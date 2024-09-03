@@ -17,6 +17,7 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "custom-pattern": "url('/images/bg-svg.svg')",
+        register: "url('/images/register-svg.svg')",
       },
       colors: {
         primary: {
