@@ -41,6 +41,7 @@ const config: Config = {
           },
           radio: {
             DEFAULT: '#EBEBEB',
+            button: '#040752',
           },
         },
       },
