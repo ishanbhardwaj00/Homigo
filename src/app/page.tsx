@@ -1,5 +1,6 @@
 import { Poppins } from "next/font/google";
 
+
 const poppins = Poppins({
   weight: ["300", "400", "700"],
   style: "normal",
@@ -22,7 +23,7 @@ const page = () => {
           <span>Here!</span>
         </div>
         <a
-          href="/login"
+          href="/login"   
           className="p-3 w-full outline outline-1 outline-white rounded-full text-center text-white font-bold"
         >
           Log in
