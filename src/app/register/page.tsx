@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 const poppins = Poppins({
-  weight: ['300', '400', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   style: 'normal',
   subsets: ['latin'],
 })
@@ -89,12 +89,12 @@ const questionnare = [
   },
 ]
 const ErrorMessage = ({ text }) => {
-  return <p className="ml-4 text-red-500 text-xs">{text}</p>
+  return <p className="ml-2 text-red-500 text-xs">{text}</p>
 }
 const StepOne = ({ setStep }: { setStep: any }) => {
   return (
     <div className="flex flex-col items-center bg-step1 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration ">
-      <div className="w-3/4 flex flex-col justify-start mt-24 gap-12">
+      <div className="w-3/4 flex flex-col justify-start mt-20 gap-12">
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >
@@ -103,21 +103,27 @@ const StepOne = ({ setStep }: { setStep: any }) => {
           <span>Verify With,</span>
           <span>Aadhar</span>
         </div>
-        <div className={`flex flex-col ${poppins.className} gap-3`}>
-          <span className={`${poppins.className}`}>
-            Enter your Aadhar Number*
-          </span>
-          <input
-            className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
-            type="text"
-            placeholder="xxxx-xxxx-xxxx-xxxx"
-          />
+        <div className={`flex flex-col ${poppins.className} gap-4`}>
+          <div className="flex flex-col gap-2">
+            <span className={`${poppins.className} ml-3 text-sm font-medium`}>
+              Enter your Aadhar Number*
+            </span>
+            <input
+              className="w-full outline-1 outline py-4 px-5 outline-black rounded-full focus:outline-2"
+              type="text"
+              placeholder="XXXX-XXXX-XXXX"
+            />
+          </div>
           <button
             onClick={() => {
               setStep((step) => step + 1)
             }}
             className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
           >
+            Verify
+          </button>
+
+          <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-4">
             Next
           </button>
         </div>
@@ -134,8 +140,8 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
   return (
-    <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration">
-      <div className="w-3/4 flex flex-col justify-start mt-24 gap-24">
+    <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
+      <div className="w-3/4 flex flex-col justify-start mt-20 gap-24">
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >
@@ -148,53 +154,78 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
             console.log(data)
             setStep((step) => step + 1)
           })}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-12"
         >
-          <div className="flex flex-col gap-1">
-            <input
-              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
-              type="email"
-              {...register('email', {
-                required: 'Email is required',
-              })}
-              placeholder="Email Address"
-            />
-            {errors.email && <ErrorMessage text={errors.email.message} />}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <input
+                className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
+                type="email"
+                {...register('email', {
+                  required: 'Email is required',
+                })}
+                placeholder="Email Address"
+              />
+              {errors.email && <ErrorMessage text={errors.email.message} />}
+            </div>
+            <div className="flex flex-col gap-1 ">
+              <input
+                className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
+                type="password"
+                {...register('password', {
+                  required: 'password is required',
+                  minLength: {
+                    value: 10,
+                    message: 'Password should be at least 10 characters',
+                  },
+                })}
+                placeholder="Password"
+              />
+              {errors.password && (
+                <ErrorMessage text={errors.password.message} />
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <input
+                className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
+                type="password"
+                {...register('confirmPassword', {
+                  required: 'Confirm password is required',
+                  validate: (value) =>
+                    value === getValues('password') || 'Passwords must match',
+                })}
+                placeholder="Password"
+              />
+              {errors.confirmPassword && (
+                <ErrorMessage text={errors.confirmPassword.message} />
+              )}
+            </div>
           </div>
-          <div className="flex flex-col gap-1 ">
-            <input
-              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
-              type="password"
-              {...register('password', {
-                required: 'password is required',
-                minLength: {
-                  value: 10,
-                  message: 'Password should be at least 10 characters',
-                },
-              })}
-              placeholder="Password"
-            />
-            {errors.password && <ErrorMessage text={errors.password.message} />}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <label
+                className="flex flex-row items-center w-5/6 self-center gap-2"
+                htmlFor="tc"
+              >
+                <input
+                  {...register('tc', {
+                    required:
+                      'Please confirm you have read and understood the Terms & Conditions and Privacy policy',
+                  })}
+                  type="checkbox"
+                  value="tc"
+                  id="tc"
+                />
+                <span className="italic  text-xs">
+                  I agree to Homigo’s Terms & Conditions and Privacy Policy
+                </span>
+              </label>
+              {errors.tc && <ErrorMessage text={errors.tc.message} />}
+            </div>
+            <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
+              Next
+            </button>
           </div>
-          <div className="flex flex-col gap-1">
-            <input
-              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
-              type="password"
-              {...register('confirmPassword', {
-                required: 'Confirm password is required',
-                validate: (value) =>
-                  value === getValues('password') || 'Passwords must match',
-              })}
-              placeholder="Password"
-            />
-            {errors.confirmPassword && (
-              <ErrorMessage text={errors.confirmPassword.message} />
-            )}
-          </div>
-
-          <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
-            Next
-          </button>
         </form>
       </div>
     </div>
@@ -226,9 +257,9 @@ const StepThree = ({ setStep }: { setStep: any }) => {
           className="flex flex-col gap-8"
         >
           <div className="flex flex-col gap-2">
-            <p className="text-black font-bold ml-4">Your Full Name*</p>
+            <p className="text-black font-bold ml-2">Your Full Name*</p>
             <input
-              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2 text-gray-500"
+              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
               type="text"
               {...register('fullName', {
                 required: 'This field is required',
@@ -238,9 +269,9 @@ const StepThree = ({ setStep }: { setStep: any }) => {
             {errors.fullName && <ErrorMessage text={errors.fullName.message} />}
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-black font-bold ml-4">Your Birth Date*</p>
+            <p className="text-black font-bold ml-2">Your Birth Date*</p>
             <input
-              className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2 text-gray-500"
+              className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
               type="date"
               {...register('dateOfBirth', {
                 required: 'Date is required',
@@ -251,7 +282,7 @@ const StepThree = ({ setStep }: { setStep: any }) => {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-black font-bold ml-4">What's your gender?</p>
+            <p className="text-black font-bold ml-2">What's your gender?</p>
             <div className="flex flex-col gap-1">
               <label
                 htmlFor="Male"
@@ -321,7 +352,8 @@ const StepFour = ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
   return (
-    <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
+    // <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
+    <div className="flex flex-col items-center justify-center  animateRegistration overflow-scroll">
       <div className="w-3/4  py-16 flex flex-col justify-between gap-8">
         <div className="flex flex-col gap-2">
           <div
@@ -336,7 +368,7 @@ const StepFour = ({ setStep }: { setStep: any }) => {
           </p>
         </div>
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-6"
           onSubmit={handleSubmit((data) => {
             setStep((step) => step + 1)
             console.log(data)
@@ -344,7 +376,9 @@ const StepFour = ({ setStep }: { setStep: any }) => {
         >
           {questionnare.map((question) => (
             <div key={question.id} className="flex flex-col capitalize gap-1">
-              <span className="font-semibold text-lg">{question.heading}</span>
+              <span className="font-semibold text-base">
+                {question.heading}
+              </span>
               <div className="flex flex-row gap-2 align items-start flex-wrap">
                 {question.options.map((option, index) => (
                   <label
@@ -371,7 +405,7 @@ const StepFour = ({ setStep }: { setStep: any }) => {
               )}
             </div>
           ))}
-          <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-4">
+          <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-6">
             Next
           </button>
         </form>
@@ -398,8 +432,8 @@ const StepFive = ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
-      <div className="w-3/4  py-16 flex flex-col justify-between gap-14">
+    <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
+      <div className="w-3/4  my-16 flex flex-col justify-between gap-14">
         <div className="flex flex-col gap-2">
           <div
             className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
@@ -410,7 +444,7 @@ const StepFive = ({ setStep }: { setStep: any }) => {
           </div>
         </div>
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-7"
           onSubmit={handleSubmit((data) => {
             setStep((step) => step + 1)
             console.log(data)
@@ -421,24 +455,25 @@ const StepFive = ({ setStep }: { setStep: any }) => {
               <p className="text-sm">Where Would You Prefer To Stay?</p>
               <p className="text-xs font-thin text-button-radio-button"></p>
             </span>
-            <div>
+            <div className="flex flex-col">
               {locations.map((location, index) => (
                 <label
-                  className="flex justify-start p-2 items-center gap-3"
+                  className="flex justify-start py-1 items-center gap-4"
                   key={index}
                   htmlFor={location}
                 >
                   <input
                     type="checkbox"
-                    className="appearance-none bg-transparent border border-solid border-gray-300 w-4 h-3 checked:border-primary"
                     value={location}
+                    // className="appearance-none bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
+                    className=" bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
                     id={location}
                     {...register('locationPreferences', {
                       required: 'This field is required',
                     })}
                   />
-                  <div className="flex flex-col w-full gap-1">
-                    <span className="text-xs font-normal w-max">
+                  <div className="flex flex-col w-full gap-2">
+                    <span className="text-sm align-center font-normal w-max">
                       {location}
                     </span>
                     <div className="w-full h-px bg-gray-300 "></div>
@@ -451,7 +486,7 @@ const StepFive = ({ setStep }: { setStep: any }) => {
             </div>
           </div>
           <div className="flex flex-col text-button-radio-button font-semibold gap-2">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <p className="text-sm">
                 Are you comfortable living with someone who consumes
                 non-vegetarian food?
@@ -487,10 +522,10 @@ const StepFive = ({ setStep }: { setStep: any }) => {
             </div>
           </div>
           <div className="flex flex-col text-button-radio-button font-semibold gap-2">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
               <p className="text-sm">What is your preferred lease duration?</p>
               <p className="text-xs font-thin text-button-radio-button"></p>
-              <div className="flex gap-2 flex-wrap ">
+              <div className="flex gap-1 flex-wrap ">
                 {['No lease', '3 months', '6 months', '12 months'].map(
                   (option, index) => (
                     <label
@@ -556,10 +591,12 @@ const StepSix = ({ setStep }: { setStep: any }) => {
             <span>We're Almost</span>
             <span>There</span>
           </div>
-          <p className="text-primary">Let's put the final piece in place</p>
+          <p className="text-primary font-light">
+            Let's put the final piece in place!
+          </p>
         </div>
         <form
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-7"
           onSubmit={handleSubmit((data) => {
             console.log(data)
             router.push('/')
@@ -576,14 +613,16 @@ const StepSix = ({ setStep }: { setStep: any }) => {
             />
             <label
               htmlFor="file-input"
-              className="avatar-label border-primary border-2"
+              className="avatar-label border-primary border"
             >
               {image ? (
                 <img src={image} alt="Avatar" className="avatar-image" />
               ) : (
-                <div className="flex avatar-placeholder text-base">
+                <div className="flex avatar-placeholder text-sm">
                   <span className="text-3xl font-bold">+</span>
-                  <span>Upload Your Picture</span>
+                  <span className="text-wrap text-center">
+                    Upload Your Profile Picture
+                  </span>
                 </div>
               )}
             </label>
@@ -597,7 +636,7 @@ const StepSix = ({ setStep }: { setStep: any }) => {
             <div className="flex justify-center items-center">
               <textarea
                 {...register('bio', { required: 'This field is required' })}
-                className="w-full h-36 border rounded-lg p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
+                className="w-full h-36 border rounded-2xl p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Tell us about you – your vibe, your quirks, and what makes you a great roommate!"
               />
             </div>
@@ -606,7 +645,7 @@ const StepSix = ({ setStep }: { setStep: any }) => {
 
           <div className="flex flex-col gap-2">
             <p className="text-base font-semibold text-button-radio-button ml-2">
-              Monthly Rent Preferences
+              Monthly Rent Preferences*
             </p>
             <div className="flex">
               <input
@@ -616,7 +655,7 @@ const StepSix = ({ setStep }: { setStep: any }) => {
                     return !isNaN(data) || 'Should be a number'
                   },
                 })}
-                className="w-full border rounded-lg p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
+                className="w-full border rounded-3xl py-3 px-4 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Enter A Number"
               />
             </div>
@@ -634,7 +673,7 @@ const StepSix = ({ setStep }: { setStep: any }) => {
 }
 
 const page = () => {
-  const [step, setStep] = useState<number>(1)
+  const [step, setStep] = useState<number>(6)
 
   if (step === 1) return <StepOne setStep={setStep} />
   else if (step === 2) return <StepTwo setStep={setStep} />

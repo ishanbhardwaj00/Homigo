@@ -378,8 +378,8 @@ template {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 12rem; /* Adjust size as needed */
-  height: 12rem; /* Adjust size as needed */
+  width: 10rem; /* Adjust size as needed */
+  height: 10rem; /* Adjust size as needed */
   border-radius: 50%;
   cursor: pointer;
   overflow: hidden;
