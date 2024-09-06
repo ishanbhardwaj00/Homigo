@@ -1,8 +1,14 @@
 'use client'
 import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useRef, useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import AadharValidator from 'aadhaar-validator'
+import { passwordStrength } from 'check-password-strength'
+import { AuthContext } from '@/contexts/authContext'
+import { userDetailsSchema } from '@/schemas/zUserInfo'
+import { TUser, TUserDetails } from '@/schemas/tUserInfo'
+import { FaArrowLeft } from 'react-icons/fa'
 
 const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
@@ -88,12 +94,30 @@ const questionnare = [
     ],
   },
 ]
-const ErrorMessage = ({ text }) => {
+const ErrorMessage = ({ text }: { text: string }) => {
   return <p className="ml-2 text-red-500 text-xs">{text}</p>
 }
-const StepOne = ({ setStep }: { setStep: any }) => {
+const AadharVerify = ({ setStep }: { setStep: any }) => {
+  const {
+    getValues,
+    handleSubmit,
+    reset,
+    register,
+    formState: { errors },
+  } = useForm()
+
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
+
+  const router = useRouter()
   return (
     <div className="flex flex-col items-center bg-step1 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration ">
+      <button onClick={() => router.back()}>
+        <FaArrowLeft />
+      </button>
       <div className="w-3/4 flex flex-col justify-start mt-20 gap-12">
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
@@ -104,34 +128,57 @@ const StepOne = ({ setStep }: { setStep: any }) => {
           <span>Aadhar</span>
         </div>
         <div className={`flex flex-col ${poppins.className} gap-4`}>
-          <div className="flex flex-col gap-2">
+          <form
+            autoComplete="off"
+            className="flex flex-col gap-2"
+            onSubmit={handleSubmit((data) => {
+              console.log(data)
+              localStorage.setItem(
+                'userInformation',
+                JSON.stringify({ ...userInformation, verified: true })
+              )
+              setStep((step: number) => step + 1)
+            })}
+          >
             <span className={`${poppins.className} ml-3 text-sm font-medium`}>
               Enter your Aadhar Number*
             </span>
             <input
+              {...register('aadharNumber', {
+                required: 'This field is required',
+                minLength: {
+                  value: 12,
+                  message: 'Length cannot be lesser than 12',
+                },
+                maxLength: {
+                  value: 12,
+                  message: 'Length cannot be more than 12',
+                },
+                validate: (data) => {
+                  return (
+                    AadharValidator.isValidNumber(data) ||
+                    'Invalid Aadhar Number'
+                  )
+                },
+              })}
               className="w-full outline-1 outline py-4 px-5 outline-black rounded-full focus:outline-2"
               type="text"
               placeholder="XXXX-XXXX-XXXX"
+              defaultValue="277463499620"
             />
-          </div>
-          <button
-            onClick={() => {
-              setStep((step) => step + 1)
-            }}
-            className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
-          >
-            Verify
-          </button>
-
-          <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-4">
-            Next
-          </button>
+            {errors.aadharNumber && (
+              <ErrorMessage text={errors.aadharNumber.message!.toString()} />
+            )}
+            <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
+              Verify
+            </button>
+          </form>
         </div>
       </div>
     </div>
   )
 }
-const StepTwo = ({ setStep }: { setStep: any }) => {
+const UserSignUp = ({ setStep }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -139,6 +186,11 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm()
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
   return (
     <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
       <div className="w-3/4 flex flex-col justify-start mt-20 gap-24">
@@ -151,8 +203,14 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit((data) => {
-            console.log(data)
-            setStep((step) => step + 1)
+            //fetchUserActionsToSetUser
+            console.log(userInformation)
+
+            localStorage.setItem(
+              'userInformation',
+              JSON.stringify({ ...userInformation, registered: true })
+            )
+            setStep((step: number) => step + 1)
           })}
           className="flex flex-col gap-12"
         >
@@ -164,6 +222,7 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
                 {...register('email', {
                   required: 'Email is required',
                 })}
+                value="ishan.x.bhardwaj@gmail.com"
                 placeholder="Email Address"
               />
               {errors.email && <ErrorMessage text={errors.email.message} />}
@@ -172,23 +231,31 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
               <input
                 className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
                 type="password"
+                value="Testing123"
                 {...register('password', {
                   required: 'password is required',
                   minLength: {
                     value: 10,
                     message: 'Password should be at least 10 characters',
                   },
+                  validate: (data) => {
+                    return (
+                      !(passwordStrength(data).id < 1) ||
+                      'Password is too weak. Add numbers and special characters to it.'
+                    )
+                  },
                 })}
                 placeholder="Password"
               />
               {errors.password && (
-                <ErrorMessage text={errors.password.message} />
+                <ErrorMessage text={errors.password.message!.toString()} />
               )}
             </div>
             <div className="flex flex-col gap-1">
               <input
                 className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
                 type="password"
+                value="Testing123"
                 {...register('confirmPassword', {
                   required: 'Confirm password is required',
                   validate: (value) =>
@@ -197,7 +264,9 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
                 placeholder="Password"
               />
               {errors.confirmPassword && (
-                <ErrorMessage text={errors.confirmPassword.message} />
+                <ErrorMessage
+                  text={errors.confirmPassword.message!.toString()}
+                />
               )}
             </div>
           </div>
@@ -220,7 +289,9 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
                   I agree to Homigo’s Terms & Conditions and Privacy Policy
                 </span>
               </label>
-              {errors.tc && <ErrorMessage text={errors.tc.message} />}
+              {errors.tc && (
+                <ErrorMessage text={errors.tc.message!.toString()} />
+              )}
             </div>
             <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
               Next
@@ -231,7 +302,7 @@ const StepTwo = ({ setStep }: { setStep: any }) => {
     </div>
   )
 }
-const StepThree = ({ setStep }: { setStep: any }) => {
+const UserDetails = ({ setStep }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -239,6 +310,13 @@ const StepThree = ({ setStep }: { setStep: any }) => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm()
+
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation: any = null
+
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
   return (
     <div className="flex flex-col items-center justify-center h-screen max-h-screen bg-bottom animateRegistration">
       <div className="w-3/4  flex flex-col justify-between gap-16">
@@ -250,9 +328,14 @@ const StepThree = ({ setStep }: { setStep: any }) => {
           <span>In?</span>
         </div>
         <form
-          onSubmit={handleSubmit((data) => {
-            console.log(data)
-            setStep((step) => step + 1)
+          onSubmit={handleSubmit((userDetails) => {
+            console.log(userDetails)
+            userInformation = { ...userInformation, userDetails }
+            localStorage.setItem(
+              'userInformation',
+              JSON.stringify(userInformation)
+            )
+            setStep((step: number) => step + 1)
           })}
           className="flex flex-col gap-8"
         >
@@ -261,16 +344,20 @@ const StepThree = ({ setStep }: { setStep: any }) => {
             <input
               className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
               type="text"
+              defaultValue={userInformation?.userDetails?.fullName || ''}
               {...register('fullName', {
                 required: 'This field is required',
               })}
               placeholder="John Doe"
             />
-            {errors.fullName && <ErrorMessage text={errors.fullName.message} />}
+            {errors.fullName && (
+              <ErrorMessage text={errors.fullName.message!.toString()} />
+            )}
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-black font-bold ml-2">Your Birth Date*</p>
             <input
+              defaultValue={userInformation?.userDetails?.dateOfBirth || ''}
               className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
               type="date"
               {...register('dateOfBirth', {
@@ -278,61 +365,37 @@ const StepThree = ({ setStep }: { setStep: any }) => {
               })}
             />
             {errors.dateOfBirth && (
-              <ErrorMessage text={errors.dateOfBirth.message} />
+              <ErrorMessage text={errors.dateOfBirth.message!.toString()} />
             )}
           </div>
           <div className="flex flex-col gap-2">
             <p className="text-black font-bold ml-2">What's your gender?</p>
             <div className="flex flex-col gap-1">
-              <label
-                htmlFor="Male"
-                className="flex p-4 bg-button-radio w-full justify-between rounded-full text-button-radio-button"
-              >
-                <span>Male</span>
-                <input
-                  className="rounded-full w-5 h-5 outline-none border-primary"
-                  {...register('gender', {
-                    required: 'This field is required',
-                  })}
-                  type="radio"
-                  name="gender"
-                  value="Male"
-                  id="Male"
-                />
-              </label>
-              <label
-                htmlFor="Female"
-                className="flex p-4 bg-button-radio w-full justify-between rounded-full text-button-radio-button"
-              >
-                <span>Female</span>
-                <input
-                  className="rounded-full w-5 h-5 outline-none border-primary"
-                  {...register('gender', {
-                    required: 'This field is required',
-                  })}
-                  type="radio"
-                  value="Female"
-                  name="gender"
-                  id="Female"
-                />
-              </label>
-              <label
-                htmlFor="Other"
-                className="flex p-4 bg-button-radio w-full justify-between rounded-full text-button-radio-button"
-              >
-                <span>Other</span>
-                <input
-                  className="rounded-full w-5 h-5 outline-none border-primary"
-                  {...register('gender', {
-                    required: 'This field is required',
-                  })}
-                  type="radio"
-                  value="Other"
-                  name="gender"
-                  id="Other"
-                />
-              </label>
-              {errors.gender && <ErrorMessage text={errors.gender?.message} />}
+              {['Male', 'Female', 'Other'].map((gender) => (
+                <label
+                  key={gender}
+                  htmlFor={gender}
+                  className="flex p-4 bg-button-radio w-full justify-between rounded-full text-button-radio-button"
+                >
+                  <span>{gender}</span>
+                  <input
+                    defaultChecked={
+                      gender === userInformation?.userDetails?.gender
+                    }
+                    className="rounded-full w-5 h-5 outline-none border-primary"
+                    {...register('gender', {
+                      required: 'This field is required',
+                    })}
+                    type="radio"
+                    name="gender"
+                    value={gender}
+                    id={gender}
+                  />
+                </label>
+              ))}
+              {errors.gender && (
+                <ErrorMessage text={errors.gender?.message!.toString()} />
+              )}
             </div>
           </div>
           <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-4">
@@ -343,7 +406,7 @@ const StepThree = ({ setStep }: { setStep: any }) => {
     </div>
   )
 }
-const StepFour = ({ setStep }: { setStep: any }) => {
+const UserDetailsCont = ({ setStep }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -351,6 +414,12 @@ const StepFour = ({ setStep }: { setStep: any }) => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm()
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
+
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
   return (
     // <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
     <div className="flex flex-col items-center justify-center  animateRegistration overflow-scroll">
@@ -369,9 +438,14 @@ const StepFour = ({ setStep }: { setStep: any }) => {
         </div>
         <form
           className="flex flex-col gap-6"
-          onSubmit={handleSubmit((data) => {
+          onSubmit={handleSubmit((hobbies) => {
             setStep((step) => step + 1)
-            console.log(data)
+            userInformation = { ...userInformation, hobbies }
+            localStorage.setItem(
+              'userInformation',
+              JSON.stringify(userInformation)
+            )
+            console.log(hobbies)
           })}
         >
           {questionnare.map((question) => (
@@ -391,6 +465,15 @@ const StepFour = ({ setStep }: { setStep: any }) => {
                       {...register(`${question.id}`, {
                         required: 'This field is required',
                       })}
+                      defaultChecked={
+                        question.type === 'radio'
+                          ? userInformation?.hobbies &&
+                            userInformation.hobbies[question.id] === option
+                          : userInformation?.hobbies &&
+                            userInformation.hobbies[question.id].includes(
+                              option
+                            )
+                      }
                       className="hidden"
                       type={question.type}
                       value={option}
@@ -401,7 +484,7 @@ const StepFour = ({ setStep }: { setStep: any }) => {
                 ))}
               </div>
               {errors[question.id] && (
-                <ErrorMessage text={errors[question.id]?.message} />
+                <ErrorMessage text={errors[question.id!.toString()]?.message} />
               )}
             </div>
           ))}
@@ -423,7 +506,7 @@ const locations = [
   'Near IMT Manesar',
   'Near Phase II',
 ]
-const StepFive = ({ setStep }: { setStep: any }) => {
+const UserPreferences = ({ setStep }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -431,6 +514,12 @@ const StepFive = ({ setStep }: { setStep: any }) => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm()
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
+
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
   return (
     <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
       <div className="w-3/4  my-16 flex flex-col justify-between gap-14">
@@ -445,9 +534,14 @@ const StepFive = ({ setStep }: { setStep: any }) => {
         </div>
         <form
           className="flex flex-col gap-7"
-          onSubmit={handleSubmit((data) => {
+          onSubmit={handleSubmit((preferences) => {
             setStep((step) => step + 1)
-            console.log(data)
+            userInformation = { ...userInformation, preferences }
+            localStorage.setItem(
+              'userInformation',
+              JSON.stringify(userInformation)
+            )
+            console.log(preferences)
           })}
         >
           <div className="flex flex-col text-button-radio-button font-semibold gap-2">
@@ -465,6 +559,11 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                   <input
                     type="checkbox"
                     value={location}
+                    defaultChecked={
+                      userInformation?.preferences?.locationPreferences?.includes(
+                        location
+                      ) || ''
+                    }
                     // className="appearance-none bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
                     className=" bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
                     id={location}
@@ -481,7 +580,9 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                 </label>
               ))}
               {errors.locationPreferences && (
-                <ErrorMessage text={errors.locationPreferences.message} />
+                <ErrorMessage
+                  text={errors.locationPreferences.message!.toString()}
+                />
               )}
             </div>
           </div>
@@ -506,6 +607,10 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                     <input
                       className="hidden"
                       type="radio"
+                      defaultChecked={
+                        userInformation?.preferences?.nonVegPreference ===
+                          option || false
+                      }
                       value={option}
                       name="nonVegPreference"
                       id={option}
@@ -516,7 +621,9 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                   </label>
                 ))}
                 {errors.nonVegPreference && (
-                  <ErrorMessage text={errors.nonVegPreference.message} />
+                  <ErrorMessage
+                    text={errors.nonVegPreference.message!.toString()}
+                  />
                 )}
               </div>
             </div>
@@ -538,6 +645,10 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                         {...register(`lease`, {
                           required: 'This field is required',
                         })}
+                        defaultChecked={
+                          userInformation?.preferences?.lease === option ||
+                          false
+                        }
                         className="hidden"
                         type="radio"
                         value={option}
@@ -548,7 +659,9 @@ const StepFive = ({ setStep }: { setStep: any }) => {
                   )
                 )}
               </div>
-              {errors.lease && <ErrorMessage text={errors.lease.message} />}
+              {errors.lease && (
+                <ErrorMessage text={errors.lease.message!.toString()} />
+              )}
             </div>
           </div>
           <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-8">
@@ -560,7 +673,7 @@ const StepFive = ({ setStep }: { setStep: any }) => {
   )
 }
 
-const StepSix = ({ setStep }: { setStep: any }) => {
+const ProfileCompletion = ({ setStep }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -569,17 +682,26 @@ const StepSix = ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0]
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] // Optional chaining to check for file existence
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImage(reader.result)
+        setImage(reader.result as string) // Ensure the result is treated as a string
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(file) // Converts the file to a Base64-encoded string
     }
   }
-  const [image, setImage] = useState(null)
+  const { authenticated, setAuthenticated, user, setUser } =
+    useContext(AuthContext)
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
+
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
+
+  const [image, setImage] = useState(userInformation?.additionalInfo?.image)
   const router = useRouter()
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
@@ -598,13 +720,19 @@ const StepSix = ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-7"
           onSubmit={handleSubmit((data) => {
-            console.log(data)
-            router.push('/')
+            const additionalInfo = { ...data, image: image }
+            userInformation = { ...userInformation, additionalInfo }
+            localStorage.setItem(
+              'userInformation',
+              JSON.stringify(userInformation)
+            )
+            setUser(userInformation)
+            setAuthenticated(true)
           })}
         >
           <div className="avatar-container self-center">
             <input
-              {...register('image', { required: 'Image is required' })}
+              {...register('image')}
               type="file"
               accept="image/*"
               id="file-input"
@@ -627,7 +755,9 @@ const StepSix = ({ setStep }: { setStep: any }) => {
               )}
             </label>
           </div>
-          {errors.image && <ErrorMessage text={errors.image.message} />}
+          {errors.image && (
+            <ErrorMessage text={errors.image.message!.toString()} />
+          )}
 
           <div className="flex flex-col gap-2">
             <p className="text-base font-semibold text-button-radio-button ml-2">
@@ -636,12 +766,13 @@ const StepSix = ({ setStep }: { setStep: any }) => {
             <div className="flex justify-center items-center">
               <textarea
                 {...register('bio', { required: 'This field is required' })}
+                defaultValue={userInformation?.additionalInfo?.bio || ''}
                 className="w-full h-36 border rounded-2xl p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Tell us about you – your vibe, your quirks, and what makes you a great roommate!"
               />
             </div>
           </div>
-          {errors.bio && <ErrorMessage text={errors.bio.message} />}
+          {errors.bio && <ErrorMessage text={errors.bio.message!.toString()} />}
 
           <div className="flex flex-col gap-2">
             <p className="text-base font-semibold text-button-radio-button ml-2">
@@ -655,12 +786,17 @@ const StepSix = ({ setStep }: { setStep: any }) => {
                     return !isNaN(data) || 'Should be a number'
                   },
                 })}
+                defaultValue={
+                  userInformation?.additionalInfo?.monthlyRentPreferences || ''
+                }
                 className="w-full border rounded-3xl py-3 px-4 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Enter A Number"
               />
             </div>
             {errors.monthlyRentPreferences && (
-              <ErrorMessage text={errors.monthlyRentPreferences.message} />
+              <ErrorMessage
+                text={errors.monthlyRentPreferences.message!.toString()}
+              />
             )}
           </div>
           <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-8">
@@ -673,14 +809,47 @@ const StepSix = ({ setStep }: { setStep: any }) => {
 }
 
 const page = () => {
-  const [step, setStep] = useState<number>(6)
+  const { authenticated, setAuthenticated, user, setUser } =
+    useContext(AuthContext)
+  const router = useRouter()
+  const [step, setStep] = useState<number>(1)
+  const userInformationJson = localStorage.getItem('userInformation')
+  let userInformation = {}
 
-  if (step === 1) return <StepOne setStep={setStep} />
-  else if (step === 2) return <StepTwo setStep={setStep} />
-  else if (step == 3) return <StepThree setStep={setStep} />
-  else if (step === 4) return <StepFour setStep={setStep} />
-  else if (step === 5) return <StepFive setStep={setStep} />
-  else if (step === 6) return <StepSix setStep={setStep} />
+  console.log(authenticated, user)
+
+  if (userInformationJson) {
+    userInformation = JSON.parse(userInformationJson)
+  }
+  // useEffect(() => {
+  //   if (userInformation?.additionalInfo) {
+  //     return router.replace('/home')
+  //   } else if (userInformation?.preferences) {
+  //     setStep(step + 5)
+  //   } else if (userInformation?.hobbies) {
+  //     setStep(step + 4)
+  //   } else if (userInformation?.userDetails) {
+  //     setStep(step + 3)
+  //   } else if (userInformation?.registered) {
+  //     setStep(step + 2)
+  //   } else if (userInformation?.verified) {
+  //     setStep(step + 1)
+  //   }
+  // }, [])
+
+  useEffect(() => {
+    // Redirect to home if authenticated
+    if (authenticated) {
+      return router.replace('/home')
+    }
+  }, [authenticated, router])
+
+  if (step === 1) return <AadharVerify setStep={setStep} />
+  else if (step === 2) return <UserSignUp setStep={setStep} />
+  else if (step == 3) return <UserDetails setStep={setStep} />
+  else if (step === 4) return <UserDetailsCont setStep={setStep} />
+  else if (step === 5) return <UserPreferences setStep={setStep} />
+  else if (step === 6) return <ProfileCompletion setStep={setStep} />
 }
 
 export default page
