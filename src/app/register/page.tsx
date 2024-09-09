@@ -46,6 +46,14 @@ const page = () => {
     fetchUserInformation()
   }, [])
 
+  useEffect(() => {
+    if (authenticated) {
+      setLoading(true)
+      router.replace('/home')
+      setLoading(false)
+    }
+  }, [authenticated])
+
   if (loading) return <Loading />
   else if (step === 1) return <AadharVerify setStep={setStep} />
   else if (step === 2) return <UserSignUp setStep={setStep} />

@@ -17,15 +17,17 @@ export default ({ setStep }: { setStep: any }) => {
     handleSubmit,
     reset,
     getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] // Optional chaining to check for file existence
+    const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImage(reader.result as string) // Ensure the result is treated as a string
+        setValue('image', reader.result)
+        setImage(reader.result)
       }
       reader.readAsDataURL(file) // Converts the file to a Base64-encoded string
     }
@@ -52,6 +54,7 @@ export default ({ setStep }: { setStep: any }) => {
         monthlyRentPreferences:
           userInformation?.additionalInfo?.monthlyRentPreferences,
       })
+      setImage(userInformation?.additionalInfo?.image)
       setLoading(false)
     }
   }, [userInformation])
@@ -62,8 +65,8 @@ export default ({ setStep }: { setStep: any }) => {
 
   if (loading) return <Loading />
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
-      <div className="w-3/4  py-12 flex flex-col justify-between gap-12">
+    <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
+      <div className="w-3/4  py-8 flex flex-col justify-between gap-12">
         <button onClick={() => setStep((step) => step - 1)}>
           <GoArrowLeft size={24} />
         </button>
@@ -79,7 +82,7 @@ export default ({ setStep }: { setStep: any }) => {
           </p>
         </div>
         <form
-          className="flex flex-col gap-7"
+          className="flex flex-col gap-6"
           onSubmit={handleSubmit((data) => {
             const additionalInfo = { ...data, image: image }
             setUserInformation({ ...userInformation, additionalInfo })
@@ -93,6 +96,7 @@ export default ({ setStep }: { setStep: any }) => {
         >
           <div className="avatar-container self-center">
             <input
+              {...register('image')}
               type="file"
               accept="image/*"
               id="file-input"
@@ -103,9 +107,8 @@ export default ({ setStep }: { setStep: any }) => {
               htmlFor="file-input"
               className="avatar-label border-primary border"
             >
-              {getValues('image') ? (
+              {image ? (
                 <img
-                  {...register('image')}
                   src={getValues('image')}
                   alt="Avatar"
                   className="avatar-image"
@@ -135,8 +138,10 @@ export default ({ setStep }: { setStep: any }) => {
                 placeholder="Tell us about you – your vibe, your quirks, and what makes you a great roommate!"
               />
             </div>
+            {errors.bio && (
+              <ErrorMessage text={errors.bio.message!.toString()} />
+            )}
           </div>
-          {errors.bio && <ErrorMessage text={errors.bio.message!.toString()} />}
 
           <div className="flex flex-col gap-2">
             <p className="text-base font-semibold text-button-radio-button ml-2">
