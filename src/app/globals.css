@@ -402,3 +402,12 @@ template {
   background-color: #ebebeb;
   color: #b8b8b8;
 }
+
+.image-filter {
+  filter: brightness(0) saturate(100%) invert(21%) sepia(97%) saturate(7405%)
+    hue-rotate(244deg) brightness(91%) contrast(103%);
+}
+
+.leading-sm {
+  line-height: 0.9;
+}

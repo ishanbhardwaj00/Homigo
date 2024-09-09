@@ -92,6 +92,7 @@ export default ({ setStep }: { setStep: any }) => {
             )
             setUser(userInformation)
             setAuthenticated(true)
+            router.replace('/')
           })}
         >
           <div className="avatar-container self-center">

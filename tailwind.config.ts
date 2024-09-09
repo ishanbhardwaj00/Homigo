@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      height: {
+        '20': '75px',
+      },
       keyframes: {
         slideRight: {
           '0%': { transform: 'translateX(-100%)' },
@@ -34,6 +37,12 @@ const config: Config = {
         primary: {
           DEFAULT: '#232beb',
           light: '#232beb',
+        },
+        nav: {
+          light: '#FAFAFA',
+        },
+        home: {
+          light: '#F0F0F0',
         },
         button: {
           primary: {

@@ -1,5 +1,11 @@
 'use client'
-import { createContext, Dispatch, SetStateAction, useState } from 'react'
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react'
 
 type AuthType = {
   user: any
@@ -16,7 +22,7 @@ export const AuthContext = createContext<AuthType>({
 
 export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [authenticated, setAuthenticated] = useState(false)
+  const [authenticated, setAuthenticated] = useState(true)
 
   return (
     <AuthContext.Provider

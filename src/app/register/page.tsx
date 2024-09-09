@@ -1,10 +1,6 @@
 'use client'
-import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useContext, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
-import { passwordStrength } from 'check-password-strength'
 import { AuthContext } from '@/contexts/authContext'
 import Loading from '@/components/Loading'
 import AadharVerify from '../containers/AadharVerify'
@@ -45,14 +41,6 @@ const page = () => {
     }
     fetchUserInformation()
   }, [])
-
-  useEffect(() => {
-    if (authenticated) {
-      setLoading(true)
-      router.replace('/home')
-      setLoading(false)
-    }
-  }, [authenticated])
 
   if (loading) return <Loading />
   else if (step === 1) return <AadharVerify setStep={setStep} />
