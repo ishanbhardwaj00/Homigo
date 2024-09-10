@@ -3,12 +3,12 @@ import { useRouter } from 'next/navigation'
 import { useState, useRef, useContext, useEffect } from 'react'
 import { AuthContext } from '@/contexts/authContext'
 import Loading from '@/components/Loading'
-import AadharVerify from '../containers/AadharVerify'
-import UserSignUp from '../containers/UserSignUp'
-import UserDetails from '../containers/UserDetails'
-import UserDetailsCont from '../containers/UserDetailsCont'
-import UserPreferences from '../containers/UserPreferences'
-import ProfileCompletion from '../containers/ProfileCompletion'
+import AadharVerify from '../../containers/AadharVerify'
+import UserSignUp from '../../containers/UserSignUp'
+import UserDetails from '../../containers/UserDetails'
+import UserDetailsCont from '../../containers/UserDetailsCont'
+import UserPreferences from '../../containers/UserPreferences'
+import ProfileCompletion from '../../containers/ProfileCompletion'
 
 const page = () => {
   const { authenticated, setAuthenticated, user, setUser } =

@@ -2,12 +2,12 @@ import React, { useState } from 'react'
 
 const imageNames = ['profile.svg', 'match.svg', 'chat.svg']
 
-const Navigation = () => {
-  const [selected, setSelected] = useState(1)
+const Navigation = ({setSelected, selected}:{setSelected:any, selected:number}) => {
   return (
     <div className="h-20 bg-nav-light rounded-3xl flex justify-between px-5">
       {imageNames.map((img, index) => (
         <img
+          key={index}
           src={`/images/${img}`}
           alt={img}
           onClick={() => {
@@ -21,3 +21,4 @@ const Navigation = () => {
 }
 
 export default Navigation
+ 

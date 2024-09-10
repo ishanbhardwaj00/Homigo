@@ -14,6 +14,7 @@ import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
+import axios from "axios"
 
 export default ({ setStep }: { setStep: any }) => {
   const {
@@ -53,15 +54,15 @@ export default ({ setStep }: { setStep: any }) => {
           <span>Login Anytime!</span>
         </div>
         <form
-          onSubmit={handleSubmit((data) => {
-            //fetchUserActionsToSetUser
-            console.log(userInformation)
+          onSubmit={handleSubmit(async (data) => {
+            const response  = await axios.post("http://locahost:5000/api/users/signup", data);
+            console.log(response.data)
 
             localStorage.setItem(
               'userInformation',
               JSON.stringify({ ...userInformation, registered: true, step: 2 })
             )
-            setStep((step: number) => step + 1)
+            // setStep((step: number) => step + 1)
           })}
           className="flex flex-col gap-12"
         >

@@ -1,6 +1,6 @@
 const Main = () => {
   return (
-    <div className="flex flex-col flex-1 overflow-scroll justify-center items-center p-5">
+    <div className="flex flex-col flex-grow overflow-scroll justify-center items-center p-5">
       <div className="h-full bg-white w-full rounded-lg px-5 py-7">
         <div className="h-3/4 w-full">
           <img

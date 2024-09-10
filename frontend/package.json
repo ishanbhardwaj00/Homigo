@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "aadhaar-validator": "^1.1.0",
+    "axios": "^1.7.7",
     "check-password-strength": "^2.0.10",
     "next": "14.2.7",
     "react": "^18",

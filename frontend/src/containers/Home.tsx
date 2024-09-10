@@ -12,6 +12,7 @@ export default () => {
   const { authenticated } = useContext(AuthContext)
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState(1)
 
   useEffect(() => {
     console.log('Home screen')
@@ -19,16 +20,18 @@ export default () => {
     setLoading(false)
   }, [])
 
-  // useEffect(() => {
-  //   if (!authenticated) router.replace('/')
-  // }, [authenticated])
+  useEffect(() => {
+    if (!authenticated) router.replace('/')
+  }, [authenticated])
 
   if (loading) return <Loading />
+
+  
   return (
     <div className="flex flex-col h-screen bg-home-light justify-between">
       <Header />
-      <Main />
-      <Navigation />
+      {selected === 0 ? <div>profile</div> : selected === 1 ?  <Main />: <div>chat</div>}
+      <Navigation setSelected={setSelected} selected={selected}/>
     </div>
   )
 }
