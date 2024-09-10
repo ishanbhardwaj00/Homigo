@@ -5,13 +5,14 @@ import User from './models/users.model.js'
 import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
+import cors from "cors"
 
 dotenv.config() // Load environment variables if any (optional)
 
 const app = express()
 app.use(bodyParser.json())
 app.use(express.json())
-
+app.use(cors({origin: '*'}))
 app.use(cookieParser());
 
 const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
@@ -91,15 +92,31 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err))
 
 // POST route to create a new user
-app.post('/api/users/login', async (req, res) => {
+app.patch('/api/users/login', async (req, res) => {
+  console.log(req.body)
   try {
-    const { userCred, userDetails, metaDat, hobbies, preferences } = req.body
+    const { verified, step, registered,  
+      userDetails: {fullName, dateOfBirth, gender}, 
+      hobbies:{
+        nature, 
+        dietaryPreferences, 
+        workStyle, 
+        workHours, 
+        smokingPreference, 
+        guestPoilicy, 
+        regionalBackground, 
+        interests}, 
+      preferences:{locationPreferences, nonVegPreference, lease}, 
+      additionalInfo } = req.body
 
-    // Validate and save the user data
     const user = new User({
       userCred,
       userDetails,
-      metaDat,
+      metaDat : {
+        image: additionalInfo.image,
+        bio: additionalInfo.bio,
+        monthlyRent: additionalInfo.monthlyRentPreferences
+      },
       hobbies,
       preferences,
     })
@@ -177,4 +194,35 @@ const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
+})
+
+app.post('/api/users/signup', async (req, res) => {
+  console.log(req.body)
+  try {
+    const { email, password}   = req.body
+
+    const user = new User({
+
+      profileCompleted:false,
+
+      userCred:{
+        email, password
+      }
+    })
+
+    await user.save() // Save to the database
+    res.status(201).json({
+      success: true,
+      id: user._id,
+    })
+
+
+    // res.json()
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({
+      message: 'Error saving user data',
+      error: err.message,
+    })
+  }
 })

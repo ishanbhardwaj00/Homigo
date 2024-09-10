@@ -10,6 +10,11 @@ dotenv.config();
 
 // Define the schema
 const userSchema = new Schema({
+
+    profileCompleted:{
+        type: Boolean,
+        required: true
+    },
     userCred: {
         email: {
             type: String,
@@ -38,18 +43,18 @@ const userSchema = new Schema({
     userDetails : {
         gender:{
             type: String,
-            required: true,
+            required: false,
 
         },
 
         fullName: {
             type: String,
-            required: true,
+            required: false,
         },
 
         dateOfBirth: {
             type: Date,
-            required: true,
+            required: false,
             trim: true,
             // index: true
         }
@@ -59,17 +64,17 @@ const userSchema = new Schema({
     metaDat: {
         image: {
             type: String,
-            required: true,
+            required: false,
         },
 
         bio: {
             type: String,
-            required: true
+            required: false
         },
 
         monthlyRent:{
             type: Number,
-            required:true,
+            required:false,
             trim: true
         }
     },
@@ -83,35 +88,35 @@ const userSchema = new Schema({
 
         dietaryPreferences:{
             type: String,
-            required: true
+            required: false
         },
 
         workStyle:{
             type:String,
-            required:true
+            required:false
         },
         workHours:{
             type: String,
-            required: true
+            required: false
         },
         
         smokingPreference:{
             type: String,
-            required: true
+            required: false
         },
 
         drinkingPreference:{
             type: String,
-            required: true
+            required: false
         },
         guestPolicy:{
             type: String,
-            required: true
+            required: false
         },
 
         regionalBackground:{
             type: String,
-            required: true
+            required: false
         },
 
 
@@ -119,7 +124,7 @@ const userSchema = new Schema({
    
         interests: [{
             type: String,
-            required: true,
+            required: false,
 
         }]
     },
@@ -127,18 +132,18 @@ const userSchema = new Schema({
     preferences:{
         location:[{
             type:String,
-            required: true
+            required: false
 
         }],
 
         nonVegPreferences:{
             type:String,
-            required:true
+            required:false
         },
 
         lease:{
             type: String,
-            required: true
+            required: false
         }
     }
 });
