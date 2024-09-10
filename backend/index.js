@@ -332,3 +332,16 @@ app.post('/api/users/signup', async (req, res) => {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
   })
+
+
+
+  app.get("/users", async (req,res) => {
+
+    const users = await User.find({})
+
+    return res.json({
+      success:true,
+      users
+    })
+
+  })
