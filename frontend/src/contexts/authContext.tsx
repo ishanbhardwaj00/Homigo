@@ -22,7 +22,7 @@ export const AuthContext = createContext<AuthType>({
 
 export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [authenticated, setAuthenticated] = useState(false)
+  const [authenticated, setAuthenticated] = useState(true)
 
   return (
     <AuthContext.Provider

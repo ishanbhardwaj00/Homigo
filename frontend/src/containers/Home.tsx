@@ -26,12 +26,17 @@ export default () => {
 
   if (loading) return <Loading />
 
-  
   return (
-    <div className="flex flex-col h-screen bg-home-light justify-between">
+    <div className="flex flex-col h-screen bg-home-light">
       <Header />
-      {selected === 0 ? <div>profile</div> : selected === 1 ?  <Main />: <div>chat</div>}
-      <Navigation setSelected={setSelected} selected={selected}/>
+      {selected === 0 ? (
+        <div>profile</div>
+      ) : selected === 1 ? (
+        <Main />
+      ) : (
+        <div>chat</div>
+      )}
+      <Navigation setSelected={setSelected} selected={selected} />
     </div>
   )
 }
