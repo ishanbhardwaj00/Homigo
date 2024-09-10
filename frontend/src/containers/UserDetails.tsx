@@ -52,9 +52,6 @@ export default ({ setStep }: { setStep: any }) => {
   return (
     <div className="flex flex-col items-center justify-center h-screen max-h-screen bg-bottom animateRegistration">
       <div className="w-3/4  flex flex-col justify-between gap-16">
-        <button onClick={() => setStep((step) => step - 1)}>
-          <GoArrowLeft size={24} />
-        </button>
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >

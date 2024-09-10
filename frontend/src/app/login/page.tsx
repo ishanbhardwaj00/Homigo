@@ -3,17 +3,11 @@ import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
 import { passwordStrength } from 'check-password-strength'
 import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
-import { FaArrowLeft } from 'react-icons/fa'
-import { BarLoader } from 'react-spinners'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
-import { GoArrowLeft } from 'react-icons/go'
 import axios from "axios"
 
 export default ({ setStep }: { setStep: any }) => {
@@ -25,8 +19,8 @@ export default ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
   const [userInformation, setUserInformation] = useState({})
-  const [signUpError, setSignUpError] = useState(null)
-
+  const [loginError, setLoginError] = useState(null)
+  const {setAuthenticated} = useContext(AuthContext)
   useEffect(() => {
     setLoading(true)
     const userInformationJson = localStorage.getItem('userInformation')
@@ -50,27 +44,26 @@ export default ({ setStep }: { setStep: any }) => {
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >
-          <span>Secure Your </span>
-          <span>Access &</span>
-          <span>Login Anytime!</span>
+          <span>Log In</span>
+          <span>And Find </span>
+          <span>The Perfect Roommate</span>
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            const response  = await axios.post("http://localhost:5000/api/users/signup", data, {withCredentials: true});
-            console.log(response.data);
+            console.log(data);
+          
+            const response  = await axios.post("http://localhost:5000/api/users/login", data);
+            console.log(response.data); 
             
             const {success, message, id} = response.data; 
 
             if(success) {
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({ ...userInformation, registered: true, step: 2 })
-              )
-              setStep((step: number) => step + 1)
-              setSignUpError(null)
+              setAuthenticated(true);
+              router.replace('/home')
+
             }
             else {
-              setSignUpError(message);
+              setLoginError(message);
             }
           })}
           className="flex flex-col gap-12"
@@ -110,48 +103,9 @@ export default ({ setStep }: { setStep: any }) => {
                 <ErrorMessage text={errors.password.message!.toString()} />
               )}
             </div>
-            <div className="flex flex-col gap-1">
-              <input
-                className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
-                type="password"
-                {...register('confirmPassword', {
-                  required: 'Confirm password is required',
-                  validate: (value) =>
-                    value === getValues('password') || 'Passwords must match',
-                })}
-                placeholder="Password"
-              />
-              {errors.confirmPassword && (
-                <ErrorMessage
-                  text={errors.confirmPassword.message!.toString()}
-                />
-              )}
-            </div>
-            {signUpError && <ErrorMessage text={signUpError}/>}
+            {loginError && <ErrorMessage text={loginError}/>}
           </div>
           <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1">
-              <label
-                className="flex flex-row items-center w-5/6 self-center gap-2"
-                htmlFor="tc"
-              >
-                <input
-                  {...register('tc', {
-                    required:
-                      'Please confirm you have read and understood the Terms & Conditions and Privacy policy',
-                  })}
-                  type="checkbox"
-                  value="tc"
-                  id="tc"
-                />
-                <span className="italic  text-xs">
-                  I agree to Homigo’s Terms & Conditions and Privacy Policy
-                </span>
-              </label>
-              {errors.tc && (
-                <ErrorMessage text={errors.tc.message!.toString()} />
-              )}
-            </div>
             <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
               Next
             </button>

@@ -12,7 +12,7 @@ dotenv.config() // Load environment variables if any (optional)
 const app = express()
 app.use(bodyParser.json())
 app.use(express.json())
-app.use(cors({origin: '*'}))
+app.use(cors({origin: 'http://localhost:3000', credentials: true}))
 app.use(cookieParser());
 
 const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
@@ -103,7 +103,7 @@ app.patch('/api/users/login', async (req, res) => {
         workStyle, 
         workHours, 
         smokingPreference, 
-        guestPoilicy, 
+        guestPolicy, 
         regionalBackground, 
         interests}, 
       preferences:{locationPreferences, nonVegPreference, lease}, 
@@ -129,9 +129,9 @@ app.patch('/api/users/login', async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
-      secure: true, // Send cookie over HTTPS only in production
+      secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
-      sameSite: 'strict', // Ensures the cookie is not sent along with cross-site requests
+      sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     });
 
   } catch (err) {
@@ -145,37 +145,34 @@ app.patch('/api/users/login', async (req, res) => {
 
 
 app.post('/api/users/login', async (req, res) => {
+  console.log(req.body);
   try {
     const { email, password } = req.body;
 
-    // Check if email and password are provided
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
-    }
-
     // Find the user by email
-    const user = await User.findOne({ 'userCred.email': email });
+    const user = await User.findOne({ 'userCred.email': email});
+    console.log(user);
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password.' });
+      return res.status(200).json({ message: 'Invalid email or password.' });
     }
 
     // Check if the password is correct
     const isMatch = await user.isPasswordCorrect(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password.' });
+      return res.status(200).json({ message: 'Invalid email or password.' });
     }
 
     console.log(user)
 
-    if (user.profileCompleted === false) {
+    if (!user.profileCompleted) {
       await user.deleteOne({ _id: user._id });
 
       // Clear the access and refresh token cookies
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
 
-      return res.status(400).json({
-        message: "User profile incomplete, user entry deleted",
+      return res.status(200).json({
+        message: "Account does not exist",
         success: false
       });
     }
@@ -190,17 +187,17 @@ app.post('/api/users/login', async (req, res) => {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
-      secure: true, // Send cookie over HTTPS only in production
+      secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
-      sameSite: 'strict', // Ensures the cookie is not sent along with cross-site requests
+      sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     });
   
     // Optionally, send refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     // Return tokens to the client
@@ -215,18 +212,15 @@ app.post('/api/users/login', async (req, res) => {
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-})
 
 app.post('/api/users/signup', async (req, res) => {
+  
   console.log(req.body)
   try {
     const { email, password}   = req.body;
 
     const userExists = await User.findOne({ 'userCred.email': email});
 
-    // console.log("user: ", userExists);
 
     if(userExists) {
 
@@ -250,30 +244,34 @@ app.post('/api/users/signup', async (req, res) => {
   
       res.cookie('accessToken', accessToken, {
         httpOnly: true, // Makes sure the cookie is accessible only by web server
-        secure: true, // Send cookie over HTTPS only in production
+        secure: false, // Send cookie over HTTPS only in production
         maxAge: 1000 * 60 * 15, // 15 minutes
-        sameSite: 'strict', // Ensures the cookie is not sent along with cross-site requests
+        sameSite: 'strict'
       });
     
       // Optionally, send refresh token as HTTP-only cookie
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
         sameSite: 'strict',
       });
-
+      
       res.status(201).json({
         success: true,
         id: user._id,
       });
-
-    // res.json()
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({
-      message: 'Error saving user data',
-      error: err.message,
-    })
-  }
-})
+      
+      // res.json()
+    } catch (err) {
+      console.error(err)
+      res.status(500).json({
+        message: 'Error saving user data',
+        error: err.message,
+      })
+    }
+  })
+  
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`)
+  })
