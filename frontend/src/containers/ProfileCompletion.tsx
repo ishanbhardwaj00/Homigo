@@ -10,6 +10,7 @@ import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
+import axios from 'axios'
 
 export default ({ setStep }: { setStep: any }) => {
   const {
@@ -83,13 +84,13 @@ export default ({ setStep }: { setStep: any }) => {
         </div>
         <form
           className="flex flex-col gap-6"
-          onSubmit={handleSubmit((data) => {
+          onSubmit={handleSubmit(async (data) => {
             const additionalInfo = { ...data, image: image }
-            setUserInformation({ ...userInformation, additionalInfo })
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({ ...userInformation, additionalInfo, step: 6 })
-            )
+            data = {...userInformation, additionalInfo}
+            const response = await axios.patch("http://localhost:5000/api/users/signup", data, {withCredentials: true})
+            console.log(response.data);
+            setUserInformation(data)
+            localStorage.removeItem('userInformation');
             setUser(userInformation)
             setAuthenticated(true)
             router.replace('/')

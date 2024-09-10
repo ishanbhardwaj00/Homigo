@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from "cors"
+import jwt from "jsonwebtoken"
 
 dotenv.config() // Load environment variables if any (optional)
 
@@ -92,22 +93,25 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err))
 
 // POST route to create a new user
-app.patch('/api/users/login', async (req, res) => {
-  console.log(req.body)
+app.patch('/api/users/signup', async (req, res) => {
   try {
-    const { verified, step, registered,  
-      userDetails: {fullName, dateOfBirth, gender}, 
-      hobbies:{
-        nature, 
-        dietaryPreferences, 
-        workStyle, 
-        workHours, 
-        smokingPreference, 
-        guestPolicy, 
-        regionalBackground, 
-        interests}, 
-      preferences:{locationPreferences, nonVegPreference, lease}, 
-      additionalInfo } = req.body
+    console.log(req.cookies.refreshToken)
+    const decodedToken = jwt.verify(req.cookies.refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    console.log(decodedToken);
+
+    // const { verified, step, registered,  
+    //   userDetails: {fullName, dateOfBirth, gender}, 
+    //   hobbies:{
+    //     nature, 
+    //     dietaryPreferences, 
+    //     workStyle, 
+    //     workHours, 
+    //     smokingPreference, 
+    //     guestPolicy, 
+    //     regionalBackground, 
+    //     interests}, 
+    //   preferences:{locationPreferences, nonVegPreference, lease}, 
+    //   additionalInfo } = req.body
 
     const user = new User({
       userCred,
@@ -120,7 +124,7 @@ app.patch('/api/users/login', async (req, res) => {
       hobbies,
       preferences,
     })
-
+    
     await user.save() // Save to the database
     res.status(201).json({
       message: 'User successfully saved',
@@ -135,7 +139,7 @@ app.patch('/api/users/login', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err)
+    // console.error(err)
     res.status(500).json({
       message: 'Error saving user data',
       error: err.message,

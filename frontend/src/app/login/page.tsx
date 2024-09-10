@@ -52,9 +52,8 @@ export default ({ setStep }: { setStep: any }) => {
           onSubmit={handleSubmit(async (data) => {
             console.log(data);
           
-            const response  = await axios.post("http://localhost:5000/api/users/login", data);
+            const response  = await axios.patch("http://localhost:5000/api/users/signup", data);
             console.log(response.data); 
-            
             const {success, message, id} = response.data; 
 
             if(success) {
