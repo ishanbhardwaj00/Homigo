@@ -94,9 +94,6 @@ mongoose
 
 // POST route to create a new user
 app.patch('/api/users/signup', async (req, res) => {
-
-
-
   console.log(req.body)
   try {
 
@@ -145,10 +142,25 @@ app.patch('/api/users/signup', async (req, res) => {
         image:additionalInfo.image,
         bio: additionalInfo.bio,
         monthlyRent: additionalInfo.monthlyRentPreferences
-      },
-      hobbies,
-      preferences,
-    })
+
+      };
+
+      user.hobbies = {
+        nature,
+        dietaryPreferences,
+        workStyle,
+        workHours,
+        smokingPreference,
+        guestPolicy,
+        regionalBackground,
+        interests,
+      };
+      user.preferences = {
+        locationPreferences,
+        nonVegPreference,
+        lease,
+      };
+
 
     await user.save() // Save to the database
     
@@ -177,7 +189,7 @@ app.patch('/api/users/signup', async (req, res) => {
     })
 
   } catch (err) {
-    // console.error(err)
+    console.error(err)
     res.status(500).json({
       message: 'Error saving user data',
       error: err.message,
