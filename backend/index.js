@@ -199,14 +199,14 @@ app.listen(PORT, () => {
 app.post('/api/users/signup', async (req, res) => {
   console.log(req.body)
   try {
-    const { email, password}   = req.body
-    const userCred = {email, password};
-    const userExists = await User.find({userCred});
+    const { email, password}   = req.body;
+    const userExists = await User.findOne({ 'userCred.email': email});
+
     console.log("user: ", userExists);
+
     if(userExists) {
       return res.send({success: false, message: "User already exists"})
     }
-    else {
       const user = new User({
 
         profileCompleted:false,
@@ -221,8 +221,6 @@ app.post('/api/users/signup', async (req, res) => {
         success: true,
         id: user._id,
       })
-    }
-
 
     // res.json()
   } catch (err) {
