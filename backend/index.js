@@ -200,21 +200,28 @@ app.post('/api/users/signup', async (req, res) => {
   console.log(req.body)
   try {
     const { email, password}   = req.body
+    const userCred = {email, password};
+    const userExists = await User.find({userCred});
+    console.log("user: ", userExists);
+    if(userExists) {
+      return res.send({success: false, message: "User already exists"})
+    }
+    else {
+      const user = new User({
 
-    const user = new User({
-
-      profileCompleted:false,
-
-      userCred:{
-        email, password
-      }
-    })
-
-    await user.save() // Save to the database
-    res.status(201).json({
-      success: true,
-      id: user._id,
-    })
+        profileCompleted:false,
+  
+        userCred:{
+          email, password
+        }
+      })
+  
+      await user.save() // Save to the database
+      res.status(201).json({
+        success: true,
+        id: user._id,
+      })
+    }
 
 
     // res.json()

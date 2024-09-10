@@ -55,7 +55,7 @@ export default ({ setStep }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            const response  = await axios.post("http://locahost:5000/api/users/signup", data);
+            const response  = await axios.post("http://localhost:5000/api/users/signup", data);
             console.log(response.data)
 
             localStorage.setItem(
@@ -74,7 +74,7 @@ export default ({ setStep }: { setStep: any }) => {
                 {...register('email', {
                   required: 'Email is required',
                 })}
-                value="ishan.x.bhardwaj@gmail.com"
+                defaultValue="ishan.x.bhardwaj111s@gmail.com"
                 placeholder="Email Address"
               />
               {errors.email && <ErrorMessage text={errors.email.message} />}
