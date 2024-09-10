@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from "cors"
+import jwt from 'jsonwebtoken'
 
 dotenv.config() // Load environment variables if any (optional)
 
@@ -92,9 +93,34 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err))
 
 // POST route to create a new user
-app.patch('/api/users/login', async (req, res) => {
+app.patch('/api/users/signup', async (req, res) => {
+
+
+
   console.log(req.body)
   try {
+
+    const { accessToken } = req.cookies;
+
+    let decodedToken;
+    if(accessToken)
+    {
+      try {
+        decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+      } catch(err){
+        return res.status(401).json({ message: 'Invalid or expired token' });
+      }
+    } else {
+      return res.status(401).json({ message: 'Access token missing' });
+      }
+
+    const { _id, email } = decodedToken;
+
+    const user = await User.findOne({ 'userCred.email': email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     const { verified, step, registered,  
       userDetails: {fullName, dateOfBirth, gender}, 
       hobbies:{
@@ -109,30 +135,61 @@ app.patch('/api/users/login', async (req, res) => {
       preferences:{locationPreferences, nonVegPreference, lease}, 
       additionalInfo } = req.body
 
-    const user = new User({
-      userCred,
-      userDetails,
-      metaDat : {
-        image: additionalInfo.image,
+      user.userDetails = {
+        fullName,
+        dateOfBirth,
+        gender,
+      };
+
+      user.metaDat = {
+        image:additionalInfo.image,
         bio: additionalInfo.bio,
         monthlyRent: additionalInfo.monthlyRentPreferences
-      },
-      hobbies,
-      preferences,
-    })
+
+      };
+
+      user.hobbies = {
+        nature,
+        dietaryPreferences,
+        workStyle,
+        workHours,
+        smokingPreference,
+        guestPolicy,
+        regionalBackground,
+        interests,
+      };
+      user.preferences = {
+        locationPreferences,
+        nonVegPreference,
+        lease,
+      };
+
 
     await user.save() // Save to the database
-    res.status(201).json({
-      message: 'User successfully saved',
-      user,
-    })
+    
 
-    res.cookie('accessToken', accessToken, {
+    const newAccessToken = user.generateAccessToken();
+
+    res.cookie('accessToken', newAccessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     });
+
+    const newRefreshToken = user.generateRefreshToken();
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true, // Makes sure the cookie is accessible only by web server
+      secure: false, // Send cookie over HTTPS only in production
+      maxAge: 1000 * 60 * 15, // 15 minutes
+      sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
+    });
+
+    return res.status(201).json({
+      message: 'User successfully saved',
+      user
+    })
 
   } catch (err) {
     console.error(err)
