@@ -126,6 +126,14 @@ app.patch('/api/users/login', async (req, res) => {
       message: 'User successfully saved',
       user,
     })
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true, // Makes sure the cookie is accessible only by web server
+      secure: true, // Send cookie over HTTPS only in production
+      maxAge: 1000 * 60 * 15, // 15 minutes
+      sameSite: 'strict', // Ensures the cookie is not sent along with cross-site requests
+    });
+
   } catch (err) {
     console.error(err)
     res.status(500).json({
@@ -136,7 +144,7 @@ app.patch('/api/users/login', async (req, res) => {
 })
 
 
-app.post('/login', async (req, res) => {
+app.post('/api/users/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -157,7 +165,22 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
-    // Generate access token
+    console.log(user)
+
+    if (user.profileCompleted === false) {
+      await user.deleteOne({ _id: user._id });
+
+      // Clear the access and refresh token cookies
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
+
+      return res.status(400).json({
+        message: "User profile incomplete, user entry deleted",
+        success: false
+      });
+    }
+
+    // // Generate access token
     const accessToken = user.generateAccessToken();
 
     // Optionally, generate a refresh token and save it to the user document
@@ -200,11 +223,13 @@ app.post('/api/users/signup', async (req, res) => {
   console.log(req.body)
   try {
     const { email, password}   = req.body;
+
     const userExists = await User.findOne({ 'userCred.email': email});
 
-    console.log("user: ", userExists);
+    // console.log("user: ", userExists);
 
     if(userExists) {
+
       return res.send({success: false, message: "User already exists"})
     }
       const user = new User({
@@ -217,10 +242,31 @@ app.post('/api/users/signup', async (req, res) => {
       })
   
       await user.save() // Save to the database
+
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
+      user.userCred.refreshToken = refreshToken;
+
+  
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true, // Makes sure the cookie is accessible only by web server
+        secure: true, // Send cookie over HTTPS only in production
+        maxAge: 1000 * 60 * 15, // 15 minutes
+        sameSite: 'strict', // Ensures the cookie is not sent along with cross-site requests
+      });
+    
+      // Optionally, send refresh token as HTTP-only cookie
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'strict',
+      });
+
       res.status(201).json({
         success: true,
         id: user._id,
-      })
+      });
 
     // res.json()
   } catch (err) {
