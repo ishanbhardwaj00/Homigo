@@ -5,7 +5,7 @@ import User from './models/users.model.js'
 import mongoose from 'mongoose'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import cors from "cors"
+import cors from 'cors'
 import jwt from 'jsonwebtoken'
 
 dotenv.config() // Load environment variables if any (optional)
@@ -13,8 +13,8 @@ dotenv.config() // Load environment variables if any (optional)
 const app = express()
 app.use(bodyParser.json())
 app.use(express.json())
-app.use(cors({origin: 'http://localhost:3000', credentials: true}))
-app.use(cookieParser());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
+app.use(cookieParser())
 
 const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
 const cli_sec = 'ag9TngY8kxdxfMZwq3sFrOPoFHVyma2b'
@@ -23,6 +23,40 @@ const prod_id = '20c6cfbb-2cc3-4e26-b2b7-4638a3b7ddac'
 const adhr_num = 123456
 const otp = 123456
 const shareCode = 1234
+
+const verifyJwt = async (req, res, next) => {
+  const { accessToken } = req.cookies
+  if (!accessToken) {
+    console.log('Access token not found')
+    return res.send('<h1>You are not authorized to see this</h1>')
+  }
+  let decodedToken
+  decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+
+  if (!decodedToken) {
+    console.log('Fake token')
+    return res.send('<h1>You are not authorized to see this</h1>')
+  }
+
+  req.decodedToken = decodedToken
+  next()
+}
+
+app.get('/api/users/checkAuth', (req, res) => {
+  const accessToken = req.cookies.accessToken
+
+  if (accessToken) {
+    const decodedToken = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET
+    )
+
+    if (decodedToken) {
+      return res.json({ success: true, message: 'Authenticated' })
+    }
+  }
+  return res.json({ success: false, message: 'Not authenticated' })
+})
 app.get('/test-axios', async (req, res) => {
   try {
     // First request to get the `id`
@@ -93,59 +127,22 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err))
 
 // POST route to create a new user
-app.patch('/api/users/signup', async (req, res) => {
+app.patch('/api/users/signup', verifyJwt, async (req, res) => {
   console.log(req.body)
   try {
+    const { _id, email } = req.decodedToken
 
-    const { accessToken } = req.cookies;
-
-    let decodedToken;
-    if(accessToken)
-    {
-      try {
-        decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-      } catch(err){
-        return res.status(401).json({ message: 'Invalid or expired token' });
-      }
-    } else {
-      return res.status(401).json({ message: 'Access token missing' });
-      }
-
-    const { _id, email } = decodedToken;
-
-    const user = await User.findOne({ 'userCred.email': email });
+    const user = await User.findOne({ 'userCred.email': email })
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' })
     }
 
-    const { verified, step, registered,  
-      userDetails: {fullName, dateOfBirth, gender}, 
-      hobbies:{
-        nature, 
-        dietaryPreferences, 
-        workStyle, 
-        workHours, 
-        smokingPreference, 
-        guestPolicy, 
-        regionalBackground, 
-        interests}, 
-      preferences:{locationPreferences, nonVegPreference, lease}, 
-      additionalInfo } = req.body
-
-      user.userDetails = {
-        fullName,
-        dateOfBirth,
-        gender,
-      };
-
-      user.metaDat = {
-        image:additionalInfo.image,
-        bio: additionalInfo.bio,
-        monthlyRent: additionalInfo.monthlyRentPreferences
-
-      };
-
-      user.hobbies = {
+    const {
+      verified,
+      step,
+      registered,
+      userDetails: { fullName, dateOfBirth, gender },
+      hobbies: {
         nature,
         dietaryPreferences,
         workStyle,
@@ -154,40 +151,65 @@ app.patch('/api/users/signup', async (req, res) => {
         guestPolicy,
         regionalBackground,
         interests,
-      };
-      user.preferences = {
-        locationPreferences,
-        nonVegPreference,
-        lease,
-      };
+      },
+      preferences: { locationPreferences, nonVegPreference, lease },
+      additionalInfo,
+    } = req.body
 
+    user.userDetails = {
+      fullName,
+      dateOfBirth,
+      gender,
+    }
+
+    user.metaDat = {
+      image: additionalInfo.image,
+      bio: additionalInfo.bio,
+      monthlyRent: additionalInfo.monthlyRentPreferences,
+    }
+
+    user.hobbies = {
+      nature,
+      dietaryPreferences,
+      workStyle,
+      workHours,
+      smokingPreference,
+      guestPolicy,
+      regionalBackground,
+      interests,
+    }
+    user.preferences = {
+      locationPreferences,
+      nonVegPreference,
+      lease,
+    }
+
+    user.profileCompleted = true
 
     await user.save() // Save to the database
-    
 
-    const newAccessToken = user.generateAccessToken();
+    const newAccessToken = user.generateAccessToken()
 
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
-    });
+    })
 
-    const newRefreshToken = user.generateRefreshToken();
+    const newRefreshToken = user.generateRefreshToken()
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
-    });
+    })
 
     return res.status(201).json({
       message: 'User successfully saved',
-      user
+      user,
     })
-
   } catch (err) {
     console.error(err)
     res.status(500).json({
@@ -197,148 +219,159 @@ app.patch('/api/users/signup', async (req, res) => {
   }
 })
 
-
 app.post('/api/users/login', async (req, res) => {
-  console.log(req.body);
+  console.log(req.body)
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body
 
     // Find the user by email
-    const user = await User.findOne({ 'userCred.email': email});
-    console.log(user);
+    const user = await User.findOne({ 'userCred.email': email })
+    console.log(user)
     if (!user) {
-      return res.status(200).json({ message: 'Invalid email or password.' });
+      console.log('not found')
+      return res.status(200).json({ message: 'Invalid email or password.' })
     }
 
     // Check if the password is correct
-    const isMatch = await user.isPasswordCorrect(password);
+    const isMatch = await user.isPasswordCorrect(password)
     if (!isMatch) {
-      return res.status(200).json({ message: 'Invalid email or password.' });
+      console.log('mismatch')
+      return res.status(200).json({ message: 'Invalid email or password.' })
     }
 
     console.log(user)
 
     if (!user.profileCompleted) {
-      await user.deleteOne({ _id: user._id });
+      await user.deleteOne({ _id: user._id })
 
       // Clear the access and refresh token cookies
-      res.clearCookie('accessToken');
-      res.clearCookie('refreshToken');
+      res.clearCookie('accessToken')
+      res.clearCookie('refreshToken')
 
       return res.status(200).json({
-        message: "Account does not exist",
-        success: false
-      });
+        message: 'Account does not exist',
+        success: false,
+      })
     }
 
     // // Generate access token
-    const accessToken = user.generateAccessToken();
+    const accessToken = user.generateAccessToken()
 
     // Optionally, generate a refresh token and save it to the user document
-    const refreshToken = user.generateRefreshToken();
-    user.userCred.refreshToken = refreshToken;
-    await user.save();
+    const refreshToken = user.generateRefreshToken()
+    user.userCred.refreshToken = refreshToken
+    await user.save()
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
       maxAge: 1000 * 60 * 15, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
-    });
-  
+    })
+
     // Optionally, send refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       sameSite: 'lax',
-    });
+    })
 
     // Return tokens to the client
     res.status(200).json({
+      success: true,
       message: 'Login successful',
-    });
+    })
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Login error:', err)
+    res.status(500).json({ message: 'Internal server error' })
   }
-});
+})
 
 const PORT = process.env.PORT || 3000
 
-
+app.post(
+  '/api/users/logout' /* `verifyJwt` is a middleware function that is used to verify the JSON
+Web Token (JWT) sent in the request. It is typically used to protect
+routes that require authentication. In this case, it ensures that the
+user is authenticated before allowing access to the
+`/api/users/logout` route. The function checks if the JWT sent in the
+request is valid and matches the secret key used for signing the
+tokens. If the verification is successful, the user is considered
+authenticated and allowed to access the protected route. If the
+verification fails, the user is not authenticated and access is
+denied. */,
+  verifyJwt,
+  async (req, res) => {
+    res.clearCookie('accessToken')
+    res.clearCookie('refreshToken')
+    res.json({ success: true, message: 'Logged out' })
+  }
+)
 app.post('/api/users/signup', async (req, res) => {
-  
   console.log(req.body)
   try {
-    const { email, password}   = req.body;
+    const { email, password } = req.body
 
-    const userExists = await User.findOne({ 'userCred.email': email});
+    const userExists = await User.findOne({ 'userCred.email': email })
 
-
-    if(userExists) {
-
-      return res.send({success: false, message: "User already exists"})
+    if (userExists) {
+      return res.send({ success: false, message: 'User already exists' })
     }
-      const user = new User({
+    const user = new User({
+      profileCompleted: false,
 
-        profileCompleted:false,
-  
-        userCred:{
-          email, password
-        }
-      })
-  
-      await user.save() // Save to the database
-
-      const accessToken = user.generateAccessToken();
-      const refreshToken = user.generateRefreshToken();
-      user.userCred.refreshToken = refreshToken;
-
-  
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true, // Makes sure the cookie is accessible only by web server
-        secure: false, // Send cookie over HTTPS only in production
-        maxAge: 1000 * 60 * 15, // 15 minutes
-        sameSite: 'strict'
-      });
-    
-      // Optionally, send refresh token as HTTP-only cookie
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-        sameSite: 'strict',
-      });
-      
-      res.status(201).json({
-        success: true,
-        id: user._id,
-      });
-      
-      // res.json()
-    } catch (err) {
-      console.error(err)
-      res.status(500).json({
-        message: 'Error saving user data',
-        error: err.message,
-      })
-    }
-  })
-  
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-  })
-
-
-
-  app.get("/users", async (req,res) => {
-
-    const users = await User.find({})
-
-    return res.json({
-      success:true,
-      users
+      userCred: {
+        email,
+        password,
+      },
     })
 
+    await user.save() // Save to the database
+
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+    user.userCred.refreshToken = refreshToken
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true, // Makes sure the cookie is accessible only by web server
+      secure: false, // Send cookie over HTTPS only in production
+      maxAge: 1000 * 60 * 15, // 15 minutes
+      sameSite: 'strict',
+    })
+
+    // Optionally, send refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'strict',
+    })
+
+    res.status(201).json({
+      success: true,
+      id: user._id,
+    })
+
+    // res.json()
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({
+      message: 'Error saving user data',
+      error: err.message,
+    })
+  }
+})
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+})
+
+app.get('/users', verifyJwt, async (req, res) => {
+  const users = await User.find({})
+
+  return res.json({
+    success: true,
+    users,
   })
+})

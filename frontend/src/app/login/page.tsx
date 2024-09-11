@@ -8,7 +8,7 @@ import { AuthContext } from '@/contexts/authContext'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
-import axios from "axios"
+import axios from 'axios'
 
 export default ({ setStep }: { setStep: any }) => {
   const {
@@ -20,7 +20,7 @@ export default ({ setStep }: { setStep: any }) => {
   } = useForm()
   const [userInformation, setUserInformation] = useState({})
   const [loginError, setLoginError] = useState(null)
-  const {setAuthenticated} = useContext(AuthContext)
+  const { setAuthenticated } = useContext(AuthContext)
   useEffect(() => {
     setLoading(true)
     const userInformationJson = localStorage.getItem('userInformation')
@@ -31,8 +31,7 @@ export default ({ setStep }: { setStep: any }) => {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-  }, [userInformation])
+  useEffect(() => {}, [userInformation])
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -50,19 +49,21 @@ export default ({ setStep }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            console.log(data);
-          
-            const response  = await axios.patch("http://localhost:5000/api/users/signup", data);
-            console.log(response.data); 
-            const {success, message, id} = response.data; 
+            console.log(data)
 
-            if(success) {
-              setAuthenticated(true);
-              router.replace('/home')
+            const response = await axios.post(
+              'http://localhost:5000/api/users/login',
+              data,
+              { withCredentials: true }
+            )
+            console.log(response.data)
+            const { success, message, id } = response.data
 
-            }
-            else {
-              setLoginError(message);
+            if (success) {
+              setAuthenticated(true)
+              router.replace('/')
+            } else {
+              setLoginError(message)
             }
           })}
           className="flex flex-col gap-12"
@@ -102,7 +103,7 @@ export default ({ setStep }: { setStep: any }) => {
                 <ErrorMessage text={errors.password.message!.toString()} />
               )}
             </div>
-            {loginError && <ErrorMessage text={loginError}/>}
+            {loginError && <ErrorMessage text={loginError} />}
           </div>
           <div className="flex flex-col gap-3">
             <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">

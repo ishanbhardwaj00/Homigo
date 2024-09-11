@@ -86,11 +86,15 @@ export default ({ setStep }: { setStep: any }) => {
           className="flex flex-col gap-6"
           onSubmit={handleSubmit(async (data) => {
             const additionalInfo = { ...data, image: image }
-            data = {...userInformation, additionalInfo}
-            const response = await axios.patch("http://localhost:5000/api/users/signup", data, {withCredentials: true})
-            console.log(response.data);
+            data = { ...userInformation, additionalInfo }
+            const response = await axios.patch(
+              'http://localhost:5000/api/users/signup',
+              data,
+              { withCredentials: true }
+            )
+            console.log(response.data)
             setUserInformation(data)
-            localStorage.removeItem('userInformation');
+            // localStorage.removeItem('userInformation');
             setUser(userInformation)
             setAuthenticated(true)
             router.replace('/')

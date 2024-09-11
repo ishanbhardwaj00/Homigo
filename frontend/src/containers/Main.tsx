@@ -9,7 +9,9 @@ const Main = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/users')
+        const response = await axios.get('http://localhost:5000/users', {
+          withCredentials: true,
+        })
         setUsers(response.data.users)
         console.log(response.data) // Check the response
       } catch (error) {
@@ -21,8 +23,9 @@ const Main = () => {
   }, [])
   useEffect(() => {}, [users])
   return (
-    <div className="flex h-full flex-1 overflow-y-scroll">
-      {users.length > 0 &&
+    <div className="flex flex-col h-full flex-1 overflow-y-scroll p-5 gap-3">
+      {users &&
+        users.length > 0 &&
         users.map((user, index) => (
           <div className="flex flex-col min-h-full bg-white min-w-full rounded-lg px-5 py-7">
             <div className="h-3/4 w-full">
