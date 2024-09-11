@@ -18,7 +18,7 @@ const page = () => {
   const [step, setStep] = useState<number>(3)
   const [userInformation, setUserInformation] = useState({})
   const [loading, setLoading] = useState(true)
-
+  const [userCredentials, setUserCredentials] = useState({})
   useEffect(() => {
     const fetchUserInformation = async () => {
       try {
@@ -52,7 +52,8 @@ const page = () => {
   if (loading) return <Loading />
   else if (step === 1) return <AadharVerify setStep={setStep} />
   else if (step === 2) return <UserSignUp setStep={setStep} />
-  else if (step === 3) return <VerifyOtp setStep={setStep} />
+  else if (step === 3)
+    return <VerifyOtp userCredentials={userCredentials} setStep={setStep} />
   else if (step === 4) return <UserDetails setStep={setStep} />
   else if (step === 5) return <UserDetailsCont setStep={setStep} />
   else if (step === 6) return <UserPreferences setStep={setStep} />

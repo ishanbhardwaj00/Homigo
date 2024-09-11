@@ -14,7 +14,7 @@ import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
-import axios from "axios"
+import axios from 'axios'
 
 export default ({ setStep }: { setStep: any }) => {
   const {
@@ -37,8 +37,7 @@ export default ({ setStep }: { setStep: any }) => {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-  }, [userInformation])
+  useEffect(() => {}, [userInformation])
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -56,22 +55,17 @@ export default ({ setStep }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            const response  = await axios.post("http://localhost:5000/api/users/signup", data, {withCredentials: true});
-            console.log(response.data);
-            
-            const {success, message, id} = response.data; 
-
-            if(success) {
             localStorage.setItem(
               'userInformation',
-              JSON.stringify({ ...userInformation, registered: true, step: 2 })
-              )
-              setStep((step: number) => step + 1)
-              setSignUpError(null)
-            }
-            else {
-              setSignUpError(message);
-            }
+              JSON.stringify({
+                ...userInformation,
+                registered: true,
+                step: 2,
+              })
+            )
+            setStep((step: number) => step + 1)
+            setSignUpError(null)
+            const response = await axios.post('')
           })}
           className="flex flex-col gap-12"
         >
@@ -127,7 +121,7 @@ export default ({ setStep }: { setStep: any }) => {
                 />
               )}
             </div>
-            {signUpError && <ErrorMessage text={signUpError}/>}
+            {signUpError && <ErrorMessage text={signUpError} />}
           </div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">

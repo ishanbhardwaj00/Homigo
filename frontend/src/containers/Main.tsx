@@ -3,6 +3,8 @@ import { userSchema } from '@/schemas/zUserInfo'
 import axios from 'axios'
 import { log } from 'console'
 import { useEffect, useState } from 'react'
+import TinderCard from 'react-tinder-card'
+import ProfileCards from './ProfileCards'
 function calculateAge(dobString) {
   // Step 1: Parse the date of birth string into a Date object
   const dob = new Date(dobString)
@@ -27,6 +29,8 @@ function calculateAge(dobString) {
 
 const Main = () => {
   const [users, setUsers] = useState([])
+  useEffect(() => {}, [users])
+
   useEffect(() => {
     console.log('fetching users')
 
@@ -44,41 +48,10 @@ const Main = () => {
 
     fetchUsers() // Call the async function inside useEffect
   }, [])
-  useEffect(() => {}, [users])
+
   return (
-    <div className="flex flex-col h-full flex-1 overflow-y-scroll p-5 gap-3">
-      {users &&
-        users.length > 0 &&
-        users.map(
-          (user, index) =>
-            user?.profileCompleted && (
-              <div className="flex flex-col min-h-full bg-white min-w-full rounded-lg px-5 py-7">
-                <div className="h-3/4 w-full">
-                  <img
-                    className="object-cover h-full w-full rounded-lg"
-                    src={user?.metaDat?.image}
-                    alt=""
-                  />
-                </div>
-                <div className="ml-2 flex flex-col gap-1">
-                  <div className="flex flex-col mt-4">
-                    <span className="text-3xl font-bold leading-sm">
-                      {user?.userDetails?.fullName?.split(' ')[0]},{' '}
-                      {calculateAge(user?.userDetails?.dateOfBirth)}
-                    </span>
-                    <span className="text-lg font-light">Gurgaon, Haryana</span>
-                  </div>
-                  <div className="flex text-primary items-center gap-2 mt-2">
-                    <img src="/images/friendship.svg" alt="" />
-                    <span className="font-bold">98%</span>
-                    <span className="font-light">
-                      | 25/30 Preferences Matched
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )
-        )}
+    <div className="flex h-full flex-1 p-5 gap-3">
+      {users && users.length > 0 && <ProfileCards users={users} />}
     </div>
   )
 }

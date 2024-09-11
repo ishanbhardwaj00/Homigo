@@ -1,12 +1,13 @@
 import ErrorMessage from '@/components/ErrorMessage'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
+import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { BarLoader } from 'react-spinners'
 
-const VerifyOtp = ({ setStep }) => {
+const VerifyOtp = ({ userCredentials, setStep }) => {
   useEffect(() => {
     setLoading(true)
     setLoading(false)
@@ -47,13 +48,19 @@ const VerifyOtp = ({ setStep }) => {
           <form
             autoComplete="off"
             className="flex flex-col gap-2"
-            onSubmit={handleSubmit((data) => {
+            onSubmit={handleSubmit(async (data) => {
               console.log(data)
               setLoading(true)
               localStorage.setItem(
                 'userInformation',
                 JSON.stringify({ ...userInformation, verified: true, step: 3 })
               )
+              const response = await axios.post(
+                'http://localhost:5000/api/users/signup',
+                data,
+                { withCredentials: true }
+              )
+
               setStep((step: number) => step + 1)
               setTimeout(() => {}, 300)
               setLoading(false)
