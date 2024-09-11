@@ -94,7 +94,7 @@ export default ({ setStep }: { setStep: any }) => {
             )
             console.log(response.data)
             setUserInformation(data)
-            // localStorage.removeItem('userInformation');
+            localStorage.removeItem('userInformation')
             setUser(userInformation)
             setAuthenticated(true)
             router.replace('/')

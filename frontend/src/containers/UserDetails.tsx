@@ -41,6 +41,7 @@ export default ({ setStep }: { setStep: any }) => {
       reset({
         fullName: userInformation?.userDetails?.fullName || '',
         dateOfBirth: userInformation?.userDetails?.dateOfBirth || '',
+        pinCode: userInformation?.userDetails?.pinCode || '',
         gender: userInformation?.userDetails?.gender || '',
       })
     }
@@ -96,6 +97,20 @@ export default ({ setStep }: { setStep: any }) => {
             />
             {errors.dateOfBirth && (
               <ErrorMessage text={errors.dateOfBirth.message!.toString()} />
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="text-black font-bold ml-2">Your Birth Date*</p>
+            <input
+              className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
+              type="date"
+              {...register('pinCode', {
+                required: 'Date is required',
+                valueAsNumber: true,
+              })}
+            />
+            {errors.pinCode && (
+              <ErrorMessage text={errors.pinCode.message!.toString()} />
             )}
           </div>
           <div className="flex flex-col gap-2">

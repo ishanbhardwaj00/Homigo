@@ -1,4 +1,5 @@
 'use client'
+import axios from 'axios'
 import {
   createContext,
   Dispatch,
@@ -23,7 +24,20 @@ export const AuthContext = createContext<AuthType>({
 export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null)
   const [authenticated, setAuthenticated] = useState(false)
+  useEffect(() => {
+    async function checkAuth() {
+      const response = await axios.get(
+        'http://localhost:5000/api/users/checkAuth',
+        { withCredentials: true }
+      )
 
+      const { success, message } = response.data
+
+      console.log(message)
+      setAuthenticated(success)
+    }
+    checkAuth()
+  }, [])
   return (
     <AuthContext.Provider
       value={{ user, authenticated, setUser, setAuthenticated }}

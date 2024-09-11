@@ -24,6 +24,7 @@ export default () => {
     if (!authenticated) router.replace('/')
   }, [authenticated])
 
+  console.log('HOME')
   if (loading) return <Loading />
 
   return (
