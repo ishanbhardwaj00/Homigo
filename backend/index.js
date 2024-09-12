@@ -7,6 +7,12 @@ import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
+import nodemailer from 'nodemailer'
+import OTP from './models/otp.model.js'
+
+
+//Middleware
+import { generateOTP, generateOTPExpiry, updateOTPForUser } from './utils/otp_gen.js';
 
 dotenv.config() // Load environment variables if any (optional)
 
@@ -16,100 +22,100 @@ app.use(express.json())
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
 app.use(cookieParser())
 
-const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
-const cli_sec = 'ag9TngY8kxdxfMZwq3sFrOPoFHVyma2b'
-const prod_id = '20c6cfbb-2cc3-4e26-b2b7-4638a3b7ddac'
-// const captha = '2GAD0'
-const adhr_num = 123456
-const otp = 123456
-const shareCode = 1234
+// const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
+// const cli_sec = 'ag9TngY8kxdxfMZwq3sFrOPoFHVyma2b'
+// const prod_id = '20c6cfbb-2cc3-4e26-b2b7-4638a3b7ddac'
+// // const captha = '2GAD0'
+// const adhr_num = 123456
+// const otp = 123456
+// const shareCode = 1234
 
-const verifyJwt = async (req, res, next) => {
-  const { accessToken } = req.cookies
-  if (!accessToken) {
-    console.log('Access token not found')
-    return res.send('<h1>You are not authorized to see this</h1>')
-  }
-  let decodedToken
-  decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+// const verifyJwt = async (req, res, next) => {
+//   const { accessToken } = req.cookies
+//   if (!accessToken) {
+//     console.log('Access token not found')
+//     return res.send('<h1>You are not authorized to see this</h1>')
+//   }
+//   let decodedToken
+//   decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-  if (!decodedToken) {
-    console.log('Fake token')
-    return res.send('<h1>You are not authorized to see this</h1>')
-  }
+//   if (!decodedToken) {
+//     console.log('Fake token')
+//     return res.send('<h1>You are not authorized to see this</h1>')
+//   }
 
-  req.decodedToken = decodedToken
-  next()
-}
+//   req.decodedToken = decodedToken
+//   next()
+// }
 
-app.get('/api/users/checkAuth', (req, res) => {
-  const accessToken = req.cookies.accessToken
+// app.get('/api/users/checkAuth', (req, res) => {
+//   const accessToken = req.cookies.accessToken
 
-  if (accessToken) {
-    const decodedToken = jwt.verify(
-      accessToken,
-      process.env.ACCESS_TOKEN_SECRET
-    )
+//   if (accessToken) {
+//     const decodedToken = jwt.verify(
+//       accessToken,
+//       process.env.ACCESS_TOKEN_SECRET
+//     )
 
-    if (decodedToken) {
-      return res.json({ success: true, message: 'Authenticated' })
-    }
-  }
-  return res.json({ success: false, message: 'Not authenticated' })
-})
-app.get('/test-axios', async (req, res) => {
-  try {
-    // First request to get the `id`
-    const options1 = {
-      method: 'post',
-      url: 'https://dg-sandbox.setu.co/api/okyc',
-      headers: {
-        'x-client-id': cli_id,
-        'x-client-secret': cli_sec,
-        'x-product-instance-id': prod_id,
-      },
-      data: { redirectURL: 'https://setu.co' },
-    }
+//     if (decodedToken) {
+//       return res.json({ success: true, message: 'Authenticated' })
+//     }
+//   }
+//   return res.json({ success: false, message: 'Not authenticated' })
+// })
+// app.get('/test-axios', async (req, res) => {
+//   try {
+//     // First request to get the `id`
+//     const options1 = {
+//       method: 'post',
+//       url: 'https://dg-sandbox.setu.co/api/okyc',
+//       headers: {
+//         'x-client-id': cli_id,
+//         'x-client-secret': cli_sec,
+//         'x-product-instance-id': prod_id,
+//       },
+//       data: { redirectURL: 'https://setu.co' },
+//     }
 
-    const response1 = await axios.request(options1)
+//     const response1 = await axios.request(options1)
 
-    // Extract the `id` from the first response
-    const st_id1 = response1.data.id
-    console.log('ID from first request:', id)
+//     // Extract the `id` from the first response
+//     const st_id1 = response1.data.id
+//     console.log('ID from first request:', id)
 
-    // Now make the second request using the extracted `id`
-    const options2 = {
-      method: 'get',
-      url: `https://dg-sandbox.setu.co/api/okyc/${st_id1}/initiate`,
-      headers: {
-        'x-client-id': cli_id,
-        'x-client-secret': cli_sec,
-        'x-product-instance-id': prod_id,
-        'Content-Type': 'application/json',
-      },
-    }
+//     // Now make the second request using the extracted `id`
+//     const options2 = {
+//       method: 'get',
+//       url: `https://dg-sandbox.setu.co/api/okyc/${st_id1}/initiate`,
+//       headers: {
+//         'x-client-id': cli_id,
+//         'x-client-secret': cli_sec,
+//         'x-product-instance-id': prod_id,
+//         'Content-Type': 'application/json',
+//       },
+//     }
 
-    const response2 = await axios.request(options2)
+//     const response2 = await axios.request(options2)
 
-    // Log the second response
-    console.log('Response from second request:', response2.data)
+//     // Log the second response
+//     console.log('Response from second request:', response2.data)
 
-    const reqId = response2.data.id
+//     const reqId = response2.data.id
 
-    const captha_img = response2.data.captchaImage
+//     const captha_img = response2.data.captchaImage
 
-    // Send the combined result to the client
-    res.json({
-      firstRequest: response1.data,
-      requestId: reqId,
+//     // Send the combined result to the client
+//     res.json({
+//       firstRequest: response1.data,
+//       requestId: reqId,
 
-      captha_image: captha_img,
-    })
-  } catch (error) {
-    console.error(error)
-    res.status(500).send('Error occurred while making the requests')
-  }
-})
+//       captha_image: captha_img,
+//     })
+//   } catch (error) {
+//     console.error(error)
+//     res.status(500).send('Error occurred while making the requests')
+//   }
+// })
 
 app.get('/', (req, res) => {
   res.send('Work in progress')
@@ -193,7 +199,7 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
-      maxAge: 1000 * 60 * 15, // 15 minutes
+      maxAge: process.env.ACCESS_TOKEN_EXPIRY, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     })
 
@@ -363,6 +369,74 @@ app.post('/api/users/signup', async (req, res) => {
   }
 })
 
+app.post('/api/users/generateOtp', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+      // Generate the OTP and its expiry
+      const otp = generateOTP();
+      const otpExpiry = generateOTPExpiry();
+
+      // Update or insert the OTP and its expiry in the database
+      await updateOTPForUser(email, otp, otpExpiry);
+
+      // Set up the email transporter using nodemailer
+      const transporter = nodemailer.createTransport({
+          secure: true,
+          host: 'smtp.gmail.com',
+          port: 465,
+          auth: {
+              user: 'arjunvir.m@gmail.com',
+              pass: 'jevewwnlkhlnkxnz',
+          },
+      });
+
+      // Send the email with the OTP
+      await transporter.sendMail({
+          to: email,
+          subject: 'Hey, verify your account on HOMIGO',
+          html: `<p>The verification code is <strong>${otp}</strong></p>`,
+      });
+
+      console.log('Email is sent');
+      res.status(200).send({ message: 'OTP sent to your email!' });
+  } catch (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).send({ message: 'Error sending OTP' });
+  }
+});
+
+
+
+
+app.post("/api/users/verifyOTP", async (req, res) => {
+  const { email, password, otp } = req.body;
+
+  try {
+      // Validate OTP
+      const isValid = await isOtpValid(email, otp);
+
+      if (isValid) {
+          // OTP is valid; remove OTP from the database
+          await OTP.deleteOne({ email });
+
+          // Check if user exists and password is correct
+          const user = await User.findOne({ "userCred.email": email });
+
+          if (user && await user.isPasswordCorrect(password)) {
+              res.status(200).send({ message: "OTP verified successfully!" });
+          } else {
+              res.status(400).send({ message: "Invalid email or password" });
+          }
+      } else {
+          // OTP is incorrect or expired
+          res.status(400).send({ message: "Invalid OTP or OTP expired" });
+      }
+  } catch (error) {
+      console.error("Error verifying OTP:", error);
+      res.status(500).send({ message: "Error verifying OTP" });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
