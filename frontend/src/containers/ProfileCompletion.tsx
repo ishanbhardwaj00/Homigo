@@ -87,17 +87,21 @@ export default ({ setStep }: { setStep: any }) => {
           onSubmit={handleSubmit(async (data) => {
             const additionalInfo = { ...data, image: image }
             data = { ...userInformation, additionalInfo }
-            const response = await axios.patch(
-              'http://localhost:5000/api/users/signup',
-              data,
-              { withCredentials: true }
-            )
-            console.log(response.data)
-            setUserInformation(data)
-            localStorage.removeItem('userInformation')
-            setUser(userInformation)
-            setAuthenticated(true)
-            router.replace('/')
+            try {
+              const response = await axios.patch(
+                'http://localhost:5000/api/users/signup',
+                data,
+                { withCredentials: true }
+              )
+              console.log(response.data)
+              setUserInformation(data)
+              localStorage.removeItem('userInformation')
+              setUser(userInformation)
+              setAuthenticated(true)
+              router.replace('/')
+            } catch (error) {
+              console.log(error)
+            }
           })}
         >
           <div className="avatar-container self-center">

@@ -23,6 +23,7 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
 
   const [loading, setLoading] = useState(false)
   const [userInformation, setUserInformation] = useState({})
+  const [otpVerificationError, setOtpVerificationError] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -59,15 +60,36 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
                 'userInformation',
                 JSON.stringify({ ...userInformation, verified: true, step: 3 })
               )
-              const response = await axios.post(
-                'http://localhost:5000/api/users/signup',
-                userCredentials,
-                { withCredentials: true }
-              )
+              try {
+                const verifyResponse = await axios.post(
+                  'http://localhost:5000/api/users/verifyOtp',
+                  { email: userCredentials.email, ...data }
+                )
+                const { success, message } = verifyResponse.data
+                if (success) {
+                  console.log(userCredentials)
 
-              setStep((step: number) => step + 1)
-              setTimeout(() => {}, 300)
-              setLoading(false)
+                  const response = await axios.post(
+                    'http://localhost:5000/api/users/signup',
+                    {
+                      email: userCredentials.email,
+                      password: userCredentials.password,
+                    },
+                    { withCredentials: true }
+                  )
+
+                  console.log(response.data)
+
+                  setStep((step: number) => step + 1)
+                } else {
+                  setOtpVerificationError(message)
+                }
+
+                setTimeout(() => {}, 300)
+                setLoading(false)
+              } catch (error) {
+                setOtpVerificationError(error.toString())
+              }
             })}
           >
             <span className={`${poppins.className} ml-3 text-sm font-medium`}>
@@ -84,12 +106,16 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
             {errors.otp && (
               <ErrorMessage text={errors.otp.message!.toString()} />
             )}
+
             <button
               disabled={loading}
               className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
             >
               {loading ? <BarLoader /> : 'Verify'}
             </button>
+            {otpVerificationError && (
+              <ErrorMessage text={otpVerificationError} />
+            )}
           </form>
         </div>
       </div>

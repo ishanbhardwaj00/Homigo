@@ -41,6 +41,7 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [otpError, setOtpError] = useState(null)
 
   if (loading) return <Loading />
   return (
@@ -71,10 +72,24 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
                 step: 2,
               })
             )
-            setStep((step: number) => step + 1)
             setSignUpError(null)
             setUserCredentials({ email: data.email, password: data.password })
-            const response = await axios.post('')
+            try {
+              const response = await axios.post(
+                'http://localhost:5000/api/users/generateOtp',
+                { email: data.email }
+              )
+              const { success, message } = response.data
+
+              if (!success) {
+                setOtpError(message)
+              } else {
+                setStep((step: number) => step + 1)
+              }
+            } catch (error) {
+              console.log(error)
+              setOtpError(error.toString())
+            }
           })}
           className="flex flex-col gap-12"
         >
@@ -155,6 +170,7 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
                 <ErrorMessage text={errors.tc.message!.toString()} />
               )}
             </div>
+            {otpError && <ErrorMessage text={otpError} />}
             <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
               Next
             </button>

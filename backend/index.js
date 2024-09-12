@@ -10,9 +10,13 @@ import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 import OTP from './models/otp.model.js'
 
-
 //Middleware
-import { generateOTP, generateOTPExpiry, updateOTPForUser, isOtpValid } from './utils/otp_gen.js';
+import {
+  generateOTP,
+  generateOTPExpiry,
+  updateOTPForUser,
+  isOtpValid,
+} from './utils/otp_gen.js'
 
 dotenv.config() // Load environment variables if any (optional)
 
@@ -295,17 +299,13 @@ app.post('/api/users/login', async (req, res) => {
 
 const PORT = process.env.PORT || 3000
 
-app.post(
-  '/api/users/logout' ,
-  verifyJwt,
-  async (req, res) => {
-    res.clearCookie('accessToken')
-    res.clearCookie('refreshToken')
-    res.json({ success: true, message: 'Logged out' })
-  }
-)
+app.post('/api/users/logout', verifyJwt, async (req, res) => {
+  res.clearCookie('accessToken')
+  res.clearCookie('refreshToken')
+  res.json({ success: true, message: 'Logged out' })
+})
 app.post('/api/users/signup', async (req, res) => {
-  console.log(req.body)
+  console.log('post', req.body)
   try {
     const { email, password } = req.body
 
@@ -360,73 +360,81 @@ app.post('/api/users/signup', async (req, res) => {
 })
 
 app.post('/api/users/generateOtp', async (req, res) => {
-  const { email } = req.body;
+  const { email } = req.body
 
   try {
-      // Generate the OTP and its expiry
-      const otp = generateOTP();
-      const otpExpiry = generateOTPExpiry();
+    // Generate the OTP and its expiry
+    const otp = generateOTP()
+    const otpExpiry = generateOTPExpiry()
 
-      // Update or insert the OTP and its expiry in the database
-      await updateOTPForUser(email, otp, otpExpiry);
+    // Update or insert the OTP and its expiry in the database
+    await updateOTPForUser(email, otp, otpExpiry)
 
-      // Set up the email transporter using nodemailer
-      const transporter = nodemailer.createTransport({
-          secure: true,
-          host: 'smtp.gmail.com',
-          port: 465,
-          auth: {
-              user: 'arjunvir.m@gmail.com',
-              pass: 'jevewwnlkhlnkxnz',
-          },
-      });
+    // Set up the email transporter using nodemailer
+    const transporter = nodemailer.createTransport({
+      secure: true,
+      host: 'smtp.gmail.com',
+      port: 465,
+      auth: {
+        user: 'arjunvir.m@gmail.com',
+        pass: 'jevewwnlkhlnkxnz',
+      },
+    })
 
-      // Send the email with the OTP
-      await transporter.sendMail({
-          to: email,
-          subject: 'Hey, verify your account on HOMIGO',
-          html: `<p>The verification code is <strong>${otp}</strong></p>`,
-      });
+    // Send the email with the OTP
+    await transporter.sendMail({
+      to: email,
+      subject: 'Hey, verify your account on HOMIGO',
+      html: `<p>The verification code is <strong>${otp}</strong></p>`,
+    })
 
-      console.log('Email is sent');
-      res.status(200).send({ message: 'OTP sent to your email!' });
+    console.log('Email is sent')
+    res.status(200).send({ success: true, message: 'OTP sent to your email!' })
   } catch (error) {
-      console.error('Error sending OTP:', error);
-      res.status(500).send({ message: 'Error sending OTP' });
+    console.error('Error sending OTP:', error)
+    res.status(500).send({ success: false, message: 'Error sending OTP' })
   }
-});
+})
 
+app.post('/api/users/verifyOTP', async (req, res) => {
+  console.log('VERTIGY', req.body)
 
-
-
-app.post("/api/users/verifyOTP", async (req, res) => {
-  const { email, password, otp } = req.body;
+  const { email, otp } = req.body
+  if (!email || !otp)
+    return res.json({
+      success: false,
+      message: 'Some error occurred. Please try refreshing.',
+    })
 
   try {
-      // Validate OTP
-      const isValid = await isOtpValid(email, otp);
+    // Validate OTP
+    const isValid = await isOtpValid(email, otp)
 
-      if (isValid) {
-          // OTP is valid; remove OTP from the database
-          await OTP.deleteOne({ email });
+    if (isValid) {
+      // OTP is valid; remove OTP from the database
+      await OTP.deleteOne({ email })
 
-          // Check if user exists and password is correct
-          // const user = await User.findOne({ "userCred.email": email });
+      // Check if user exists and password is correct
+      // const user = await User.findOne({ "userCred.email": email });
 
-          // if (user && await user.isPasswordCorrect(password)) {
-              res.status(200).send({ message: "OTP verified successfully!" });
-          // } else {
-          //     res.status(400).send({ message: "Invalid email or password" });
-          // }
-      } else {
-          // OTP is incorrect or expired
-          res.status(400).send({ message: "Invalid OTP or OTP expired" });
-      }
+      // if (user && await user.isPasswordCorrect(password)) {
+      res
+        .status(200)
+        .send({ success: true, message: 'OTP verified successfully!' })
+      // } else {
+      //     res.status(400).send({ message: "Invalid email or password" });
+      // }
+    } else {
+      // OTP is incorrect or expired
+      res
+        .status(400)
+        .send({ success: false, message: 'Invalid OTP or OTP expired' })
+    }
   } catch (error) {
-      console.error("Error verifying OTP:", error);
-      res.status(500).send({ message: "Error verifying OTP" });
+    console.error('Error verifying OTP:', error)
+    res.status(500).send({ message: 'Error verifying OTP' })
   }
-});
+})
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
