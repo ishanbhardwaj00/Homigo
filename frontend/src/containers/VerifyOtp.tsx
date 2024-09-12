@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { GoArrowLeft } from 'react-icons/go'
 import { BarLoader } from 'react-spinners'
 
 const VerifyOtp = ({ userCredentials, setStep }) => {
@@ -36,6 +37,9 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
   return (
     <div className="flex flex-col items-center bg-step1 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration ">
       <div className="w-3/4 flex flex-col justify-start mt-10 gap-16">
+        <button onClick={() => setStep((step) => step - 1)}>
+          <GoArrowLeft size={24} />
+        </button>
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >
@@ -57,7 +61,7 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
               )
               const response = await axios.post(
                 'http://localhost:5000/api/users/signup',
-                data,
+                userCredentials,
                 { withCredentials: true }
               )
 

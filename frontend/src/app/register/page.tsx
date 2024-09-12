@@ -15,7 +15,7 @@ const page = () => {
   const { authenticated, setAuthenticated, user, setUser } =
     useContext(AuthContext)
   const router = useRouter()
-  const [step, setStep] = useState<number>(3)
+  const [step, setStep] = useState<number>(1)
   const [userInformation, setUserInformation] = useState({})
   const [loading, setLoading] = useState(true)
   const [userCredentials, setUserCredentials] = useState({})
@@ -29,7 +29,7 @@ const page = () => {
         if (userInformationJson) {
           const parsedInfo = JSON.parse(userInformationJson)
           setUserInformation(parsedInfo)
-          setStep(parsedInfo?.step ?? 3)
+          setStep(parsedInfo?.step ?? 1)
         } else {
           setStep(1)
         }
@@ -51,7 +51,10 @@ const page = () => {
 
   if (loading) return <Loading />
   else if (step === 1) return <AadharVerify setStep={setStep} />
-  else if (step === 2) return <UserSignUp setStep={setStep} />
+  else if (step === 2)
+    return (
+      <UserSignUp setUserCredentials={setUserCredentials} setStep={setStep} />
+    )
   else if (step === 3)
     return <VerifyOtp userCredentials={userCredentials} setStep={setStep} />
   else if (step === 4) return <UserDetails setStep={setStep} />

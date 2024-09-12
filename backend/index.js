@@ -11,8 +11,7 @@ import jwt from 'jsonwebtoken'
 dotenv.config() // Load environment variables if any (optional)
 
 const app = express()
-app.use(bodyParser.json())
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
 app.use(cookieParser())
 

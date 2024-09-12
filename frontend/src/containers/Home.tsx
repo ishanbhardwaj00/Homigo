@@ -28,7 +28,7 @@ export default () => {
   if (loading) return <Loading />
 
   return (
-    <div className="flex flex-col h-screen bg-home-light">
+    <div className="flex flex-col h-screen  bg-home-light">
       <Header />
       {selected === 0 ? (
         <div>profile</div>

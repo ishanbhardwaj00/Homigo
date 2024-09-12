@@ -45,6 +45,9 @@ const config: Config = {
         home: {
           light: '#F0F0F0',
         },
+        userdetails: {
+          DEFAULT: '#EFEFF9',
+        },
         button: {
           primary: {
             DEFAULT: '#a7ebcf',

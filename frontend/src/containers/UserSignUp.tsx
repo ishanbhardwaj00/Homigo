@@ -16,7 +16,7 @@ import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
 import axios from 'axios'
 
-export default ({ setStep }: { setStep: any }) => {
+export default ({ setStep, setUserCredentials }: { setStep: any }) => {
   const {
     register,
     handleSubmit,
@@ -45,13 +45,21 @@ export default ({ setStep }: { setStep: any }) => {
   if (loading) return <Loading />
   return (
     <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
-      <div className="w-3/4 flex flex-col justify-start mt-16 gap-24">
-        <div
-          className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
-        >
-          <span>Secure Your </span>
-          <span>Access &</span>
-          <span>Login Anytime!</span>
+      <div className="w-3/4 flex flex-col justify-start mt-10 gap-24">
+        <div className="flex flex-col gap-12">
+          <button
+            className="text-black"
+            onClick={() => setStep((step) => step - 1)}
+          >
+            <GoArrowLeft size={24} />
+          </button>
+          <div
+            className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
+          >
+            <span>Secure Your </span>
+            <span>Access &</span>
+            <span>Login Anytime!</span>
+          </div>
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
@@ -65,6 +73,7 @@ export default ({ setStep }: { setStep: any }) => {
             )
             setStep((step: number) => step + 1)
             setSignUpError(null)
+            setUserCredentials({ email: data.email, password: data.password })
             const response = await axios.post('')
           })}
           className="flex flex-col gap-12"
