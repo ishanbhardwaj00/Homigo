@@ -30,10 +30,10 @@ const Main = ({ users }) => {
   const swiper = useSwiper()
 
   return (
-    <div className="flex flex-1 w-screen overflow-scroll p-5">
+    <div className="flex flex-1 w-screen overflow-scroll p-8">
       <Swiper
-        className="flex flex-1 rounded-lg"
-        spaceBetween={30}
+        className="flex flex-1 rounded-2xl"
+        spaceBetween={100}
         slidesPerView={1}
         onSlideChange={() => {
           console.log('slide changed')
@@ -45,16 +45,16 @@ const Main = ({ users }) => {
             (user, index) =>
               user?.profileCompleted && (
                 <div className="flex flex-col items-center justify-center w-full h-full overflow-y-scroll bg-white">
-                  <SwiperSlide className="p-5 bg-white overflow-y-scroll">
+                  <SwiperSlide className="p-4 bg-white overflow-y-scroll">
                     <div className="flex justify-center h-3/4 w-full items-center self-center">
                       <img
-                        className="object-cover h-full w-full rounded-lg"
+                        className="object-cover h-full w-full rounded-xl"
                         src={user?.metaDat?.image}
                         alt=""
                       />
                     </div>
-                    <div className="ml-2 flex flex-col gap-1">
-                      <div className="flex flex-col mt-4">
+                    <div className="ml-2 flex flex-col gap-3">
+                      <div className="flex flex-col mt-5 gap-1">
                         <span className="text-3xl font-bold leading-sm">
                           {user?.userDetails?.fullName?.split(' ')[0]},{' '}
                           {calculateAge(user?.userDetails?.dateOfBirth)}
@@ -63,10 +63,10 @@ const Main = ({ users }) => {
                           Gurgaon, Haryana
                         </span>
                       </div>
-                      <div className="flex text-primary items-center gap-2 mt-2">
+                      <div className="flex text-primary items-center gap-1 mt-2">
                         <img
                           src="/images/friendship.svg"
-                          className="h-8 w-8"
+                          className="h-6 w-6"
                           alt=""
                         />
                         <span className="font-bold text-xl">98%</span>
