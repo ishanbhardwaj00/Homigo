@@ -12,7 +12,7 @@ import OTP from './models/otp.model.js'
 
 
 //Middleware
-import { generateOTP, generateOTPExpiry, updateOTPForUser } from './utils/otp_gen.js';
+import { generateOTP, generateOTPExpiry, updateOTPForUser, isOtpValid } from './utils/otp_gen.js';
 
 dotenv.config() // Load environment variables if any (optional)
 
@@ -30,39 +30,39 @@ app.use(cookieParser())
 // const otp = 123456
 // const shareCode = 1234
 
-// const verifyJwt = async (req, res, next) => {
-//   const { accessToken } = req.cookies
-//   if (!accessToken) {
-//     console.log('Access token not found')
-//     return res.send('<h1>You are not authorized to see this</h1>')
-//   }
-//   let decodedToken
-//   decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+const verifyJwt = async (req, res, next) => {
+  const { accessToken } = req.cookies
+  if (!accessToken) {
+    console.log('Access token not found')
+    return res.send('<h1>You are not authorized to see this</h1>')
+  }
+  let decodedToken
+  decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-//   if (!decodedToken) {
-//     console.log('Fake token')
-//     return res.send('<h1>You are not authorized to see this</h1>')
-//   }
+  if (!decodedToken) {
+    console.log('Fake token')
+    return res.send('<h1>You are not authorized to see this</h1>')
+  }
 
-//   req.decodedToken = decodedToken
-//   next()
-// }
+  req.decodedToken = decodedToken
+  next()
+}
 
-// app.get('/api/users/checkAuth', (req, res) => {
-//   const accessToken = req.cookies.accessToken
+app.get('/api/users/checkAuth', (req, res) => {
+  const accessToken = req.cookies.accessToken
 
-//   if (accessToken) {
-//     const decodedToken = jwt.verify(
-//       accessToken,
-//       process.env.ACCESS_TOKEN_SECRET
-//     )
+  if (accessToken) {
+    const decodedToken = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET
+    )
 
-//     if (decodedToken) {
-//       return res.json({ success: true, message: 'Authenticated' })
-//     }
-//   }
-//   return res.json({ success: false, message: 'Not authenticated' })
-// })
+    if (decodedToken) {
+      return res.json({ success: true, message: 'Authenticated' })
+    }
+  }
+  return res.json({ success: false, message: 'Not authenticated' })
+})
 // app.get('/test-axios', async (req, res) => {
 //   try {
 //     // First request to get the `id`
@@ -199,7 +199,7 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
-      maxAge: process.env.ACCESS_TOKEN_EXPIRY, // 15 minutes
+      maxAge: 1000 * 60 * 15, // 15 minutes
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     })
 
@@ -297,16 +297,7 @@ app.post('/api/users/login', async (req, res) => {
 const PORT = process.env.PORT || 3000
 
 app.post(
-  '/api/users/logout' /* `verifyJwt` is a middleware function that is used to verify the JSON
-Web Token (JWT) sent in the request. It is typically used to protect
-routes that require authentication. In this case, it ensures that the
-user is authenticated before allowing access to the
-`/api/users/logout` route. The function checks if the JWT sent in the
-request is valid and matches the secret key used for signing the
-tokens. If the verification is successful, the user is considered
-authenticated and allowed to access the protected route. If the
-verification fails, the user is not authenticated and access is
-denied. */,
+  '/api/users/logout' ,
   verifyJwt,
   async (req, res) => {
     res.clearCookie('accessToken')
@@ -421,13 +412,13 @@ app.post("/api/users/verifyOTP", async (req, res) => {
           await OTP.deleteOne({ email });
 
           // Check if user exists and password is correct
-          const user = await User.findOne({ "userCred.email": email });
+          // const user = await User.findOne({ "userCred.email": email });
 
-          if (user && await user.isPasswordCorrect(password)) {
+          // if (user && await user.isPasswordCorrect(password)) {
               res.status(200).send({ message: "OTP verified successfully!" });
-          } else {
-              res.status(400).send({ message: "Invalid email or password" });
-          }
+          // } else {
+          //     res.status(400).send({ message: "Invalid email or password" });
+          // }
       } else {
           // OTP is incorrect or expired
           res.status(400).send({ message: "Invalid OTP or OTP expired" });

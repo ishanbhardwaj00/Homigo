@@ -1,5 +1,5 @@
 // utils/otpGenerator.js
-import OTP from "../models/otp.model";  // Ensure the OTP model is imported
+import OTP from "../models/otp.model.js";  // Ensure the OTP model is imported
 
 // Function to generate a 6-digit OTP
 const generateOTP = () => {
@@ -31,5 +31,27 @@ async function updateOTPForUser(email, otp, otpExpiry) {
     }
 }
 
+
+const isOtpValid = async (email, otp) => {
+  try {
+      // Find OTP document by email
+      const otpDoc = await OTP.findOne({ email });
+      
+      if (!otpDoc) {
+          return false; // No OTP record found
+          console.log("No otp record found")
+      }
+
+      // Check if OTP matches and is not expired
+      const isMatch = otpDoc.value === otp;
+      const isNotExpired = otpDoc.expiry > new Date();
+      
+      return isMatch && isNotExpired;
+  } catch (error) {
+      console.error("Error checking OTP validity:", error);
+      return false;
+  }
+};
+
 // Export the necessary functions
-export { generateOTP, generateOTPExpiry, updateOTPForUser };
+export { generateOTP, generateOTPExpiry, updateOTPForUser, isOtpValid };
