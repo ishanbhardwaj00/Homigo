@@ -1,3 +1,4 @@
+import Loading from '@/components/Loading'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import 'swiper/css'
@@ -25,27 +26,9 @@ function calculateAge(dobString) {
   return age
 }
 
-const Main = () => {
-  const [users, setUsers] = useState([])
-  useEffect(() => {
-    console.log('fetching users')
-
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/users', {
-          withCredentials: true,
-        })
-        setUsers(response.data.users)
-        console.log(response.data) // Check the response
-      } catch (error) {
-        console.error('Error fetching users:', error)
-      }
-    }
-
-    fetchUsers() // Call the async function inside useEffect
-  }, [])
-  useEffect(() => {}, [users])
+const Main = ({ users }) => {
   const swiper = useSwiper()
+
   return (
     <div className="flex flex-1 w-screen overflow-scroll p-5">
       <Swiper
@@ -92,10 +75,10 @@ const Main = () => {
                     </div>
                   </div>
 
-                  <div className="w-full bg-userdetails mt-5 flex flex-col gap-5 py-2 px-5 rounded-lg">
+                  <div className="w-full bg-userdetails mt-5 flex flex-col gap-8 py-4 px-5 rounded-xl">
                     <div className="flex flex-col gap-1">
-                      <span className="font-semibold text-lg">About Me</span>
-                      <span className="font-light">
+                      <span className="font-medium text-lg">About Me</span>
+                      <span className="font-light ">
                         Lorem ipsum dolor sit amet, consectetur adipisicing
                         elit. Veritatis fugiat neque eveniet aspernatur error.
                         Aperiam dolorem sed labore accusamus maiores dolor
@@ -105,14 +88,42 @@ const Main = () => {
                       </span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <span className="font-semibold text-lg">Basic Info</span>
-                      <label
-                        key={user}
-                        className="flex text-sm items-center font-normal py-2 px-3 border-solid border border-black rounded-full has-[:checked]:bg-button-primary has-[:checked]:border-button-primary"
-                      >
-                        <span className="w-max"></span>
-                      </label>
+                      <span className="font-medium text-lg">Basic Info</span>
+                      {user?.hobbies && (
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(user?.hobbies)
+                            .filter(([key]) => key !== 'interests') // Exclude 'interests' field
+                            .map(([key, value], idx) => (
+                              <div
+                                key={idx}
+                                className="p-3 bg-transparent rounded-full border border-solid border-black w-max capitalize font-light "
+                              >
+                                {value}
+                              </div>
+                            ))}
+                        </div>
+                      )}
                     </div>
+                    <div className="flex flex-col gap-2">
+                      <span className="font-semibold text-lg">
+                        Hobbies & Interests
+                      </span>
+                      {user?.hobbies?.interests && (
+                        <div className="flex flex-wrap gap-2">
+                          {user?.hobbies?.interests.map((value, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 bg-transparent rounded-full border border-solid border-black w-max capitalize font-light"
+                            >
+                              {value}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
+                      Message
+                    </button>
                   </div>
                 </SwiperSlide>
               </div>
