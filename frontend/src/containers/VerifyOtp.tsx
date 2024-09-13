@@ -56,10 +56,10 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
             onSubmit={handleSubmit(async (data) => {
               console.log(data)
               setLoading(true)
-              localStorage.setItem(
-                'userInformation',
-                JSON.stringify({ ...userInformation, verified: true })
-              )
+              // localStorage.setItem(
+              //   'userInformation',
+              //   JSON.stringify({ ...userInformation, verified: true })
+              // )
               try {
                 const verifyResponse = await axios.post(
                   'http://localhost:5000/api/users/verifyOTP',

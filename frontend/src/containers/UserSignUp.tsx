@@ -36,10 +36,7 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
     <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
       <div className="w-3/4 flex flex-col justify-start mt-10 gap-24">
         <div className="flex flex-col gap-12">
-          <button
-            className="text-black"
-            onClick={() => setStep((step) => step - 1)}
-          >
+          <button className="text-black" onClick={() => router.replace('/')}>
             <GoArrowLeft size={24} />
           </button>
           <div
@@ -65,11 +62,6 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
               if (!success) {
                 setOtpError(message)
               } else {
-                if (profileCompleted === false) {
-                  console.log('profile completed false')
-
-                  return router.replace('/register?profileCompleted=false')
-                }
                 setStep((step: number) => step + 1)
               }
             } catch (error) {

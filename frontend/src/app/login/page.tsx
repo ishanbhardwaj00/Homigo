@@ -57,9 +57,11 @@ export default ({ setStep }: { setStep: any }) => {
               { withCredentials: true }
             )
             console.log(response.data)
-            const { success, message, id } = response.data
+            const { success, message, id, profileCompleted } = response.data
 
             if (success) {
+              if (profileCompleted === false)
+                return router.replace('/register?profileCompleted=false')
               setAuthenticated(true)
               router.replace('/')
             } else {

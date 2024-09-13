@@ -33,14 +33,7 @@ const page = () => {
         } else if (profileCompleted === 'false') {
           setStep(4)
         } else {
-          const userInformationJson = localStorage.getItem('userInformation')
-          if (userInformationJson) {
-            const parsedInfo = JSON.parse(userInformationJson)
-            setUserInformation(parsedInfo)
-            setStep(parsedInfo?.step ?? 1)
-          } else {
-            setStep(1)
-          }
+          setStep(1)
         }
       } catch (err) {
         console.log(err)
@@ -53,8 +46,7 @@ const page = () => {
   }, [])
 
   useEffect(() => {
-    if(profileCompleted)
-      setStep(4)
+    if (profileCompleted) setStep(4)
   }, [profileCompleted])
 
   useEffect(() => {

@@ -270,18 +270,18 @@ app.post('/api/users/login', async (req, res) => {
 
     console.log(user)
 
-    if (!user.profileCompleted) {
-      await user.deleteOne({ _id: user._id })
+    // if (!user.profileCompleted) {
+    //   await user.deleteOne({ _id: user._id })
 
-      // Clear the access and refresh token cookies
-      res.clearCookie('accessToken')
-      res.clearCookie('refreshToken')
+    //   // Clear the access and refresh token cookies
+    //   res.clearCookie('accessToken')
+    //   res.clearCookie('refreshToken')
 
-      return res.status(200).json({
-        message: 'Account does not exist',
-        success: false,
-      })
-    }
+    //   return res.status(200).json({
+    //     message: 'Account does not exist',
+    //     success: false,
+    //   })
+    // }
 
     // // Generate access token
     const accessToken = user.generateAccessToken()
@@ -387,17 +387,10 @@ app.post('/api/users/generateOtp', async (req, res) => {
     // Generate the OTP and its expiry
     const userExists = await User.findOne({ 'userCred.email': email })
 
-    if (userExists && userExists.profileCompleted) {
+    if (userExists) {
       return res.status(200).json({
         success: false,
-        profileCompleted: null,
         message: 'This email address is already registered',
-      })
-    } else if (userExists && !userExists.profileCompleted) {
-      return res.status(200).json({
-        success: true,
-        profileCompleted: false,
-        message: 'This profile is incompleted',
       })
     }
     const otp = generateOTP()
