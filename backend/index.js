@@ -51,7 +51,7 @@ const verifyJwt = async (req, res, next) => {
   next()
 }
 
-app.get('/api/users/checkAuth', (req, res) => {
+app.get('/api/users/checkAuth', async (req, res) => {
   const accessToken = req.cookies.accessToken
 
   if (accessToken) {
@@ -61,10 +61,29 @@ app.get('/api/users/checkAuth', (req, res) => {
     )
 
     if (decodedToken) {
-      return res.json({ success: true, message: 'Authenticated' })
+      console.log(decodedToken)
+      const user = await User.findById(decodedToken._id)
+      if (user && !user.profileCompleted) {
+        console.log('Incomplete profile')
+
+        return res.json({
+          success: true,
+          profileCompleted: false,
+          message: 'Incomplete profile',
+        })
+      }
+      return res.json({
+        success: true,
+        profileCompleted: true,
+        message: 'Authenticated',
+      })
     }
   }
-  return res.json({ success: false, message: 'Not authenticated' })
+  return res.json({
+    success: false,
+    profileCompleted: null,
+    message: 'Not authenticated',
+  })
 })
 // app.get('/test-axios', async (req, res) => {
 //   try {
@@ -289,6 +308,7 @@ app.post('/api/users/login', async (req, res) => {
     // Return tokens to the client
     res.status(200).json({
       success: true,
+      profileCompleted: user.profileCompleted,
       message: 'Login successful',
     })
   } catch (err) {
@@ -332,7 +352,7 @@ app.post('/api/users/signup', async (req, res) => {
     res.cookie('accessToken', accessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
-      maxAge: 1000 * 60 * 15, // 15 minutes
+      maxAge: 60 * 24 * 60 * 60 * 1000, // 60 days
       sameSite: 'strict',
     })
 
@@ -364,6 +384,14 @@ app.post('/api/users/generateOtp', async (req, res) => {
 
   try {
     // Generate the OTP and its expiry
+    const userExists = await User.findOne({ 'userCred.email': email })
+
+    if (userExists && userExists.profileCompleted) {
+      return res.status(200).json({
+        success: false,
+        message: 'This email address is already registered',
+      })
+    }
     const otp = generateOTP()
     const otpExpiry = generateOTPExpiry()
 
@@ -420,7 +448,7 @@ app.post('/api/users/verifyOTP', async (req, res) => {
       // if (user && await user.isPasswordCorrect(password)) {
       res
         .status(200)
-        .send({ success: true, message: 'OTP verified successfully!' })
+        .json({ success: true, message: 'OTP verified successfully!' })
       // } else {
       //     res.status(400).send({ message: "Invalid email or password" });
       // }
@@ -428,11 +456,14 @@ app.post('/api/users/verifyOTP', async (req, res) => {
       // OTP is incorrect or expired
       res
         .status(400)
-        .send({ success: false, message: 'Invalid OTP or OTP expired' })
+        .json({ success: false, message: 'Invalid OTP or OTP expired' })
     }
   } catch (error) {
     console.error('Error verifying OTP:', error)
-    res.status(500).send({ message: 'Error verifying OTP' })
+    res.status(500).json({
+      success: false,
+      message: 'Server error occured while verifying OTP',
+    })
   }
 })
 app.listen(PORT, () => {

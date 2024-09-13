@@ -62,7 +62,7 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
               )
               try {
                 const verifyResponse = await axios.post(
-                  'http://localhost:5000/api/users/verifyOtp',
+                  'http://localhost:5000/api/users/verifyOTP',
                   { email: userCredentials.email, ...data }
                 )
                 const { success, message } = verifyResponse.data
@@ -84,11 +84,10 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
                 } else {
                   setOtpVerificationError(message)
                 }
-
-                setTimeout(() => {}, 300)
-                setLoading(false)
               } catch (error) {
                 setOtpVerificationError(error.toString())
+              } finally {
+                setLoading(false)
               }
             })}
           >

@@ -90,6 +90,7 @@ const questionnare = [
       'Gaming',
       'Music',
       'Cooking',
+      'Anime',
     ],
   },
 ]

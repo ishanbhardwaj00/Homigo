@@ -100,10 +100,10 @@ export default ({ setStep }: { setStep: any }) => {
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-black font-bold ml-2">Your Birth Date*</p>
+            <p className="text-black font-bold ml-2">Your Pincode*</p>
             <input
               className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
-              type="date"
+              type="text"
               {...register('pinCode', {
                 required: 'Date is required',
                 valueAsNumber: true,

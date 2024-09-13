@@ -23,17 +23,6 @@ export default ({ setStep }: { setStep: any }) => {
     formState: { errors },
   } = useForm()
 
-  const [userInformation, setUserInformation] = useState({})
-
-  useEffect(() => {
-    setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
-    if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
-    }
-    setLoading(false)
-  }, [])
-
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -59,12 +48,7 @@ export default ({ setStep }: { setStep: any }) => {
             onSubmit={handleSubmit((data) => {
               console.log(data)
               setLoading(true)
-              localStorage.setItem(
-                'userInformation',
-                JSON.stringify({ ...userInformation, verified: true, step: 1 })
-              )
               setStep((step: number) => step + 1)
-              setTimeout(() => {}, 300)
               setLoading(false)
             })}
           >

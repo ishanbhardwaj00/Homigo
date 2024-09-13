@@ -27,18 +27,6 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
   const [userInformation, setUserInformation] = useState({})
   const [signUpError, setSignUpError] = useState(null)
 
-  useEffect(() => {
-    setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
-
-    if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {}, [userInformation])
-
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [otpError, setOtpError] = useState(null)
@@ -64,14 +52,6 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({
-                ...userInformation,
-                registered: true,
-                step: 2,
-              })
-            )
             setSignUpError(null)
             setUserCredentials({ email: data.email, password: data.password })
             try {

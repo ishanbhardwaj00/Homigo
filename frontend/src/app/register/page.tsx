@@ -1,5 +1,5 @@
 'use client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useRef, useContext, useEffect } from 'react'
 import { AuthContext } from '@/contexts/authContext'
 import Loading from '@/components/Loading'
@@ -19,19 +19,26 @@ const page = () => {
   const [userInformation, setUserInformation] = useState({})
   const [loading, setLoading] = useState(true)
   const [userCredentials, setUserCredentials] = useState({})
+
+  const searchParams = useSearchParams()
+  const profileCompleted = searchParams.get('profileCompleted')
+
   useEffect(() => {
     const fetchUserInformation = async () => {
       try {
         if (authenticated) {
           return router.replace('/')
-        }
-        const userInformationJson = localStorage.getItem('userInformation')
-        if (userInformationJson) {
-          const parsedInfo = JSON.parse(userInformationJson)
-          setUserInformation(parsedInfo)
-          setStep(parsedInfo?.step ?? 1)
+        } else if (profileCompleted === 'false') {
+          setStep(4)
         } else {
-          setStep(1)
+          const userInformationJson = localStorage.getItem('userInformation')
+          if (userInformationJson) {
+            const parsedInfo = JSON.parse(userInformationJson)
+            setUserInformation(parsedInfo)
+            setStep(parsedInfo?.step ?? 1)
+          } else {
+            setStep(1)
+          }
         }
       } catch (err) {
         console.log(err)

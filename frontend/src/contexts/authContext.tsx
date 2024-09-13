@@ -1,5 +1,6 @@
 'use client'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 import {
   createContext,
   Dispatch,
@@ -24,6 +25,8 @@ export const AuthContext = createContext<AuthType>({
 export default function AuthContextProvider({ children }) {
   const [user, setUser] = useState(null)
   const [authenticated, setAuthenticated] = useState(false)
+  const router = useRouter()
+
   useEffect(() => {
     async function checkAuth() {
       const response = await axios.get(
@@ -31,8 +34,10 @@ export default function AuthContextProvider({ children }) {
         { withCredentials: true }
       )
 
-      const { success, message } = response.data
-
+      const { success, profileCompleted, message } = response.data
+      if (success && profileCompleted === false) {
+        return router.replace('/register?profileCompleted=false')
+      }
       console.log(message)
       setAuthenticated(success)
     }
