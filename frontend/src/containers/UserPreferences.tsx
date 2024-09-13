@@ -81,7 +81,7 @@ export default ({ setStep }: { setStep: any }) => {
 
             localStorage.setItem(
               'userInformation',
-              JSON.stringify({ ...userInformation, preferences, step: 5 })
+              JSON.stringify({ ...userInformation, preferences })
             )
             console.log(preferences)
           })}

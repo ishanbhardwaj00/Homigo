@@ -258,7 +258,7 @@ app.post('/api/users/login', async (req, res) => {
     console.log(user)
     if (!user) {
       console.log('not found')
-      return res.status(200).json({ message: 'Invalid email or password.' })
+      return res.status(200).json({ message: 'Account does not exist.' })
     }
 
     // Check if the password is correct
@@ -458,6 +458,8 @@ app.post('/api/users/verifyOTP', async (req, res) => {
       // const user = await User.findOne({ "userCred.email": email });
 
       // if (user && await user.isPasswordCorrect(password)) {
+      console.log('otp verifed')
+
       res
         .status(200)
         .json({ success: true, message: 'OTP verified successfully!' })
@@ -466,6 +468,8 @@ app.post('/api/users/verifyOTP', async (req, res) => {
       // }
     } else {
       // OTP is incorrect or expired
+      console.log('not otp verifed')
+
       res
         .status(400)
         .json({ success: false, message: 'Invalid OTP or OTP expired' })

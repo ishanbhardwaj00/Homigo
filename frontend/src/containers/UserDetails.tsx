@@ -14,6 +14,7 @@ import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
+import axios from 'axios'
 
 export default ({ setStep }: { setStep: any }) => {
   const [userInformation, setUserInformation] = useState({})
@@ -28,10 +29,6 @@ export default ({ setStep }: { setStep: any }) => {
 
   useEffect(() => {
     setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
-    if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
-    }
     setLoading(false)
   }, [])
 
@@ -48,11 +45,24 @@ export default ({ setStep }: { setStep: any }) => {
   }, [userInformation])
 
   console.log(userInformation)
-
+  const router = useRouter()
   if (loading) return <Loading />
   return (
     <div className="flex flex-col items-center justify-center h-screen max-h-screen bg-bottom animateRegistration">
       <div className="w-3/4  flex flex-col justify-between gap-16">
+        <button
+          onClick={async () => {
+            const response = await axios.post(
+              'http://localhost:5000/api/users/logout',
+              {},
+              { withCredentials: true }
+            )
+            router.replace('/register')
+            setStep((step) => step - 2)
+          }}
+        >
+          <GoArrowLeft size={24} />
+        </button>
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
         >
@@ -66,7 +76,7 @@ export default ({ setStep }: { setStep: any }) => {
             setUserInformation({ ...userInformation, userDetails })
             localStorage.setItem(
               'userInformation',
-              JSON.stringify({ ...userInformation, userDetails, step: 3 })
+              JSON.stringify({ ...userInformation, userDetails })
             )
             setStep((step: number) => step + 1)
           })}

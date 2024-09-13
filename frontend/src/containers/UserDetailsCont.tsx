@@ -154,7 +154,7 @@ export default ({ setStep }: { setStep: any }) => {
             setLoading(true)
             localStorage.setItem(
               'userInformation',
-              JSON.stringify({ ...userInformation, hobbies, step: 4 })
+              JSON.stringify({ ...userInformation, hobbies })
             )
             setStep((step: number) => step + 1)
             setTimeout(() => {}, 300)

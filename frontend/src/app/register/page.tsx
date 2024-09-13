@@ -10,6 +10,7 @@ import UserDetailsCont from '../../containers/UserDetailsCont'
 import UserPreferences from '../../containers/UserPreferences'
 import ProfileCompletion from '../../containers/ProfileCompletion'
 import VerifyOtp from '@/containers/VerifyOtp'
+import { profile } from 'console'
 
 const page = () => {
   const { authenticated, setAuthenticated, user, setUser } =
@@ -22,6 +23,7 @@ const page = () => {
 
   const searchParams = useSearchParams()
   const profileCompleted = searchParams.get('profileCompleted')
+  console.log(typeof profileCompleted, profileCompleted)
 
   useEffect(() => {
     const fetchUserInformation = async () => {
@@ -49,6 +51,11 @@ const page = () => {
 
     fetchUserInformation()
   }, [])
+
+  useEffect(() => {
+    if(profileCompleted)
+      setStep(4)
+  }, [profileCompleted])
 
   useEffect(() => {
     if (authenticated) {
