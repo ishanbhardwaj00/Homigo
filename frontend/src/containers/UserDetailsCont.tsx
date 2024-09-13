@@ -1,20 +1,11 @@
 'use client'
-import { Poppins } from 'next/font/google'
-import { useRouter } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
-import { passwordStrength } from 'check-password-strength'
-import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
-import { FaArrowLeft } from 'react-icons/fa'
-import { BarLoader } from 'react-spinners'
-import Loading from '@/components/Loading'
 
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
+import { UserContext } from '@/contexts/userContext'
 const questionnare = [
   {
     id: 'nature',
@@ -100,40 +91,33 @@ export default ({ setStep }: { setStep: any }) => {
     register,
     handleSubmit,
     reset,
-    getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm()
   const [loading, setLoading] = useState(false)
-  const [userInformation, setUserInformation] = useState({})
+  const { userInformation } = useContext(UserContext)
   useEffect(() => {
-    setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
-    if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (userInformation?.hobbies) {
+    if (userInformation.current?.hobbies) {
       reset({
-        nature: userInformation?.hobbies?.nature,
-        dietaryPreferences: userInformation?.hobbies?.dietaryPreferences,
-        workStyle: userInformation?.hobbies?.workStyle,
-        smokingPreference: userInformation?.hobbies?.smokingPreference,
-        drinkingPreference: userInformation?.hobbies?.drinkingPreference,
-        guestPolicy: userInformation?.hobbies?.guestPolicy,
-        workHours: userInformation?.hobbies?.workHours,
-        regionalBackground: userInformation?.hobbies?.regionalBackground,
-        interests: userInformation?.hobbies?.interests,
+        nature: userInformation.current?.hobbies?.nature,
+        dietaryPreferences:
+          userInformation.current?.hobbies?.dietaryPreferences,
+        workStyle: userInformation.current?.hobbies?.workStyle,
+        smokingPreference: userInformation.current?.hobbies?.smokingPreference,
+        drinkingPreference:
+          userInformation.current?.hobbies?.drinkingPreference,
+        guestPolicy: userInformation.current?.hobbies?.guestPolicy,
+        workHours: userInformation.current?.hobbies?.workHours,
+        regionalBackground:
+          userInformation.current?.hobbies?.regionalBackground,
+        interests: userInformation.current?.hobbies?.interests,
       })
     }
-  }, [userInformation])
+  }, [])
   return (
     // <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
     <div className="flex flex-col items-center justify-center  animateRegistration overflow-scroll">
       <div className="w-3/4  py-16 flex flex-col justify-between gap-8">
-        <button onClick={() => setStep((step) => step - 1)}>
+        <button onClick={() => setStep((step: any) => step - 1)}>
           <GoArrowLeft size={24} />
         </button>
         <div className="flex flex-col gap-2">
@@ -152,10 +136,7 @@ export default ({ setStep }: { setStep: any }) => {
           className="flex flex-col gap-6"
           onSubmit={handleSubmit((hobbies) => {
             setLoading(true)
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({ ...userInformation, hobbies })
-            )
+            userInformation.current = { ...userInformation.current, hobbies }
             setStep((step: number) => step + 1)
             setTimeout(() => {}, 300)
             setLoading(false)
@@ -189,7 +170,9 @@ export default ({ setStep }: { setStep: any }) => {
                 ))}
               </div>
               {errors[question.id] && (
-                <ErrorMessage text={errors[question.id!.toString()]?.message} />
+                <ErrorMessage
+                  text={errors[question.id!.toString()]?.message as string}
+                />
               )}
             </div>
           ))}

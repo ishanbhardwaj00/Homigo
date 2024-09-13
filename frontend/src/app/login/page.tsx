@@ -9,6 +9,7 @@ import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import axios from 'axios'
+import { PulseLoader } from 'react-spinners'
 
 export default ({ setStep }: { setStep: any }) => {
   const {
@@ -19,7 +20,7 @@ export default ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm()
   const [userInformation, setUserInformation] = useState({})
-  const [loginError, setLoginError] = useState(null)
+  const [loginError, setLoginError] = useState<null | string>(null)
   const { setAuthenticated } = useContext(AuthContext)
   useEffect(() => {
     setLoading(true)
@@ -35,10 +36,10 @@ export default ({ setStep }: { setStep: any }) => {
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-
+  const [requestPending, setRequestPending] = useState(false)
   if (loading) return <Loading />
   return (
-    <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
+    <div className="flex flex-col items-center bg-step2 bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
       <div className="w-3/4 flex flex-col justify-start mt-16 gap-24">
         <div
           className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
@@ -50,22 +51,27 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           onSubmit={handleSubmit(async (data) => {
             console.log(data)
+            setRequestPending(true)
+            try {
+              const response = await axios.post(
+                'http://localhost:5000/api/users/login',
+                data,
+                { withCredentials: true }
+              )
+              console.log(response.data)
+              const { success, message, id, profileCompleted } = response.data
 
-            const response = await axios.post(
-              'http://localhost:5000/api/users/login',
-              data,
-              { withCredentials: true }
-            )
-            console.log(response.data)
-            const { success, message, id, profileCompleted } = response.data
-
-            if (success) {
-              if (profileCompleted === false)
-                return router.replace('/register?profileCompleted=false')
-              setAuthenticated(true)
-              router.replace('/')
-            } else {
-              setLoginError(message)
+              if (success) {
+                if (profileCompleted === false)
+                  return router.replace('/register?profileCompleted=false')
+                setAuthenticated(true)
+                router.replace('/')
+              } else {
+                setLoginError(message)
+              }
+              setRequestPending(false)
+            } catch (error) {
+              setLoginError('Some error occurred while making the request')
             }
           })}
           className="flex flex-col gap-12"
@@ -80,7 +86,9 @@ export default ({ setStep }: { setStep: any }) => {
                 })}
                 placeholder="Email Address"
               />
-              {errors.email && <ErrorMessage text={errors.email.message} />}
+              {errors.email && (
+                <ErrorMessage text={errors.email.message as string} />
+              )}
             </div>
             <div className="flex flex-col gap-1 ">
               <input
@@ -108,8 +116,15 @@ export default ({ setStep }: { setStep: any }) => {
             {loginError && <ErrorMessage text={loginError} />}
           </div>
           <div className="flex flex-col gap-3">
-            <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
-              Next
+            <button
+              disabled={requestPending}
+              className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
+            >
+              {requestPending ? (
+                <PulseLoader size={8} color="#232beb" />
+              ) : (
+                'Next'
+              )}
             </button>
           </div>
         </form>

@@ -44,7 +44,7 @@ export default () => {
 
   return (
     <div className="flex flex-col h-screen  bg-home-light">
-      <Header />
+      <Header selected={selected} />
       {selected === 0 ? (
         <div className="flex flex-1">profile</div>
       ) : selected === 1 ? (

@@ -1,19 +1,11 @@
 'use client'
-import { Poppins } from 'next/font/google'
-import { useRouter } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
-import { passwordStrength } from 'check-password-strength'
-import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
-import { FaArrowLeft } from 'react-icons/fa'
-import { BarLoader } from 'react-spinners'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
+import { UserContext } from '@/contexts/userContext'
 
 const locations = [
   'Near Cyberhub',
@@ -32,28 +24,20 @@ export default ({ setStep }: { setStep: any }) => {
     getValues,
     formState: { errors, isSubmitting },
   } = useForm()
-  const [userInformation, setUserInformation] = useState({})
+  const { userInformation } = useContext(UserContext)
 
   useEffect(() => {
-    setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
-    if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (userInformation?.preferences) {
+    if (userInformation.current?.preferences) {
       setLoading(true)
       reset({
-        locationPreferences: userInformation?.preferences.locationPreferences,
-        nonVegPreference: userInformation?.preferences.nonVegPreference,
-        lease: userInformation?.preferences.lease,
+        locationPreferences:
+          userInformation.current?.preferences.locationPreferences,
+        nonVegPreference: userInformation.current?.preferences.nonVegPreference,
+        lease: userInformation.current?.preferences.lease,
       })
       setLoading(false)
     }
-  }, [userInformation])
+  }, [])
 
   const [loading, setLoading] = useState(false)
 
@@ -61,7 +45,7 @@ export default ({ setStep }: { setStep: any }) => {
   return (
     <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
       <div className="w-3/4  my-16 flex flex-col justify-between gap-14">
-        <button onClick={() => setStep((step) => step - 1)}>
+        <button onClick={() => setStep((step: number) => step - 1)}>
           <GoArrowLeft size={24} />
         </button>
         <div className="flex flex-col gap-2">
@@ -76,13 +60,11 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-7"
           onSubmit={handleSubmit((preferences) => {
-            setStep((step) => step + 1)
-            setUserInformation({ ...userInformation, preferences })
-
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({ ...userInformation, preferences })
-            )
+            setStep((step: number) => step + 1)
+            userInformation.current = {
+              ...userInformation.current,
+              preferences,
+            }
             console.log(preferences)
           })}
         >
@@ -145,7 +127,6 @@ export default ({ setStep }: { setStep: any }) => {
                       className="hidden"
                       type="radio"
                       value={option}
-                      name="nonVegPreference"
                       id={option}
                       {...register(`nonVegPreference`, {
                         required: 'This field is required',

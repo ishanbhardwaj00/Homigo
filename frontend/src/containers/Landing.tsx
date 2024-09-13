@@ -4,7 +4,7 @@ import { poppins } from '@/font/poppins'
 import React from 'react'
 
 const Landing = () => {
-  console.log('lDNING')
+  console.log('Landing')
 
   return (
     <div className="flex flex-col h-screen max-h-screen bg-primary bg-custom-pattern bg-no-repeat bg-center bg-cover w-full items-center justify-center gap-8">

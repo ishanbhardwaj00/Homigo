@@ -22,7 +22,11 @@ export const AuthContext = createContext<AuthType>({
   setAuthenticated: () => {},
 })
 
-export default function AuthContextProvider({ children }) {
+export default function AuthContextProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [user, setUser] = useState(null)
   const [authenticated, setAuthenticated] = useState(false)
   const router = useRouter()
@@ -43,6 +47,9 @@ export default function AuthContextProvider({ children }) {
     }
     checkAuth()
   }, [])
+  useEffect(() => {
+    console.log('authenticated', authenticated)
+  }, [authenticated])
   return (
     <AuthContext.Provider
       value={{ user, authenticated, setUser, setAuthenticated }}

@@ -1,47 +1,38 @@
 'use client'
-import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
-import { passwordStrength } from 'check-password-strength'
 import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
-import { FaArrowLeft } from 'react-icons/fa'
-import { BarLoader } from 'react-spinners'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
 import axios from 'axios'
+import { UserContext } from '@/contexts/userContext'
 
 export default ({ setStep }: { setStep: any }) => {
-  const [userInformation, setUserInformation] = useState({})
+  const { userInformation } = useContext(UserContext)
   const [loading, setLoading] = useState(false)
+  const {} = useContext(AuthContext)
   const {
     register,
     handleSubmit,
     reset,
-    getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm()
 
   useEffect(() => {
     setLoading(true)
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (userInformation?.userDetails) {
+    if (userInformation?.current?.userDetails) {
       // Reset the form only after userInformation is updated
       reset({
-        fullName: userInformation?.userDetails?.fullName || '',
-        dateOfBirth: userInformation?.userDetails?.dateOfBirth || '',
-        pinCode: userInformation?.userDetails?.pinCode || '',
-        gender: userInformation?.userDetails?.gender || '',
+        fullName: userInformation.current?.userDetails?.fullName || '',
+        dateOfBirth: userInformation.current?.userDetails?.dateOfBirth || '',
+        pinCode: userInformation.current?.userDetails?.pinCode || '',
+        gender: userInformation.current?.userDetails?.gender || '',
       })
     }
+    setLoading(false)
   }, [userInformation])
 
   console.log(userInformation)
@@ -49,7 +40,7 @@ export default ({ setStep }: { setStep: any }) => {
   if (loading) return <Loading />
   return (
     <div className="flex flex-col items-center justify-center h-screen max-h-screen bg-bottom animateRegistration">
-      <div className="w-3/4  flex flex-col justify-between gap-16">
+      <div className="w-3/4  flex flex-col justify-evenly gap-16 mt-16">
         <button
           onClick={async () => {
             const response = await axios.post(
@@ -58,7 +49,7 @@ export default ({ setStep }: { setStep: any }) => {
               { withCredentials: true }
             )
             router.replace('/register')
-            setStep((step) => step - 2)
+            setStep((step: number) => step - 2)
           }}
         >
           <GoArrowLeft size={24} />
@@ -73,11 +64,10 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           onSubmit={handleSubmit((userDetails) => {
             console.log(userDetails)
-            setUserInformation({ ...userInformation, userDetails })
-            localStorage.setItem(
-              'userInformation',
-              JSON.stringify({ ...userInformation, userDetails })
-            )
+            userInformation.current = {
+              ...userInformation.current,
+              userDetails,
+            }
             setStep((step: number) => step + 1)
           })}
           className="flex flex-col gap-8"

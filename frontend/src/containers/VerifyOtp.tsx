@@ -1,14 +1,21 @@
 import ErrorMessage from '@/components/ErrorMessage'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
+import { UserCredentialsType } from '@/types/types'
 import axios from 'axios'
 import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { GoArrowLeft } from 'react-icons/go'
 import { BarLoader } from 'react-spinners'
 
-const VerifyOtp = ({ userCredentials, setStep }) => {
+const VerifyOtp = ({
+  userCredentials,
+  setStep,
+}: {
+  userCredentials: UserCredentialsType | null
+  setStep: Dispatch<SetStateAction<number>>
+}) => {
   useEffect(() => {
     setLoading(true)
     setLoading(false)
@@ -63,7 +70,7 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
               try {
                 const verifyResponse = await axios.post(
                   'http://localhost:5000/api/users/verifyOTP',
-                  { email: userCredentials.email, ...data }
+                  { email: userCredentials!.email, ...data }
                 )
 
                 const { success, message } = verifyResponse.data
@@ -74,8 +81,8 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
                   const response = await axios.post(
                     'http://localhost:5000/api/users/signup',
                     {
-                      email: userCredentials.email,
-                      password: userCredentials.password,
+                      email: userCredentials!.email,
+                      password: userCredentials!.password,
                     },
                     { withCredentials: true }
                   )
@@ -86,8 +93,8 @@ const VerifyOtp = ({ userCredentials, setStep }) => {
                 } else {
                   setOtpVerificationError(message)
                 }
-              } catch (error) {
-                setOtpVerificationError(error.toString())
+              } catch (error: any) {
+                setOtpVerificationError(error.message)
               } finally {
                 setLoading(false)
               }

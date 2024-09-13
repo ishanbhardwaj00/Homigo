@@ -63,7 +63,13 @@ app.get('/api/users/checkAuth', async (req, res) => {
     if (decodedToken) {
       console.log(decodedToken)
       const user = await User.findById(decodedToken._id)
-      if (user && !user.profileCompleted) {
+      if (!user) {
+        return res.json({
+          success: false,
+          profileCompleted: null,
+          message: 'Account not found',
+        })
+      } else if (user && !user.profileCompleted) {
         console.log('Incomplete profile')
 
         return res.json({
@@ -72,6 +78,7 @@ app.get('/api/users/checkAuth', async (req, res) => {
           message: 'Incomplete profile',
         })
       }
+
       return res.json({
         success: true,
         profileCompleted: true,
@@ -294,7 +301,7 @@ app.post('/api/users/login', async (req, res) => {
     res.cookie('accessToken', accessToken, {
       httpOnly: true, // Makes sure the cookie is accessible only by web server
       secure: false, // Send cookie over HTTPS only in production
-      maxAge: 1000 * 60 * 15, // 15 minutes
+      maxAge: 1000 * 60 * 60 * 24 * 60, // 60 days
       sameSite: 'lax', // Ensures the cookie is not sent along with cross-site requests
     })
 

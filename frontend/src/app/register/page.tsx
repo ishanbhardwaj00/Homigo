@@ -10,17 +10,16 @@ import UserDetailsCont from '../../containers/UserDetailsCont'
 import UserPreferences from '../../containers/UserPreferences'
 import ProfileCompletion from '../../containers/ProfileCompletion'
 import VerifyOtp from '@/containers/VerifyOtp'
-import { profile } from 'console'
+import { UserCredentialsType } from '@/types/types'
 
 const page = () => {
   const { authenticated, setAuthenticated, user, setUser } =
     useContext(AuthContext)
   const router = useRouter()
   const [step, setStep] = useState<number>(1)
-  const [userInformation, setUserInformation] = useState({})
   const [loading, setLoading] = useState(true)
-  const [userCredentials, setUserCredentials] = useState({})
-
+  const [userCredentials, setUserCredentials] =
+    useState<UserCredentialsType | null>(null)
   const searchParams = useSearchParams()
   const profileCompleted = searchParams.get('profileCompleted')
   console.log(typeof profileCompleted, profileCompleted)

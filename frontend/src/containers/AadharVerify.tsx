@@ -1,13 +1,8 @@
 'use client'
-import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import AadharValidator from 'aadhaar-validator'
-import { passwordStrength } from 'check-password-strength'
-import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
 import { GoArrowLeft } from 'react-icons/go'
 import { BarLoader } from 'react-spinners'
 import Loading from '@/components/Loading'
@@ -16,9 +11,7 @@ import ErrorMessage from '@/components/ErrorMessage'
 
 export default ({ setStep }: { setStep: any }) => {
   const {
-    getValues,
     handleSubmit,
-    reset,
     register,
     formState: { errors },
   } = useForm()

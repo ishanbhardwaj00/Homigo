@@ -1,39 +1,40 @@
 'use client'
-import { Poppins } from 'next/font/google'
 import { useRouter } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
+import { useState, SetStateAction, Dispatch } from 'react'
 import { useForm } from 'react-hook-form'
-import AadharValidator from 'aadhaar-validator'
 import { passwordStrength } from 'check-password-strength'
-import { AuthContext } from '@/contexts/authContext'
-import { userDetailsSchema } from '@/schemas/zUserInfo'
-import { TUser, TUserDetails } from '@/schemas/tUserInfo'
-import { FaArrowLeft } from 'react-icons/fa'
-import { BarLoader } from 'react-spinners'
 import Loading from '@/components/Loading'
 import { poppins } from '@/font/poppins'
 import ErrorMessage from '@/components/ErrorMessage'
 import { GoArrowLeft } from 'react-icons/go'
 import axios from 'axios'
+import { PulseLoader } from 'react-spinners'
+import { UserCredentialsType } from '@/types/types'
 
-export default ({ setStep, setUserCredentials }: { setStep: any }) => {
+export default ({
+  setStep,
+  setUserCredentials,
+}: {
+  setStep: Dispatch<SetStateAction<number>>
+
+  setUserCredentials: Dispatch<SetStateAction<UserCredentialsType | null>>
+}) => {
   const {
     register,
     handleSubmit,
-    reset,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm()
-  const [userInformation, setUserInformation] = useState({})
   const [signUpError, setSignUpError] = useState(null)
 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [otpError, setOtpError] = useState(null)
+  const [requestPending, setRequestPending] = useState(false)
 
   if (loading) return <Loading />
   return (
-    <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
+    <div className="flex flex-col items-center bg-step2 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration">
       <div className="w-3/4 flex flex-col justify-start mt-10 gap-24">
         <div className="flex flex-col gap-12">
           <button className="text-black" onClick={() => router.replace('/')}>
@@ -49,6 +50,7 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
+            setRequestPending(true)
             setSignUpError(null)
             setUserCredentials({ email: data.email, password: data.password })
             try {
@@ -64,9 +66,10 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
               } else {
                 setStep((step: number) => step + 1)
               }
-            } catch (error) {
-              console.log(error)
-              setOtpError(error.toString())
+            } catch (error: any) {
+              setOtpError(error.message)
+            } finally {
+              setRequestPending(false)
             }
           })}
           className="flex flex-col gap-12"
@@ -81,7 +84,9 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
                 })}
                 placeholder="Email Address"
               />
-              {errors.email && <ErrorMessage text={errors.email.message} />}
+              {errors.email && (
+                <ErrorMessage text={errors.email.message as string} />
+              )}
             </div>
             <div className="flex flex-col gap-1 ">
               <input
@@ -149,8 +154,15 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
               )}
             </div>
             {otpError && <ErrorMessage text={otpError} />}
-            <button className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary">
-              Next
+            <button
+              disabled={requestPending}
+              className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
+            >
+              {requestPending ? (
+                <PulseLoader color="#232beb" size={8} />
+              ) : (
+                'Next'
+              )}
             </button>
           </div>
         </form>

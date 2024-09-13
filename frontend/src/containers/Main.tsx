@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import 'swiper/css'
 import { SwiperSlide, Swiper, useSwiper } from 'swiper/react'
 
-function calculateAge(dobString) {
+function calculateAge(dobString: string) {
   // Step 1: Parse the date of birth string into a Date object
   const dob = new Date(dobString)
 
@@ -26,7 +26,7 @@ function calculateAge(dobString) {
   return age
 }
 
-const Main = ({ users }) => {
+const Main = ({ users }: { users: any }) => {
   const swiper = useSwiper()
 
   return (
@@ -42,7 +42,7 @@ const Main = ({ users }) => {
       >
         {users &&
           users.map(
-            (user, index) =>
+            (user: any, index: number) =>
               user?.profileCompleted && (
                 <SwiperSlide className="p-4 bg-white overflow-y-scroll">
                   {/* <div className="h-max"> */}
@@ -77,14 +77,7 @@ const Main = ({ users }) => {
                   <div className="w-full bg-userdetails mt-5 flex flex-col gap-8 py-4 px-5 rounded-xl justify-center">
                     <div className="flex flex-col gap-1">
                       <span className="font-semibold text-lg">About Me</span>
-                      <span className="font-light ">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing
-                        elit. Veritatis fugiat neque eveniet aspernatur error.
-                        Aperiam dolorem sed labore accusamus maiores dolor
-                        incidunt deleniti et, soluta dicta voluptatibus
-                        explicabo necessitatibus ipsum facilis eaque non, ab
-                        eligendi, dignissimos totam. Dolorum, natus ipsa?
-                      </span>
+                      <span className="font-light ">{user?.metaDat?.bio}</span>
                     </div>
                     <div className="flex flex-col gap-2">
                       <span className="font-semibold text-lg">Basic Info</span>
@@ -97,7 +90,7 @@ const Main = ({ users }) => {
                                 key={idx}
                                 className="p-3 bg-transparent rounded-full border border-solid border-black w-max capitalize font-light "
                               >
-                                {value}
+                                {value as string}
                               </div>
                             ))}
                         </div>
@@ -109,14 +102,16 @@ const Main = ({ users }) => {
                       </span>
                       {user?.hobbies?.interests && (
                         <div className="flex flex-wrap gap-2">
-                          {user?.hobbies?.interests.map((value, idx) => (
-                            <div
-                              key={idx}
-                              className="p-3 bg-transparent rounded-full border border-solid border-black w-max capitalize font-light"
-                            >
-                              {value}
-                            </div>
-                          ))}
+                          {user?.hobbies?.interests.map(
+                            (value: string, idx: number) => (
+                              <div
+                                key={idx}
+                                className="p-3 bg-transparent rounded-full border border-solid border-black w-max capitalize font-light"
+                              >
+                                {value}
+                              </div>
+                            )
+                          )}
                         </div>
                       )}
                     </div>
