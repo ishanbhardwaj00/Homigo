@@ -104,6 +104,7 @@ export default ({ setStep }: { setStep: any }) => {
             <input
               className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
               type="text"
+              placeholder="110065"
               {...register('pinCode', {
                 required: 'Date is required',
                 valueAsNumber: true,

@@ -59,11 +59,17 @@ export default ({ setStep, setUserCredentials }: { setStep: any }) => {
                 'http://localhost:5000/api/users/generateOtp',
                 { email: data.email }
               )
-              const { success, message } = response.data
+              const { success, profileCompleted, message } = response.data
+              console.log(response.data)
 
               if (!success) {
                 setOtpError(message)
               } else {
+                if (profileCompleted === false) {
+                  console.log('profile completed false')
+
+                  return router.replace('/register?profileCompleted=false')
+                }
                 setStep((step: number) => step + 1)
               }
             } catch (error) {

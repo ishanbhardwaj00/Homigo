@@ -183,6 +183,7 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
       preferences: { locationPreferences, nonVegPreference, lease },
       additionalInfo,
     } = req.body
+    console.log(req.body)
 
     user.userDetails = {
       fullName,
@@ -207,8 +208,8 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
       interests,
     }
     user.preferences = {
-      locationPreferences,
-      nonVegPreference,
+      location: locationPreferences,
+      nonVegPreferences: nonVegPreference,
       lease,
     }
 
@@ -389,7 +390,14 @@ app.post('/api/users/generateOtp', async (req, res) => {
     if (userExists && userExists.profileCompleted) {
       return res.status(200).json({
         success: false,
+        profileCompleted: null,
         message: 'This email address is already registered',
+      })
+    } else if (userExists && !userExists.profileCompleted) {
+      return res.status(200).json({
+        success: true,
+        profileCompleted: false,
+        message: 'This profile is incompleted',
       })
     }
     const otp = generateOTP()
@@ -417,7 +425,11 @@ app.post('/api/users/generateOtp', async (req, res) => {
     })
 
     console.log('Email is sent')
-    res.status(200).send({ success: true, message: 'OTP sent to your email!' })
+    res.status(200).send({
+      success: true,
+      profileCompleted: null,
+      message: 'OTP sent to your email!',
+    })
   } catch (error) {
     console.error('Error sending OTP:', error)
     res.status(500).send({ success: false, message: 'Error sending OTP' })

@@ -143,7 +143,9 @@ export default ({ setStep }: { setStep: any }) => {
             </p>
             <div className="flex justify-center items-center">
               <textarea
-                {...register('bio', { required: 'This field is required' })}
+                {...register('bio', {
+                  required: 'This field is required',
+                })}
                 className="w-full h-36 border rounded-2xl p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Tell us about you – your vibe, your quirks, and what makes you a great roommate!"
               />
