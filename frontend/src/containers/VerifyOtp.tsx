@@ -1,46 +1,44 @@
-import ErrorMessage from '@/components/ErrorMessage'
-import Loading from '@/components/Loading'
-import { poppins } from '@/font/poppins'
-import { UserCredentialsType } from '@/types/types'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { GoArrowLeft } from 'react-icons/go'
-import { BarLoader } from 'react-spinners'
+import ErrorMessage from "../components/ErrorMessage";
+import Loading from "../components/Loading";
+import { UserCredentialsType } from "../types/types";
+import axios from "axios";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { GoArrowLeft } from "react-icons/go";
+import { BarLoader } from "react-spinners";
 
 const VerifyOtp = ({
   userCredentials,
   setStep,
 }: {
-  userCredentials: UserCredentialsType | null
-  setStep: Dispatch<SetStateAction<number>>
+  userCredentials: UserCredentialsType | null;
+  setStep: Dispatch<SetStateAction<number>>;
 }) => {
   useEffect(() => {
-    setLoading(true)
-    setLoading(false)
-  }, [])
+    setLoading(true);
+    setLoading(false);
+  }, []);
   const {
     getValues,
     handleSubmit,
     reset,
     register,
     formState: { errors },
-  } = useForm()
+  } = useForm();
 
-  const [loading, setLoading] = useState(false)
-  const [userInformation, setUserInformation] = useState({})
-  const [otpVerificationError, setOtpVerificationError] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [userInformation, setUserInformation] = useState({});
+  const [otpVerificationError, setOtpVerificationError] = useState(null);
 
   useEffect(() => {
-    setLoading(true)
-    const userInformationJson = localStorage.getItem('userInformation')
+    setLoading(true);
+    const userInformationJson = localStorage.getItem("userInformation");
     if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson))
+      setUserInformation(JSON.parse(userInformationJson));
     }
-    setLoading(false)
-  }, [])
-  if (loading) return <Loading />
+    setLoading(false);
+  }, []);
+  if (loading) return <Loading />;
 
   return (
     <div className="flex flex-col items-center bg-step1 bg-contain bg-no-repeat h-screen max-h-screen bg-bottom animateRegistration ">
@@ -48,64 +46,60 @@ const VerifyOtp = ({
         <button onClick={() => setStep((step) => step - 1)}>
           <GoArrowLeft size={24} />
         </button>
-        <div
-          className={`${poppins.className} flex flex-col text-4xl font-bold text-primary `}
-        >
+        <div className={`flex flex-col text-4xl font-bold text-primary `}>
           <span>We've</span>
           <span>Sent You</span>
           <span>A Code</span>
           {/* <span>Aadhar</span> */}
         </div>
-        <div className={`flex flex-col ${poppins.className} gap-7`}>
+        <div className={`flex flex-col gap-7`}>
           <form
             autoComplete="off"
             className="flex flex-col gap-2"
             onSubmit={handleSubmit(async (data) => {
-              console.log(data)
-              setLoading(true)
+              console.log(data);
+              setLoading(true);
               // localStorage.setItem(
               //   'userInformation',
               //   JSON.stringify({ ...userInformation, verified: true })
               // )
               try {
                 const verifyResponse = await axios.post(
-                  'http://localhost:5000/api/users/verifyOTP',
+                  "http://localhost:5000/api/users/verifyOTP",
                   { email: userCredentials!.email, ...data }
-                )
+                );
 
-                const { success, message } = verifyResponse.data
-                console.log(message)
+                const { success, message } = verifyResponse.data;
+                console.log(message);
                 if (success) {
-                  console.log(userCredentials)
+                  console.log(userCredentials);
 
                   const response = await axios.post(
-                    'http://localhost:5000/api/users/signup',
+                    "http://localhost:5000/api/users/signup",
                     {
                       email: userCredentials!.email,
                       password: userCredentials!.password,
                     },
                     { withCredentials: true }
-                  )
+                  );
 
-                  console.log(response.data)
+                  console.log(response.data);
 
-                  setStep((step: number) => step + 1)
+                  setStep((step: number) => step + 1);
                 } else {
-                  setOtpVerificationError(message)
+                  setOtpVerificationError(message);
                 }
               } catch (error: any) {
-                setOtpVerificationError(error.message)
+                setOtpVerificationError(error.message);
               } finally {
-                setLoading(false)
+                setLoading(false);
               }
             })}
           >
-            <span className={`${poppins.className} ml-3 text-sm font-medium`}>
-              6 Digit OTP*
-            </span>
+            <span className={`ml-3 text-sm font-medium`}>6 Digit OTP*</span>
             <input
-              {...register('otp', {
-                required: 'This field is required',
+              {...register("otp", {
+                required: "This field is required",
               })}
               className="w-full outline-1 outline py-4 px-5 outline-black rounded-full focus:outline-2"
               type="text"
@@ -119,7 +113,7 @@ const VerifyOtp = ({
               disabled={loading}
               className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
             >
-              {loading ? <BarLoader /> : 'Verify'}
+              {loading ? <BarLoader /> : "Verify"}
             </button>
             {otpVerificationError && (
               <ErrorMessage text={otpVerificationError} />
@@ -128,7 +122,7 @@ const VerifyOtp = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default VerifyOtp
+export default VerifyOtp;

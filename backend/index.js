@@ -22,7 +22,7 @@ dotenv.config() // Load environment variables if any (optional)
 
 const app = express()
 app.use(express.json({ limit: '50mb' }))
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 app.use(cookieParser())
 
 // const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'

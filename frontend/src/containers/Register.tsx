@@ -1,26 +1,24 @@
-'use client'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useRef, useContext, useEffect } from 'react'
-import { AuthContext } from '@/contexts/authContext'
-import Loading from '@/components/Loading'
-import AadharVerify from '../../containers/AadharVerify'
-import UserSignUp from '../../containers/UserSignUp'
-import UserDetails from '../../containers/UserDetails'
-import UserDetailsCont from '../../containers/UserDetailsCont'
-import UserPreferences from '../../containers/UserPreferences'
-import ProfileCompletion from '../../containers/ProfileCompletion'
-import VerifyOtp from '@/containers/VerifyOtp'
-import { UserCredentialsType } from '@/types/types'
+import { useState, useContext, useEffect } from 'react'
+import { AuthContext } from '../contexts/authContext'
+import Loading from '../components/Loading'
+import AadharVerify from './AadharVerify'
+import UserSignUp from './UserSignUp'
+import UserDetails from './UserDetails'
+import UserDetailsCont from './UserDetailsCont'
+import UserPreferences from './UserPreferences'
+import ProfileCompletion from './ProfileCompletion'
+import VerifyOtp from '../containers/VerifyOtp'
+import { UserCredentialsType } from '../types/types'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
-const page = () => {
-  const { authenticated, setAuthenticated, user, setUser } =
-    useContext(AuthContext)
-  const router = useRouter()
+const Register = () => {
+  const { authenticated } = useContext(AuthContext)
+  const navigate = useNavigate()
   const [step, setStep] = useState<number>(1)
   const [loading, setLoading] = useState(true)
   const [userCredentials, setUserCredentials] =
     useState<UserCredentialsType | null>(null)
-  const searchParams = useSearchParams()
+  const [searchParams] = useSearchParams()
   const profileCompleted = searchParams.get('profileCompleted')
   console.log(typeof profileCompleted, profileCompleted)
 
@@ -28,7 +26,7 @@ const page = () => {
     const fetchUserInformation = async () => {
       try {
         if (authenticated) {
-          return router.replace('/')
+          return navigate('/')
         } else if (profileCompleted === 'false') {
           setStep(4)
         } else {
@@ -50,7 +48,7 @@ const page = () => {
 
   useEffect(() => {
     if (authenticated) {
-      router.replace('/')
+      navigate('/')
     }
   }, [authenticated])
 
@@ -68,4 +66,4 @@ const page = () => {
   else if (step === 7) return <ProfileCompletion setStep={setStep} />
 }
 
-export default page
+export default Register

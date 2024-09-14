@@ -1,8 +1,7 @@
-import Loading from '@/components/Loading'
-import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useContext, useMemo } from 'react'
 import 'swiper/css'
 import { SwiperSlide, Swiper, useSwiper } from 'swiper/react'
+import { MatchContext } from '../contexts/matchContext'
 
 function calculateAge(dobString: string) {
   // Step 1: Parse the date of birth string into a Date object
@@ -26,9 +25,8 @@ function calculateAge(dobString: string) {
   return age
 }
 
-const Main = ({ users }: { users: any }) => {
-  const swiper = useSwiper()
-
+const Main = () => {
+  const { matches } = useContext(MatchContext)
   return (
     <div className="flex flex-1 w-screen overflow-scroll p-8">
       <Swiper
@@ -40,11 +38,14 @@ const Main = ({ users }: { users: any }) => {
         }}
         onSwiper={(swiper) => console.log(swiper)}
       >
-        {users &&
-          users.map(
+        {matches &&
+          matches.map(
             (user: any, index: number) =>
               user?.profileCompleted && (
-                <SwiperSlide className="p-4 bg-white overflow-y-scroll">
+                <SwiperSlide
+                  key={index}
+                  className="p-4 bg-white overflow-y-scroll"
+                >
                   {/* <div className="h-max"> */}
                   <img
                     className="object-cover h-3/4 w-full rounded-xl"

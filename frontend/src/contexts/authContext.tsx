@@ -1,6 +1,5 @@
 'use client'
 import axios from 'axios'
-import { useRouter } from 'next/navigation'
 import {
   createContext,
   Dispatch,
@@ -8,16 +7,18 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Loading from '../components/Loading'
 
 type AuthType = {
   user: any
-  authenticated: boolean
+  authenticated: boolean | null
   setUser: Dispatch<SetStateAction<any>>
   setAuthenticated: Dispatch<SetStateAction<boolean>>
 }
 export const AuthContext = createContext<AuthType>({
   user: null,
-  authenticated: false,
+  authenticated: null,
   setUser: () => {},
   setAuthenticated: () => {},
 })
@@ -28,8 +29,8 @@ export default function AuthContextProvider({
   children: React.ReactNode
 }) {
   const [user, setUser] = useState(null)
-  const [authenticated, setAuthenticated] = useState(false)
-  const router = useRouter()
+  const [authenticated, setAuthenticated] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     async function checkAuth() {
@@ -40,7 +41,7 @@ export default function AuthContextProvider({
 
       const { success, profileCompleted, message } = response.data
       if (success && profileCompleted === false) {
-        return router.replace('/register?profileCompleted=false')
+        return navigate('/register?profileCompleted=false')
       }
       console.log(message)
       setAuthenticated(success)
@@ -50,6 +51,7 @@ export default function AuthContextProvider({
   useEffect(() => {
     console.log('authenticated', authenticated)
   }, [authenticated])
+
   return (
     <AuthContext.Provider
       value={{ user, authenticated, setUser, setAuthenticated }}
