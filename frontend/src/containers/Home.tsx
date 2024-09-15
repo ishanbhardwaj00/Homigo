@@ -28,14 +28,13 @@ export default () => {
           withCredentials: true,
         })
         setUsers(response.data.users)
-        console.log(response.data) // Check the response
+        // console.log(response.data)
       } catch (error) {
         console.error('Error fetching users:', error)
       }
     }
 
     fetchUsers()
-    // Call the async function inside useEffect
     setLoading(false)
   }, [])
 
