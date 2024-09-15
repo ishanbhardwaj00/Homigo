@@ -152,11 +152,7 @@ app.get('/', (req, res) => {
 
 mongoose
   .connect(
-    'mongodb+srv://arjunvirm:Bravearcher20@cluster0.0cg5y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+    'mongodb+srv://arjunvirm:Bravearcher20@cluster0.0cg5y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
   )
   .then(() => console.log('MongoDB connected!'))
   .catch((err) => console.error('MongoDB connection error:', err))

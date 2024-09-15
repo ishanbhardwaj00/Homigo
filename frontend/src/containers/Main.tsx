@@ -28,9 +28,9 @@ function calculateAge(dobString: string) {
 const Main = () => {
   const { matches } = useContext(MatchContext)
   return (
-    <div className="flex flex-1 w-screen overflow-scroll p-8">
+    <div className="flex flex-1 w-screen overflow-scroll bg-match bg-auto bg-center bg-no-repeat p-8">
       <Swiper
-        className="flex flex-1 rounded-2xl"
+        className="flex rounded-2xl"
         spaceBetween={100}
         slidesPerView={1}
         onSlideChange={() => {
