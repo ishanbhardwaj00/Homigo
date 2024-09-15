@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 const Chats = () => {
   const navigate = useNavigate()
   return (
-    <div className="flex flex-col flex-1 gap-2">
+    <div className="flex flex-col flex-1 gap-2 fade-in-scale-up">
       <div className="flex flex-col py-7 px-7 gap-5">
         <span className="capitalize text-lg text-gray-dark font-medium">
           queued (2)

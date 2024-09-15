@@ -36,7 +36,7 @@ const Main = () => {
     }
   }, [])
   return (
-    <div className="flex flex-1 w-screen overflow-scroll bg-match bg-auto bg-center bg-no-repeat p-8">
+    <div className="flex flex-1 w-screen overflow-scroll bg-match bg-auto bg-center bg-no-repeat p-8 fade-in ">
       <Swiper
         ref={swiperRef}
         className="flex rounded-2xl"
@@ -52,7 +52,7 @@ const Main = () => {
               user?.profileCompleted && (
                 <SwiperSlide
                   key={ind}
-                  className="p-4 bg-white overflow-y-scroll"
+                  className="p-4 bg-white overflow-y-scroll fade-in-scale-up"
                 >
                   {/* <div className="h-max"> */}
                   <img

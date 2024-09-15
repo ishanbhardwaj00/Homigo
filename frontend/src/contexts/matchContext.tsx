@@ -19,7 +19,7 @@ export default ({ children }: { children: ReactNode }) => {
           withCredentials: true,
         })
         setMatches(response.data.users)
-        console.log(response.data) // Check the response
+        // console.log(response.data)
       } catch (error) {
         console.error('Error fetching users:', error)
       }

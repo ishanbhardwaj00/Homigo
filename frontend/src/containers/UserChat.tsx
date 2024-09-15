@@ -28,7 +28,7 @@ const UserChat = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between">
+      <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
         <div className="flex gap-8">
           <button
             onClick={() => {
@@ -56,20 +56,26 @@ const UserChat = () => {
         {messages.map((message, index) => {
           if (index & 1) {
             return (
-              <span className="self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-home-light text-wrap">
+              <span
+                key={index}
+                className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-home-light text-wrap"
+              >
                 {message}
               </span>
             )
           } else {
             return (
-              <span className="self-end max-w-3/4 p-3  rounded-tl-xl items-center  rounded-tr-xl rounded-bl-xl bg-primary-light text-white text-wrap">
+              <span
+                key={index}
+                className="animateRecieverChat self-end max-w-3/4 p-3  rounded-tl-xl items-center  rounded-tr-xl rounded-bl-xl bg-primary-light text-white text-wrap"
+              >
                 {message}
               </span>
             )
           }
         })}
       </div>
-      <div className="flex items-center p-6">
+      <div className="flex items-center p-6 animateRegistration">
         <form
           className="flex items-center gap-3 w-full h-10 rounded-full"
           onSubmit={handleSubmit((input) => {
