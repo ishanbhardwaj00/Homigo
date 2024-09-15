@@ -13,6 +13,12 @@ const config: Config = {
       height: {
         20: '75px',
       },
+      maxWidth: {
+        '1/2': '50%',
+        '3/4': '75%',
+        '4/5': '80%',
+        '2/3': '66%',
+      },
       keyframes: {
         slideRight: {
           '0%': { transform: 'translateX(-100%)' },

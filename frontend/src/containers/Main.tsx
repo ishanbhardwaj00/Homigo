@@ -1,8 +1,8 @@
-import { useContext, useMemo } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import 'swiper/css'
-import { SwiperSlide, Swiper, useSwiper } from 'swiper/react'
+import { SwiperSlide, Swiper, useSwiper, SwiperRef } from 'swiper/react'
 import { MatchContext } from '../contexts/matchContext'
-
+import { useNavigate } from 'react-router-dom'
 function calculateAge(dobString: string) {
   // Step 1: Parse the date of birth string into a Date object
   const dob = new Date(dobString)
@@ -26,24 +26,32 @@ function calculateAge(dobString: string) {
 }
 
 const Main = () => {
+  const navigate = useNavigate()
   const { matches } = useContext(MatchContext)
+  const swiperRef = useRef<SwiperRef>(null)
+  const savedIndex = Number(localStorage.getItem('swiperIndex') || 0)
+  useEffect(() => {
+    if (swiperRef.current?.swiper) {
+      swiperRef.current.swiper.slideTo(savedIndex, 0) // Restore saved slide
+    }
+  }, [])
   return (
     <div className="flex flex-1 w-screen overflow-scroll bg-match bg-auto bg-center bg-no-repeat p-8">
       <Swiper
+        ref={swiperRef}
         className="flex rounded-2xl"
         spaceBetween={100}
         slidesPerView={1}
-        onSlideChange={() => {
-          console.log('slide changed')
+        onSlideChange={(swiper) => {
+          localStorage.setItem('swiperIndex', String(swiper.activeIndex))
         }}
-        onSwiper={(swiper) => console.log(swiper)}
       >
         {matches &&
           matches.map(
-            (user: any, index: number) =>
+            (user: any, ind: number) =>
               user?.profileCompleted && (
                 <SwiperSlide
-                  key={index}
+                  key={ind}
                   className="p-4 bg-white overflow-y-scroll"
                 >
                   {/* <div className="h-max"> */}
@@ -118,7 +126,13 @@ const Main = () => {
                     </div>
                   </div>
                   <div className="flex w-full justify-center">
-                    <button className="w-11/12 rounded-full bg-button-primary py-3 text-2xl font-bold text-primary mt-6">
+                    <button
+                      onClick={() => {
+                        navigate(`/chats/${user?._id}`)
+                        localStorage.setItem('swiperIndex', String(ind))
+                      }}
+                      className="w-11/12 rounded-full bg-button-primary py-3 text-2xl font-bold text-primary mt-6"
+                    >
                       Message
                     </button>
                   </div>

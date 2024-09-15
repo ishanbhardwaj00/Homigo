@@ -33,7 +33,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/chats/:id',
+    path: '/chats/:userId',
     element: (
       <AuthContextProvider>
         <UserChat />
