@@ -128,7 +128,12 @@ const Main = () => {
                   <div className="flex w-full justify-center">
                     <button
                       onClick={() => {
-                        navigate(`/chats/${user?._id}`)
+                        navigate(`/chats/${user?._id}`, {
+                          state: {
+                            name: user?.userDetails?.fullName?.split(' ')[0],
+                            img: user?.metaDat?.image,
+                          },
+                        })
                         localStorage.setItem('swiperIndex', String(ind))
                       }}
                       className="w-11/12 rounded-full bg-button-primary py-3 text-2xl font-bold text-primary mt-6"

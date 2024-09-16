@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 const imageNames = ['profile.svg', 'match.svg', 'chat.svg']
 
@@ -11,6 +11,10 @@ const Navigation = ({
   selected: number
 }) => {
   const navigate = useNavigate()
+  const location = useLocation()
+  console.log(location)
+
+  if (location.pathname.includes('/chats/')) return <div className="h-0"></div>
   return (
     <div className="h-20 bg-nav-light rounded-3xl flex justify-around items-center ">
       {imageNames.map((img, index) => (
