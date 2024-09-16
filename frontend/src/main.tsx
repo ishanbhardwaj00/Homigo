@@ -7,11 +7,13 @@ import Parent from './Parent.tsx'
 import Login from './containers/Login.tsx'
 import Register from './containers/Register.tsx'
 import AuthContextProvider from './contexts/authContext.tsx'
+import ChatContextProvider from './contexts/chatContext.tsx'
 import { UserContextProvider } from './contexts/userContext.tsx'
 import MatchContextProvider from './contexts/matchContext.tsx'
 import Main from './containers/Main.tsx'
 import Chats from './containers/Chat.tsx'
 import UserChat from './containers/UserChat.tsx'
+import ChatContainer from './containers/ChatContainer.tsx'
 
 const router = createBrowserRouter([
   {
@@ -37,7 +39,9 @@ const router = createBrowserRouter([
     element: (
       <AuthContextProvider>
         <MatchContextProvider>
-          <Parent />
+          <ChatContextProvider>
+            <Parent />
+          </ChatContextProvider>
         </MatchContextProvider>
       </AuthContextProvider>
     ),
@@ -48,26 +52,34 @@ const router = createBrowserRouter([
       },
       {
         path: 'chats',
-        element: <Chats />,
+        element: <ChatContainer />,
+        children: [
+          {
+            path: '',
+            element: <Chats />,
+          },
+          {
+            path: ':userId',
+            element: (
+              <AuthContextProvider>
+                <UserChat />
+              </AuthContextProvider>
+            ),
+          },
+        ],
       },
       {
         path: 'profile',
         element: <div className="flex flex-1">profile</div>,
       },
-      {
-        path: 'chats/:userId',
-        element: (
-          <AuthContextProvider>
-            <UserChat />
-          </AuthContextProvider>
-        ),
-      },
+      // {
+      //   path: 'chats/:userId',
+      //   element: :
+      // },
     ],
   },
 ])
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+  <RouterProvider router={router} />
 )
