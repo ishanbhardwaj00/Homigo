@@ -33,28 +33,18 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/chats/:userId',
-    element: (
-      <AuthContextProvider>
-        <UserChat />
-      </AuthContextProvider>
-    ),
-  },
-  {
     path: '/',
     element: (
       <AuthContextProvider>
-        <Parent />
+        <MatchContextProvider>
+          <Parent />
+        </MatchContextProvider>
       </AuthContextProvider>
     ),
     children: [
       {
         path: '',
-        element: (
-          <MatchContextProvider>
-            <Main />
-          </MatchContextProvider>
-        ),
+        element: <Main />,
       },
       {
         path: 'chats',
@@ -63,6 +53,14 @@ const router = createBrowserRouter([
       {
         path: 'profile',
         element: <div className="flex flex-1">profile</div>,
+      },
+      {
+        path: 'chats/:userId',
+        element: (
+          <AuthContextProvider>
+            <UserChat />
+          </AuthContextProvider>
+        ),
       },
     ],
   },

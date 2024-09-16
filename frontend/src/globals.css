@@ -358,20 +358,20 @@ template {
 }
 
 .animateRegistration {
-  animation: slideAndAppear 500ms ease;
+  animation: slideAndAppear 300ms ease;
 }
 
 .animateChatHeader {
-  animation: topToBottomAppear 500ms ease;
+  animation: topToBottomAppear 300ms ease;
 }
 .animateChat {
-  animation: bottomToTopAppear 500ms ease;
+  animation: bottomToTopAppear 300ms ease;
 }
 .animateSenderChat {
-  animation: slideAndAppearToRight 500ms ease;
+  animation: slideAndAppearToRight 300ms ease;
 }
 .animateRecieverChat {
-  animation: slideAndAppear 500ms ease;
+  animation: slideAndAppear 300ms ease;
 }
 
 .fade-in {

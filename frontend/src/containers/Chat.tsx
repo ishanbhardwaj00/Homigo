@@ -1,7 +1,22 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate } from 'react-router-dom'
 
 const Chats = () => {
   const navigate = useNavigate()
+
+  return (
+    // <Outlet />
+    <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up">
+      <img className="w-2/3" src="/images/no_chats.svg" alt="" />
+      <button
+        onClick={() => {
+          navigate('/')
+        }}
+        className="w-3/4 rounded-full bg-button-primary py-4 text-2xl font-bold text-primary"
+      >
+        Find My Roommate
+      </button>
+    </div>
+  )
   return (
     <div className="flex flex-col flex-1 gap-2 fade-in-scale-up">
       <div className="flex flex-col py-7 px-7 gap-5">

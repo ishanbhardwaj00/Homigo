@@ -9,6 +9,9 @@ import cors from 'cors'
 import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 import OTP from './models/otp.model.js'
+import { createSocketServer } from './socket.js'
+
+import http from 'http'
 
 //Middleware
 import {
@@ -25,126 +28,80 @@ app.use(express.json({ limit: '50mb' }))
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 app.use(cookieParser())
 
-// const cli_id = '3f94a27f-fc95-45d8-bc20-d4da5f5d7331'
-// const cli_sec = 'ag9TngY8kxdxfMZwq3sFrOPoFHVyma2b'
-// const prod_id = '20c6cfbb-2cc3-4e26-b2b7-4638a3b7ddac'
-// // const captha = '2GAD0'
-// const adhr_num = 123456
-// const otp = 123456
-// const shareCode = 1234
-
 const verifyJwt = async (req, res, next) => {
-  const { accessToken } = req.cookies
-  if (!accessToken) {
-    console.log('Access token not found')
-    return res.send('<h1>You are not authorized to see this</h1>')
-  }
-  let decodedToken
-  decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+  try {
+    const { accessToken } = req.cookies
+    if (!accessToken) {
+      console.log('Access token not found')
+      return res.send('<h1>You are not authorized to see this</h1>')
+    }
+    let decodedToken
+    decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
 
-  if (!decodedToken) {
-    console.log('Fake token')
-    return res.send('<h1>You are not authorized to see this</h1>')
-  }
+    if (!decodedToken) {
+      console.log('Fake token')
+      return res.send('<h1>You are not authorized to see this</h1>')
+    }
 
-  req.decodedToken = decodedToken
-  next()
+    req.decodedToken = decodedToken
+    next()
+  } catch (error) {
+    console.log('verifyJwt...........')
+    res.redirect('/api/users/logout')
+  }
 }
 
 app.get('/api/users/checkAuth', async (req, res) => {
   const accessToken = req.cookies.accessToken
 
-  if (accessToken) {
-    const decodedToken = jwt.verify(
-      accessToken,
-      process.env.ACCESS_TOKEN_SECRET
-    )
+  try {
+    if (accessToken) {
+      const decodedToken = jwt.verify(
+        accessToken,
+        process.env.ACCESS_TOKEN_SECRET
+      )
 
-    if (decodedToken) {
-      console.log(decodedToken)
-      const user = await User.findById(decodedToken._id)
-      if (!user) {
-        return res.json({
-          success: false,
-          profileCompleted: null,
-          message: 'Account not found',
-        })
-      } else if (user && !user.profileCompleted) {
-        console.log('Incomplete profile')
+      if (decodedToken) {
+        console.log(decodedToken)
+        const user = await User.findById(decodedToken._id)
+        if (!user) {
+          return res.json({
+            success: false,
+            profileCompleted: null,
+            message: 'Account not found',
+          })
+        } else if (user && !user.profileCompleted) {
+          console.log('Incomplete profile')
+
+          return res.json({
+            success: true,
+            profileCompleted: false,
+            message: 'Incomplete profile',
+          })
+        }
 
         return res.json({
           success: true,
-          profileCompleted: false,
-          message: 'Incomplete profile',
+          profileCompleted: true,
+          message: 'Authenticated',
         })
       }
-
-      return res.json({
-        success: true,
-        profileCompleted: true,
-        message: 'Authenticated',
-      })
     }
+    return res.json({
+      success: false,
+      profileCompleted: null,
+      message: 'Not authenticated',
+    })
+  } catch (error) {
+    console.log('checkAuth.... error')
+
+    return res.json({
+      success: false,
+      profileCompleted: null,
+      message: 'Not authenticated',
+    })
   }
-  return res.json({
-    success: false,
-    profileCompleted: null,
-    message: 'Not authenticated',
-  })
 })
-// app.get('/test-axios', async (req, res) => {
-//   try {
-//     // First request to get the `id`
-//     const options1 = {
-//       method: 'post',
-//       url: 'https://dg-sandbox.setu.co/api/okyc',
-//       headers: {
-//         'x-client-id': cli_id,
-//         'x-client-secret': cli_sec,
-//         'x-product-instance-id': prod_id,
-//       },
-//       data: { redirectURL: 'https://setu.co' },
-//     }
-
-//     const response1 = await axios.request(options1)
-
-//     // Extract the `id` from the first response
-//     const st_id1 = response1.data.id
-//     console.log('ID from first request:', id)
-
-//     // Now make the second request using the extracted `id`
-//     const options2 = {
-//       method: 'get',
-//       url: `https://dg-sandbox.setu.co/api/okyc/${st_id1}/initiate`,
-//       headers: {
-//         'x-client-id': cli_id,
-//         'x-client-secret': cli_sec,
-//         'x-product-instance-id': prod_id,
-//         'Content-Type': 'application/json',
-//       },
-//     }
-
-//     const response2 = await axios.request(options2)
-
-//     // Log the second response
-//     console.log('Response from second request:', response2.data)
-
-//     const reqId = response2.data.id
-
-//     const captha_img = response2.data.captchaImage
-
-//     // Send the combined result to the client
-//     res.json({
-//       firstRequest: response1.data,
-//       requestId: reqId,
-
-//       captha_image: captha_img,
-//     })
-//   } catch (error) {
-//     console.error(error)
-//     res.status(500).send('Error occurred while making the requests')
-//   }
-// })
 
 app.get('/', (req, res) => {
   res.send('Work in progress')
@@ -176,6 +133,7 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
       hobbies: {
         nature,
         dietaryPreferences,
+        drinkingPreference,
         workStyle,
         workHours,
         smokingPreference,
@@ -203,6 +161,7 @@ app.patch('/api/users/signup', verifyJwt, async (req, res) => {
     user.hobbies = {
       nature,
       dietaryPreferences,
+      drinkingPreference,
       workStyle,
       workHours,
       smokingPreference,
@@ -433,7 +392,7 @@ app.post('/api/users/generateOtp', async (req, res) => {
 })
 
 app.post('/api/users/verifyOTP', async (req, res) => {
-  console.log('VERTIGY', req.body)
+  console.log('VERIFY', req.body)
 
   const { email, otp } = req.body
   if (!email || !otp)
@@ -459,12 +418,9 @@ app.post('/api/users/verifyOTP', async (req, res) => {
       res
         .status(200)
         .json({ success: true, message: 'OTP verified successfully!' })
-      // } else {
-      //     res.status(400).send({ message: "Invalid email or password" });
-      // }
     } else {
       // OTP is incorrect or expired
-      console.log('not otp verifed')
+      console.log('otp not verifed')
 
       res
         .status(400)
@@ -478,9 +434,6 @@ app.post('/api/users/verifyOTP', async (req, res) => {
     })
   }
 })
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-})
 
 app.get('/users', verifyJwt, async (req, res) => {
   const users = await User.find({})
@@ -489,4 +442,11 @@ app.get('/users', verifyJwt, async (req, res) => {
     success: true,
     users,
   })
+})
+
+const server = http.createServer(app)
+createSocketServer(server)
+
+server.listen(process.env.PORT, () => {
+  console.log(`Listening on PORT ${process.env.PORT}`)
 })
