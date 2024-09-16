@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { FaChevronLeft } from 'react-icons/fa'
 import { RxDotsVertical } from 'react-icons/rx'
 import { IoMdSend } from 'react-icons/io'
@@ -12,6 +12,7 @@ import {
 } from 'react-router-dom'
 
 import { useForm } from 'react-hook-form'
+import chatContext, { ChatContext } from '../contexts/chatContext'
 
 type MessageType = { type: string; message: string }
 const UserChat = () => {
@@ -30,12 +31,16 @@ const UserChat = () => {
     formState: { errors },
   } = useForm({ mode: 'onChange' })
   console.log(userId)
-  const navigate = useNavigate()
 
+  const { chats, setChats } = useContext(ChatContext)
+  const navigate = useNavigate()
   const location = useLocation()
   const { img, name } = location.state
-  const [messages, setMessages] = useState<MessageType[]>([])
 
+  const [messages, setMessages] = useState<MessageType[]>([])
+  useEffect(() => {
+    setChats((prevChats) => [...prevChats, { img, name, messages: [] }])
+  }, [])
   useEffect(() => {
     console.log(lastMessage)
     if (lastMessage)
