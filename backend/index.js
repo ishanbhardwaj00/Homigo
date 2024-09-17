@@ -21,7 +21,7 @@ import {
   isOtpValid,
 } from './utils/otp_gen.js'
 
-dotenv.config() // Load environment variables if any (optional)
+dotenv.config() // Load environment variables
 
 const app = express()
 app.use(express.json({ limit: '50mb' }))
