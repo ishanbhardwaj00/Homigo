@@ -9,6 +9,8 @@ const UserToSocketMap = new Map()
 export function createSocketServer(server) {
   const wss = new WebSocketServer({ server: server })
 
+  console.log("Server connection")
+
   wss.on('connection', (ws, request) => {
     const cookies = cookie.parse(request.headers.cookie || '')
 
