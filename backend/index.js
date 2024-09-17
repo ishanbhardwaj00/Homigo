@@ -31,22 +31,39 @@ app.use(cookieParser())
 const verifyJwt = async (req, res, next) => {
   try {
     const { accessToken } = req.cookies
+
+    // Check if the access token is present in the cookies
     if (!accessToken) {
       console.log('Access token not found')
       return res.send('<h1>You are not authorized to see this</h1>')
     }
-    let decodedToken
-    decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
 
+    // Verify the token
+    const decodedToken = await new Promise((resolve, reject) => {
+      jwt.verify(
+        accessToken,
+        process.env.ACCESS_TOKEN_SECRET,
+        (err, decoded) => {
+          if (err) {
+            reject(err) // Reject the promise if there's an error
+          } else {
+            resolve(decoded) // Resolve the promise with the decoded token
+          }
+        }
+      )
+    })
+
+    // If token is invalid or decoding failed
     if (!decodedToken) {
-      console.log('Fake token')
+      console.log('Token verification failed')
       return res.send('<h1>You are not authorized to see this</h1>')
     }
 
+    // Attach decoded token to the request object
     req.decodedToken = decodedToken
     next()
   } catch (error) {
-    console.log('verifyJwt...........')
+    console.log('verifyJwt error:', error)
     res.redirect('/api/users/logout')
   }
 }

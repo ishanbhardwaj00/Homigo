@@ -46,8 +46,8 @@ const Main = () => {
           localStorage.setItem('swiperIndex', String(swiper.activeIndex))
         }}
       >
-        {matches &&
-          matches.map(
+        {Object.values(matches).length > 0 &&
+          Object.values(matches).map(
             (user: any, ind: number) =>
               user?.profileCompleted && (
                 <SwiperSlide

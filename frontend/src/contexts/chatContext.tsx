@@ -1,10 +1,8 @@
 import axios from 'axios'
 import { createContext, useEffect, useState } from 'react'
+import useWebSocket from 'react-use-websocket'
 
-export const ChatContext = createContext({
-  chats: new Map(),
-  setChats: (arr) => {},
-})
+export const ChatContext = createContext(null)
 
 export default ({ children }) => {
   useEffect(() => {
@@ -15,17 +13,20 @@ export default ({ children }) => {
         })
 
         const { success, chats } = response.data
+        console.log(response)
+
+        console.log('chats', chats)
 
         if (success) {
-          setChats((prevChats) => {
-            const map = {}
+          const map = {}
 
-            for (let chat of chats) {
-              map[chat?.recipients[0]?._id] = chat
-            }
+          for (let chat of chats) {
+            map[chat?.recipients[0]?._id] = chat
 
-            return map
-          })
+            console.log(map)
+          }
+
+          setChats(map)
         } else {
           console.log('no chats found')
         }
@@ -37,7 +38,13 @@ export default ({ children }) => {
     getUserChats()
   }, [])
   const [chats, setChats] = useState({})
-  useEffect(() => {}, [chats])
+  // const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
+  //   'http://localhost:5000'
+  // )
+
+  // useEffect(() => {
+  //   console.log(lastMessage)
+  // }, [lastMessage])
   return (
     <ChatContext.Provider value={{ chats, setChats }}>
       {children}

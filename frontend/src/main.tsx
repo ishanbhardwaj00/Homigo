@@ -39,7 +39,9 @@ const router = createBrowserRouter([
     element: (
       <AuthContextProvider>
         <MatchContextProvider>
-          <Parent />
+          <ChatContextProvider>
+            <Parent />
+          </ChatContextProvider>
         </MatchContextProvider>
       </AuthContextProvider>
     ),
@@ -50,11 +52,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'chats',
-        element: (
-          <ChatContextProvider>
-            <ChatContainer />
-          </ChatContextProvider>
-        ),
+        element: <ChatContainer />,
         children: [
           {
             path: '',
@@ -62,11 +60,7 @@ const router = createBrowserRouter([
           },
           {
             path: ':userId',
-            element: (
-              <AuthContextProvider>
-                <UserChat />
-              </AuthContextProvider>
-            ),
+            element: <UserChat />,
           },
         ],
       },

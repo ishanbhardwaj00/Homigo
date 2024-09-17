@@ -9,7 +9,7 @@ export const MatchContext = createContext({
 })
 
 export default ({ children }: { children: ReactNode }) => {
-  const [matches, setMatches] = useState([])
+  const [matches, setMatches] = useState({})
   const [loading, setLoading] = useState(true)
   const [index, setIndex] = useState(0)
   useEffect(() => {
@@ -18,6 +18,17 @@ export default ({ children }: { children: ReactNode }) => {
         const response = await axios.get('http://localhost:5000/users', {
           withCredentials: true,
         })
+
+        console.log(response.data)
+        const { success, users } = response.data
+        const usersMap = {}
+        if (success) {
+          users.forEach((user) => {
+            usersMap[user._id] = user
+          })
+
+          console.log(usersMap)
+        }
         setMatches(response.data.users)
         // console.log(response.data)
       } catch (error) {
