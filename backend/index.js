@@ -10,7 +10,7 @@ import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 import OTP from './models/otp.model.js'
 import { createSocketServer } from './socket.js'
-
+import Chat from './models/chat.model.js'
 import http from 'http'
 
 //Middleware
@@ -444,6 +444,25 @@ app.get('/users', verifyJwt, async (req, res) => {
   })
 })
 
+app.get('/chats', verifyJwt, async (req, res) => {
+  console.log(req.decodedToken)
+  const userChats = await Chat.find({
+    recipients: { $all: [req.decodedToken._id] },
+  })
+    .populate('messages')
+    .populate({ path: 'recipients', select: { metaDat: 1, userDetails: 1 } })
+
+  const formattedChats = userChats.map((chat) => {
+    return {
+      ...chat._doc, // Spread the rest of the chat document
+      recipients: chat.recipients.filter(
+        (recipientId) => !recipientId.equals(req.decodedToken._id)
+      ), // Exclude current user's ID
+    }
+  })
+
+  res.json({ success: true, chats: formattedChats })
+})
 const server = http.createServer(app)
 createSocketServer(server)
 
