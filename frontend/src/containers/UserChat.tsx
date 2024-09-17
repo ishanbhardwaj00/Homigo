@@ -13,14 +13,10 @@ import {
 
 import { useForm } from 'react-hook-form'
 import chatContext, { ChatContext } from '../contexts/chatContext'
+import Loading from '../components/Loading'
 
 type MessageType = { type: string; message: string }
 const UserChat = () => {
-  const { readyState, sendJsonMessage, lastMessage } = useWebSocket(
-    'http://localhost:5000'
-  )
-  useEffect(() => {}, [readyState])
-  const { userId } = useParams()
   const {
     register,
     handleSubmit,
@@ -32,28 +28,38 @@ const UserChat = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { img, name } = location.state
-  const { chats } = useContext(ChatContext)
+  const { chats, setChats, sendJsonMessage, lastMessage } =
+    useContext(ChatContext)
 
-  const [messages, setMessages] = useState(null)
-  console.log(messages)
+  const { userId } = useParams()
 
   useEffect(() => {
     console.log(chats)
-    setMessages(chats[userId]?.messages)
   }, [])
 
   useEffect(() => {
-    console.log(messages)
-  }, [messages])
+    if (chats) {
+      console.log(chats)
+    }
+  }, [chats])
 
-  // useEffect(() => {
-  //   if (lastMessage)
-  //     setMessages((messages) => [
-  //       ...messages,
-  //       { receiver: 1, content: lastMessage.data },
-  //     ])
-  // }, [lastMessage])
+  useEffect(() => {
+    if (lastMessage) {
+      setChats((prevChats: any) => {
+        prevChats[userId].messages = [
+          ...prevChats[userId]?.messages,
+          { sender: userId, content: lastMessage.data },
+        ]
+        return prevChats
+      })
+      // setMessages((messages) => [
+      //   ...messages,
+      //   { sender: userId, content: lastMessage.data },
+      // ])
+    }
+  }, [lastMessage])
 
+  if (chats === null) return <Loading />
   return (
     <div className="flex flex-col h-screen">
       <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
@@ -81,12 +87,13 @@ const UserChat = () => {
         </button>
       </div>
       <div className="flex flex-1 flex-col p-6 gap-4">
-        {messages && messages?.length === 0 ? (
+        {chats?.[userId]?.messages &&
+        chats?.[userId]?.messages?.length === 0 ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
         ) : (
-          messages?.map((message, index) => {
+          chats?.[userId]?.messages?.map((message, index) => {
             if (message.sender === userId) {
               return (
                 <span
@@ -117,10 +124,21 @@ const UserChat = () => {
             console.log(userId)
 
             const message = { receiver: userId, content: input.message }
-            setMessages((messages) => [
-              ...messages,
-              { receiver: 1, content: input.message },
-            ])
+            setChats((prevChats) => {
+              if (prevChats[userId]) {
+                prevChats[userId].messages = [
+                  ...prevChats[userId]?.messages,
+                  { sender: null, content: input.message },
+                ]
+              } else {
+                console.log('first timne')
+
+                prevChats[userId].messages = [
+                  { sender: null, content: input.message },
+                ]
+              }
+              return prevChats
+            })
 
             sendJsonMessage({
               jsonMessage: JSON.stringify(message),

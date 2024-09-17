@@ -1,16 +1,19 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { ChatContext } from '../contexts/chatContext'
 import useWebSocket from 'react-use-websocket'
+import Loading from '../components/Loading'
 
 const Chats = () => {
   const navigate = useNavigate()
-  const { chats, setChats } = useContext(ChatContext)
-  console.log(Object.values(chats))
-  const { readyState, sendJsonMessage, lastMessage } = useWebSocket(
-    'http://localhost:5000'
-  )
-  if (chats.size === 0)
+  const { chats, setChats, sendJsonMessage, readyState, lastMessage } =
+    useContext(ChatContext)
+  useEffect(() => {
+    console.log(lastMessage)
+  }, [lastMessage])
+  console.log('Chat.tsx, ', chats)
+  if (chats === null) return <Loading />
+  if (Object.values(chats).length === 0)
     return (
       // <Outlet />
       <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up">
@@ -26,7 +29,7 @@ const Chats = () => {
       </div>
     )
   return (
-    <div className="flex flex-col flex-1 gap-2 fade-in-scale-up">
+    <div className="flex flex-col flex-1 gap-2 fade-in-scale-up overflow-scroll">
       <div className="flex flex-col py-7 px-7 gap-5">
         <span className="capitalize text-lg text-gray-dark font-medium">
           queued (2)
@@ -57,11 +60,10 @@ const Chats = () => {
               <div
                 key={index}
                 onClick={() => {
-                  navigate(`/chats/${chat.recipients[0]._id}`, {
+                  navigate(`/chats/${chat?.recipients[0]._id}`, {
                     state: {
-                      img: chat.recipients[0].metaDat.image,
-                      name: chat.recipients[0].userDetails.fullName,
-                      chat: chat.messages,
+                      img: chat?.recipients[0].metaDat.image,
+                      name: chat?.recipients[0].userDetails.fullName,
                     },
                   })
                 }}
@@ -69,15 +71,18 @@ const Chats = () => {
               >
                 <span className="rounded-full h-20 w-20">
                   <img
-                    src={chat?.recipients[0]?.metaDat?.image}
-                    className="h-full w-full bg-cover rounded-full"
+                    src={chat?.recipients[0]?.metaDat.image}
+                    className="h-full w-full object-cover rounded-full"
                   />
                 </span>
-                <div className="flex flex-col justify-center">
+                <div className="flex flex-col justify-center w-full">
                   <span className="capitalize text-xl font-medium">
-                    {chat?.recipients[0]?.userDetails?.fullName}
+                    {chat?.recipients[0].userDetails.fullName}
                   </span>
-                  <span className="text-gray-dark text-lg text-light"></span>
+                  <span className="text-gray-dark text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
+                    {chat?.messages?.at(chat?.messages?.length - 1)?.content ??
+                      null}
+                  </span>
                 </div>
               </div>
             )

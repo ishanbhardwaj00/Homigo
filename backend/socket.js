@@ -39,13 +39,17 @@ export function createSocketServer(server) {
         console.log(parsedData)
 
         const receiverSocket = UserToSocketMap.get(parsedData.receiver)
+        console.log('receiverf sickert ', receiverSocket)
+
         console.log(`sending ${parsedData.content} to ${receiverSocket}`)
 
-        if (receiverSocket) {
-          receiverSocket.send(parsedData.content, { binary: false })
-        }
-
         const sender = SocketToUserMap.get(ws)
+        if (receiverSocket) {
+          receiverSocket.send(
+            { ...parsedData.content, sender },
+            { binary: false }
+          )
+        }
         const senderObjectId = new mongoose.Types.ObjectId(sender)
         const receiverObjectId = new mongoose.Types.ObjectId(
           parsedData.receiver
