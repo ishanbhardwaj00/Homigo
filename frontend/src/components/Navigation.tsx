@@ -12,7 +12,6 @@ const Navigation = ({
 }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  console.log(location)
 
   if (location.pathname.includes('/chats/')) return <div className="h-0"></div>
   return (

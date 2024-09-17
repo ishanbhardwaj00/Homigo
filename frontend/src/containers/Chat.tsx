@@ -1,12 +1,16 @@
 import { useContext } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { ChatContext } from '../contexts/chatContext'
+import useWebSocket from 'react-use-websocket'
 
 const Chats = () => {
   const navigate = useNavigate()
   const { chats, setChats } = useContext(ChatContext)
-
-  if (chats.length === 0)
+  console.log(Object.values(chats))
+  const { readyState, sendJsonMessage, lastMessage } = useWebSocket(
+    'http://localhost:5000'
+  )
+  if (chats.size === 0)
     return (
       // <Outlet />
       <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up">
@@ -48,24 +52,30 @@ const Chats = () => {
         </span>
         {/* cards */}
         <div className="flex flex-col gap-2 p-1">
-          {chats.map((chat, index) => {
+          {Object.values(chats).map((chat, index) => {
             return (
               <div
                 key={index}
                 onClick={() => {
-                  navigate('/chats/1')
+                  navigate(`/chats/${chat.recipients[0]._id}`, {
+                    state: {
+                      img: chat.recipients[0].metaDat.image,
+                      name: chat.recipients[0].userDetails.fullName,
+                      chat: chat.messages,
+                    },
+                  })
                 }}
                 className="flex  w-full p-1 px-7 gap-3 active:bg-slate-200 rounded-2xl"
               >
                 <span className="rounded-full h-20 w-20">
                   <img
-                    src={chat.img}
+                    src={chat?.recipients[0]?.metaDat?.image}
                     className="h-full w-full bg-cover rounded-full"
                   />
                 </span>
                 <div className="flex flex-col justify-center">
                   <span className="capitalize text-xl font-medium">
-                    {chat.name}
+                    {chat?.recipients[0]?.userDetails?.fullName}
                   </span>
                   <span className="text-gray-dark text-lg text-light"></span>
                 </div>

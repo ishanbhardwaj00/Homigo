@@ -39,9 +39,7 @@ const router = createBrowserRouter([
     element: (
       <AuthContextProvider>
         <MatchContextProvider>
-          <ChatContextProvider>
-            <Parent />
-          </ChatContextProvider>
+          <Parent />
         </MatchContextProvider>
       </AuthContextProvider>
     ),
@@ -52,7 +50,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'chats',
-        element: <ChatContainer />,
+        element: (
+          <ChatContextProvider>
+            <ChatContainer />
+          </ChatContextProvider>
+        ),
         children: [
           {
             path: '',

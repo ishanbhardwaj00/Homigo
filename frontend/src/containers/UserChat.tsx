@@ -19,9 +19,7 @@ const UserChat = () => {
   const { readyState, sendJsonMessage, lastMessage } = useWebSocket(
     'http://localhost:5000'
   )
-  useEffect(() => {
-    console.log(readyState, 'ready')
-  }, [readyState])
+  useEffect(() => {}, [readyState])
   const { userId } = useParams()
   const {
     register,
@@ -30,25 +28,32 @@ const UserChat = () => {
     getValues,
     formState: { errors },
   } = useForm({ mode: 'onChange' })
-  console.log(userId)
 
-  const { chats, setChats } = useContext(ChatContext)
   const navigate = useNavigate()
   const location = useLocation()
   const { img, name } = location.state
+  const { chats } = useContext(ChatContext)
 
-  const [messages, setMessages] = useState<MessageType[]>([])
+  const [messages, setMessages] = useState(null)
+  console.log(messages)
+
   useEffect(() => {
-    setChats((prevChats) => [...prevChats, { img, name, messages: [] }])
+    console.log(chats)
+    setMessages(chats[userId]?.messages)
   }, [])
+
   useEffect(() => {
-    console.log(lastMessage)
-    if (lastMessage)
-      setMessages((messages) => [
-        ...messages,
-        { type: 'receiver', message: lastMessage.data },
-      ])
-  }, [lastMessage])
+    console.log(messages)
+  }, [messages])
+
+  // useEffect(() => {
+  //   if (lastMessage)
+  //     setMessages((messages) => [
+  //       ...messages,
+  //       { receiver: 1, content: lastMessage.data },
+  //     ])
+  // }, [lastMessage])
+
   return (
     <div className="flex flex-col h-screen">
       <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
@@ -76,19 +81,19 @@ const UserChat = () => {
         </button>
       </div>
       <div className="flex flex-1 flex-col p-6 gap-4">
-        {messages.length === 0 ? (
+        {messages && messages?.length === 0 ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
         ) : (
-          messages.map((message, index) => {
-            if (message.type === 'receiver') {
+          messages?.map((message, index) => {
+            if (message.sender === userId) {
               return (
                 <span
                   key={index}
-                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-home-light text-wrap"
+                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-slate-300 text-wrap"
                 >
-                  {message.message}
+                  {message.content}
                 </span>
               )
             } else {
@@ -97,7 +102,7 @@ const UserChat = () => {
                   key={index}
                   className="animateRecieverChat self-end max-w-3/4 p-3  rounded-tl-xl items-center  rounded-tr-xl rounded-bl-xl bg-primary-light text-white text-wrap"
                 >
-                  {message.message}
+                  {message.content}
                 </span>
               )
             }
@@ -111,11 +116,12 @@ const UserChat = () => {
             console.log(input)
             console.log(userId)
 
-            const message = { receiver: userId, message: input.message }
+            const message = { receiver: userId, content: input.message }
             setMessages((messages) => [
               ...messages,
-              { type: 'sender', message: input.message },
+              { receiver: 1, content: input.message },
             ])
+
             sendJsonMessage({
               jsonMessage: JSON.stringify(message),
               keep: true,
