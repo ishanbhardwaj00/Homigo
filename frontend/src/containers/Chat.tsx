@@ -3,16 +3,21 @@ import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { ChatContext } from '../contexts/chatContext'
 import useWebSocket from 'react-use-websocket'
 import Loading from '../components/Loading'
+import { MatchContext } from '../contexts/matchContext'
 
 const Chats = () => {
   const navigate = useNavigate()
-  const { chats, setChats, sendJsonMessage, readyState, lastMessage } =
-    useContext(ChatContext)
+  const { chats } = useContext(ChatContext)
+
+  const { matches } = useContext(MatchContext)
+
   useEffect(() => {
-    console.log(lastMessage)
-  }, [lastMessage])
+    console.log('chats updated')
+  }, [chats])
+  useEffect(() => {
+    console.log('matches updated', matches)
+  }, [matches])
   console.log('Chat.tsx, ', chats)
-  if (chats === null) return <Loading />
   if (Object.values(chats).length === 0)
     return (
       // <Outlet />
@@ -55,15 +60,15 @@ const Chats = () => {
         </span>
         {/* cards */}
         <div className="flex flex-col gap-2 p-1">
-          {Object.values(chats).map((chat, index) => {
+          {Object.entries(chats).map(([senderId, chat], index) => {
             return (
               <div
                 key={index}
                 onClick={() => {
-                  navigate(`/chats/${chat?.recipients[0]._id}`, {
+                  navigate(`/chats/${senderId}`, {
                     state: {
-                      img: chat?.recipients[0].metaDat.image,
-                      name: chat?.recipients[0].userDetails.fullName,
+                      img: matches[senderId]?.metaDat?.image,
+                      name: matches[senderId]?.userDetails?.fullName,
                     },
                   })
                 }}
@@ -71,13 +76,13 @@ const Chats = () => {
               >
                 <span className="rounded-full h-20 w-20">
                   <img
-                    src={chat?.recipients[0]?.metaDat.image}
+                    src={matches[senderId]?.metaDat.image}
                     className="h-full w-full object-cover rounded-full"
                   />
                 </span>
                 <div className="flex flex-col justify-center w-full">
                   <span className="capitalize text-xl font-medium">
-                    {chat?.recipients[0].userDetails.fullName}
+                    {matches[senderId]?.userDetails.fullName}
                   </span>
                   <span className="text-gray-dark text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
                     {chat?.messages?.at(chat?.messages?.length - 1)?.content ??

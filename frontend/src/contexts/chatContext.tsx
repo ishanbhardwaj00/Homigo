@@ -37,16 +37,51 @@ export default ({ children }) => {
 
     getUserChats()
   }, [])
-  const [chats, setChats] = useState({})
-  // const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
-  //   'http://localhost:5000'
-  // )
 
-  // useEffect(() => {
-  //   console.log(lastMessage)
-  // }, [lastMessage])
+  const [chats, setChats] = useState({})
+  const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
+    'http://localhost:5000'
+  )
+
+  useEffect(() => {
+    if (lastMessage) {
+      console.log(chats) // Logging chats to inspect
+
+      const { content, sender } = JSON.parse(lastMessage?.data)
+
+      setChats((prevChats) => {
+        console.log(prevChats)
+
+        if (prevChats[sender]) {
+          console.log(sender, prevChats)
+
+          // Update the existing sender's messages
+          return {
+            ...prevChats,
+            [sender]: {
+              ...prevChats[sender],
+              messages: [...prevChats[sender].messages, { sender, content }],
+            },
+          }
+        } else {
+          console.log('First time for this sender')
+
+          // Add new sender and their first message
+          return {
+            ...prevChats,
+            [sender]: { messages: [{ sender, content }] },
+          }
+        }
+      })
+    }
+  }, [lastMessage])
+  useEffect(() => {
+    console.log(chats)
+  }, [chats])
   return (
-    <ChatContext.Provider value={{ chats, setChats }}>
+    <ChatContext.Provider
+      value={{ chats, setChats, sendJsonMessage, lastMessage, readyState }}
+    >
       {children}
     </ChatContext.Provider>
   )

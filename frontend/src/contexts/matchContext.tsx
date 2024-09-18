@@ -29,7 +29,7 @@ export default ({ children }: { children: ReactNode }) => {
 
           console.log(usersMap)
         }
-        setMatches(response.data.users)
+        setMatches(usersMap)
         // console.log(response.data)
       } catch (error) {
         console.error('Error fetching users:', error)

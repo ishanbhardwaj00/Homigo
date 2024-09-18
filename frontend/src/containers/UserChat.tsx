@@ -14,6 +14,7 @@ import {
 import { useForm } from 'react-hook-form'
 import chatContext, { ChatContext } from '../contexts/chatContext'
 import Loading from '../components/Loading'
+import { MatchContext } from '../contexts/matchContext'
 
 type MessageType = { type: string; message: string }
 const UserChat = () => {
@@ -28,9 +29,9 @@ const UserChat = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { img, name } = location.state
-  const { chats, setChats, sendJsonMessage, lastMessage } =
+  const { chats, setChats, sendJsonMessage, lastMessage, readyState } =
     useContext(ChatContext)
-
+  const { matches } = useContext(MatchContext)
   const { userId } = useParams()
 
   useEffect(() => {
@@ -43,15 +44,46 @@ const UserChat = () => {
     }
   }, [chats])
 
+  // useEffect(() => {
+  //   if (lastMessage) {
+  //     console.log(chats)
+
+  //     const { content, sender } = JSON.parse(lastMessage?.data)
+
+  //     setChats((prevChats: any) => {
+  //       console.log(prevChats)
+
+  //       if (prevChats[sender]) {
+  //         console.log(sender, prevChats)
+
+  //         return {
+  //           ...prevChats,
+  //           [sender]: {
+  //             ...prevChats[sender],
+  //             messages: [...prevChats[sender].messages, { sender, content }],
+  //           },
+  //         }
+  //       } else {
+  //         console.log('First time for this sender')
+  //         return {
+  //           ...prevChats,
+  //           [sender]: { messages: [{ sender, content }] },
+  //         }
+  //       }
+  //     })
+  //   }
+  // }, [lastMessage])
   useEffect(() => {
     if (lastMessage) {
-      setChats((prevChats: any) => {
-        prevChats[userId].messages = [
-          ...prevChats[userId]?.messages,
-          { sender: userId, content: lastMessage.data },
-        ]
-        return prevChats
-      })
+      console.log('LAST Message', lastMessage.data)
+
+      // setChats((prevChats: any) => {
+      //   prevChats[userId].messages = [
+      //     ...prevChats[userId]?.messages,
+      //     { sender: userId, content: lastMessage.data },
+      //   ]
+      //   return prevChats
+      // })
       // setMessages((messages) => [
       //   ...messages,
       //   { sender: userId, content: lastMessage.data },
@@ -87,13 +119,12 @@ const UserChat = () => {
         </button>
       </div>
       <div className="flex flex-1 flex-col p-6 gap-4">
-        {chats?.[userId]?.messages &&
-        chats?.[userId]?.messages?.length === 0 ? (
+        {chats?.[userId]?.messages === undefined ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
         ) : (
-          chats?.[userId]?.messages?.map((message, index) => {
+          chats[userId].messages.map((message, index) => {
             if (message.sender === userId) {
               return (
                 <span
@@ -125,19 +156,32 @@ const UserChat = () => {
 
             const message = { receiver: userId, content: input.message }
             setChats((prevChats) => {
-              if (prevChats[userId]) {
-                prevChats[userId].messages = [
-                  ...prevChats[userId]?.messages,
-                  { sender: null, content: input.message },
-                ]
-              } else {
-                console.log('first timne')
+              console.log('settings chats from ', prevChats)
 
-                prevChats[userId].messages = [
-                  { sender: null, content: input.message },
-                ]
+              const updatedChats = { ...prevChats }
+
+              if (updatedChats[userId]) {
+                // Updating existing user messages without mutating the state
+                updatedChats[userId] = {
+                  ...updatedChats[userId],
+                  messages: [
+                    ...updatedChats[userId].messages,
+                    { sender: null, content: input.message },
+                  ],
+                }
+              } else {
+                console.log('first time')
+                // Adding a new user with metadata and userDetails
+
+                ///recipient data can be null be careful during pagination
+                updatedChats[userId] = {
+                  messages: [{ sender: null, content: input.message }],
+                }
               }
-              return prevChats
+
+              console.log('set chats to', updatedChats)
+
+              return updatedChats
             })
 
             sendJsonMessage({
