@@ -4,8 +4,8 @@ import cookie from 'cookie'
 import jwt, { decode } from 'jsonwebtoken'
 import mongoose from 'mongoose'
 
-import Message from './models/message.model.js'
-import Chat from './models/chat.model.js'
+import Message from '../models/message.model.js'
+import Chat from '../models/chat.model.js'
 
 const UserToSocketMap = new Map()
 const SocketToUserMap = new Map()
