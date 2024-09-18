@@ -51,10 +51,12 @@ mongoose
   .catch((err) => console.error('MongoDB connection error:', err))
 
 
-const server = http.createServer(app)
-createSocketServer(server)
+
 
 const PORT = process.env.PORT || 3000
+
+const server = http.createServer(app)
+createSocketServer(server)
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
