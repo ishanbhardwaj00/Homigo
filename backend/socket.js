@@ -7,7 +7,6 @@ import mongoose from 'mongoose'
 import Message from './models/message.model.js'
 import Chat from './models/chat.model.js'
 
-const clients = []
 const UserToSocketMap = new Map()
 const SocketToUserMap = new Map()
 
@@ -39,16 +38,15 @@ export function createSocketServer(server) {
         console.log(parsedData)
 
         const receiverSocket = UserToSocketMap.get(parsedData.receiver)
-        console.log('receiverf sickert ', receiverSocket)
+        console.log('receiverf sickert ', typeof receiverSocket)
+        console.log(receiverSocket)
 
         console.log(`sending ${parsedData.content} to ${receiverSocket}`)
 
         const sender = SocketToUserMap.get(ws)
         if (receiverSocket) {
-          receiverSocket.send(
-            { ...parsedData.content, sender },
-            { binary: false }
-          )
+          const message = { content: parsedData.content, sender: sender }
+          receiverSocket.send(JSON.stringify(message), { binary: false })
         }
         const senderObjectId = new mongoose.Types.ObjectId(sender)
         const receiverObjectId = new mongoose.Types.ObjectId(
