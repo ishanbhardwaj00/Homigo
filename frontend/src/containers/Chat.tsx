@@ -1,12 +1,24 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { ChatContext } from '../contexts/chatContext'
+import useWebSocket from 'react-use-websocket'
+import Loading from '../components/Loading'
+import { MatchContext } from '../contexts/matchContext'
 
 const Chats = () => {
   const navigate = useNavigate()
-  const { chats, setChats } = useContext(ChatContext)
+  const { chats } = useContext(ChatContext)
 
-  if (chats.length === 0)
+  const { matches } = useContext(MatchContext)
+
+  useEffect(() => {
+    console.log('chats updated')
+  }, [chats])
+  useEffect(() => {
+    console.log('matches updated', matches)
+  }, [matches])
+  console.log('Chat.tsx, ', chats)
+  if (Object.values(chats).length === 0)
     return (
       // <Outlet />
       <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up">
@@ -22,7 +34,7 @@ const Chats = () => {
       </div>
     )
   return (
-    <div className="flex flex-col flex-1 gap-2 fade-in-scale-up">
+    <div className="flex flex-col flex-1 gap-2 fade-in-scale-up overflow-scroll">
       <div className="flex flex-col py-7 px-7 gap-5">
         <span className="capitalize text-lg text-gray-dark font-medium">
           queued (2)
@@ -48,26 +60,34 @@ const Chats = () => {
         </span>
         {/* cards */}
         <div className="flex flex-col gap-2 p-1">
-          {chats.map((chat, index) => {
+          {Object.entries(chats).map(([senderId, chat], index) => {
             return (
               <div
                 key={index}
                 onClick={() => {
-                  navigate('/chats/1')
+                  navigate(`/chats/${senderId}`, {
+                    state: {
+                      img: matches[senderId]?.metaDat?.image,
+                      name: matches[senderId]?.userDetails?.fullName,
+                    },
+                  })
                 }}
                 className="flex  w-full p-1 px-7 gap-3 active:bg-slate-200 rounded-2xl"
               >
                 <span className="rounded-full h-20 w-20">
                   <img
-                    src={chat.img}
-                    className="h-full w-full bg-cover rounded-full"
+                    src={matches[senderId]?.metaDat.image}
+                    className="h-full w-full object-cover rounded-full"
                   />
                 </span>
-                <div className="flex flex-col justify-center">
+                <div className="flex flex-col justify-center w-full">
                   <span className="capitalize text-xl font-medium">
-                    {chat.name}
+                    {matches[senderId]?.userDetails.fullName}
                   </span>
-                  <span className="text-gray-dark text-lg text-light"></span>
+                  <span className="text-gray-dark text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
+                    {chat?.messages?.at(chat?.messages?.length - 1)?.content ??
+                      null}
+                  </span>
                 </div>
               </div>
             )
