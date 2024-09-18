@@ -41,14 +41,11 @@ export default function AuthContextProvider({
       if (success && profileCompleted === false) {
         return navigate('/register?profileCompleted=false')
       }
-      console.log(message)
       setAuthenticated(success)
     }
     checkAuth()
   }, [])
-  useEffect(() => {
-    console.log('authenticated', authenticated)
-  }, [authenticated])
+  useEffect(() => {}, [authenticated])
 
   return (
     <AuthContext.Provider

@@ -13,16 +13,11 @@ import {
 
 import { useForm } from 'react-hook-form'
 import chatContext, { ChatContext } from '../contexts/chatContext'
+import Loading from '../components/Loading'
+import { MatchContext } from '../contexts/matchContext'
 
 type MessageType = { type: string; message: string }
 const UserChat = () => {
-  const { readyState, sendJsonMessage, lastMessage } = useWebSocket(
-    'http://localhost:5000'
-  )
-  useEffect(() => {
-    console.log(readyState, 'ready')
-  }, [readyState])
-  const { userId } = useParams()
   const {
     register,
     handleSubmit,
@@ -30,25 +25,73 @@ const UserChat = () => {
     getValues,
     formState: { errors },
   } = useForm({ mode: 'onChange' })
-  console.log(userId)
 
-  const { chats, setChats } = useContext(ChatContext)
   const navigate = useNavigate()
   const location = useLocation()
   const { img, name } = location.state
+  const { chats, setChats, sendJsonMessage, lastMessage, readyState } =
+    useContext(ChatContext)
+  const { matches } = useContext(MatchContext)
+  const { userId } = useParams()
 
-  const [messages, setMessages] = useState<MessageType[]>([])
   useEffect(() => {
-    setChats((prevChats) => [...prevChats, { img, name, messages: [] }])
+    console.log(chats)
   }, [])
+
   useEffect(() => {
-    console.log(lastMessage)
-    if (lastMessage)
-      setMessages((messages) => [
-        ...messages,
-        { type: 'receiver', message: lastMessage.data },
-      ])
+    if (chats) {
+      console.log(chats)
+    }
+  }, [chats])
+
+  // useEffect(() => {
+  //   if (lastMessage) {
+  //     console.log(chats)
+
+  //     const { content, sender } = JSON.parse(lastMessage?.data)
+
+  //     setChats((prevChats: any) => {
+  //       console.log(prevChats)
+
+  //       if (prevChats[sender]) {
+  //         console.log(sender, prevChats)
+
+  //         return {
+  //           ...prevChats,
+  //           [sender]: {
+  //             ...prevChats[sender],
+  //             messages: [...prevChats[sender].messages, { sender, content }],
+  //           },
+  //         }
+  //       } else {
+  //         console.log('First time for this sender')
+  //         return {
+  //           ...prevChats,
+  //           [sender]: { messages: [{ sender, content }] },
+  //         }
+  //       }
+  //     })
+  //   }
+  // }, [lastMessage])
+  useEffect(() => {
+    if (lastMessage) {
+      console.log('LAST Message', lastMessage.data)
+
+      // setChats((prevChats: any) => {
+      //   prevChats[userId].messages = [
+      //     ...prevChats[userId]?.messages,
+      //     { sender: userId, content: lastMessage.data },
+      //   ]
+      //   return prevChats
+      // })
+      // setMessages((messages) => [
+      //   ...messages,
+      //   { sender: userId, content: lastMessage.data },
+      // ])
+    }
   }, [lastMessage])
+
+  if (chats === null) return <Loading />
   return (
     <div className="flex flex-col h-screen">
       <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
@@ -76,19 +119,19 @@ const UserChat = () => {
         </button>
       </div>
       <div className="flex flex-1 flex-col p-6 gap-4">
-        {messages.length === 0 ? (
+        {chats?.[userId]?.messages === undefined ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
         ) : (
-          messages.map((message, index) => {
-            if (message.type === 'receiver') {
+          chats[userId].messages.map((message, index) => {
+            if (message.sender === userId) {
               return (
                 <span
                   key={index}
-                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-home-light text-wrap"
+                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-slate-300 text-wrap"
                 >
-                  {message.message}
+                  {message.content}
                 </span>
               )
             } else {
@@ -97,7 +140,7 @@ const UserChat = () => {
                   key={index}
                   className="animateRecieverChat self-end max-w-3/4 p-3  rounded-tl-xl items-center  rounded-tr-xl rounded-bl-xl bg-primary-light text-white text-wrap"
                 >
-                  {message.message}
+                  {message.content}
                 </span>
               )
             }
@@ -111,11 +154,36 @@ const UserChat = () => {
             console.log(input)
             console.log(userId)
 
-            const message = { receiver: userId, message: input.message }
-            setMessages((messages) => [
-              ...messages,
-              { type: 'sender', message: input.message },
-            ])
+            const message = { receiver: userId, content: input.message }
+            setChats((prevChats) => {
+              console.log('settings chats from ', prevChats)
+
+              const updatedChats = { ...prevChats }
+
+              if (updatedChats[userId]) {
+                // Updating existing user messages without mutating the state
+                updatedChats[userId] = {
+                  ...updatedChats[userId],
+                  messages: [
+                    ...updatedChats[userId].messages,
+                    { sender: null, content: input.message },
+                  ],
+                }
+              } else {
+                console.log('first time')
+                // Adding a new user with metadata and userDetails
+
+                ///recipient data can be null be careful during pagination
+                updatedChats[userId] = {
+                  messages: [{ sender: null, content: input.message }],
+                }
+              }
+
+              console.log('set chats to', updatedChats)
+
+              return updatedChats
+            })
+
             sendJsonMessage({
               jsonMessage: JSON.stringify(message),
               keep: true,

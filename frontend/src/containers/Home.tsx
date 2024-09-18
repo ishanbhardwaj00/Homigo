@@ -20,8 +20,6 @@ export default () => {
   const [users, setUsers] = useState([])
   const [selected, setSelected] = useState(1)
   useEffect(() => {
-    console.log('fetching users')
-
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://localhost:5000/users', {
@@ -39,8 +37,6 @@ export default () => {
   }, [])
 
   useEffect(() => {
-    console.log(location.pathname)
-
     if (location.pathname === '/')
       setSelected(1) // Call the async function inside useEffect
     else if (location.pathname === '/profile') setSelected(0) // Call the async function inside useEffect
