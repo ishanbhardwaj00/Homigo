@@ -1,6 +1,6 @@
 import express from 'express'
 import User from '../models/users.model.js'
-import { verifyJwt } from '../utils/verifyJwt.js'  // Move verifyJwt to utils for reuse
+import verifyJwt from '../middleware/verifyJwt.js' // Move verifyJwt to utils for reuse
 
 const router = express.Router()
 

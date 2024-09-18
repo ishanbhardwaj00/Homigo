@@ -5,7 +5,8 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import axios from 'axios'
 import http from 'http'
-import { createSocketServer } from './socket.js'
+import { createSocketServer } from './sockets/socket.js'
+import Chat from './models/chat.model.js'
 
 // Load environment variables
 dotenv.config()
@@ -20,7 +21,7 @@ app.use(cookieParser())
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
-import { verifyJwt } from './utils/verifyJwt.js'
+import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
 
 // Use routes
@@ -55,8 +56,28 @@ mongoose
 
 const PORT = process.env.PORT || 3000
 
+app.get('/chats', verifyJwt, async (req, res) => {
+  console.log(req.decodedToken)
+  const userChats = await Chat.find({
+    recipients: { $all: [req.decodedToken._id] },
+  })
+    .populate('messages')
+    .populate({ path: 'recipients', select: { metaDat: 1, userDetails: 1 } })
+
+  const formattedChats = userChats.map((chat) => {
+    return {
+      ...chat._doc, // Spread the rest of the chat document
+      recipients: chat.recipients.filter(
+        (recipientId) => !recipientId.equals(req.decodedToken._id)
+      ), // Exclude current user's ID
+    }
+  })
+
+  res.json({ success: true, chats: formattedChats })
+})
+
 const server = http.createServer(app)
 createSocketServer(server)
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
