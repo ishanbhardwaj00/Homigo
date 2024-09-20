@@ -1,8 +1,10 @@
-import { parse } from 'dotenv'
+import 'dotenv'
 import { WebSocketServer } from 'ws'
 import cookie from 'cookie'
 import jwt, { decode } from 'jsonwebtoken'
 import mongoose from 'mongoose'
+import { Queue, Worker } from 'bullmq'
+import { Redis } from 'ioredis'
 
 import Message from '../models/message.model.js'
 import Chat from '../models/chat.model.js'
@@ -10,10 +12,73 @@ import Chat from '../models/chat.model.js'
 const UserToSocketMap = new Map()
 const SocketToUserMap = new Map()
 
+const connection = new Redis({
+  host: 'redis-14076.c99.us-east-1-4.ec2.redns.redis-cloud.com',
+  port: 14076,
+  password: process.env.REDIS_PASS,
+  maxRetriesPerRequest: null,
+})
+
+const messageQueue = new Queue('saveMessageInDB', { connection })
+
+const worker = new Worker(
+  'saveMessageInDB',
+  async (job) => {
+    console.log(job.data)
+    let { sender, content, receiver } = job.data
+    console.log(job.data)
+
+    sender = new mongoose.Types.ObjectId(sender)
+    receiver = new mongoose.Types.ObjectId(receiver)
+
+    const message = new Message({
+      sender: sender,
+      content: content,
+    })
+    message.save()
+
+    const chat = await Chat.findOne({
+      recipients: {
+        $all: [sender, receiver],
+      },
+    })
+
+    console.log(chat)
+
+    if (!chat) {
+      console.log('creating new chat')
+
+      const newChat = new Chat({
+        recipients: [sender, receiver],
+        isGroupChat: false,
+        messages: [message],
+      })
+
+      newChat.save()
+    } else {
+      const message = new Message({
+        sender: sender,
+        content: content,
+      })
+      message.save()
+      chat.messages = [...chat.messages, message]
+      chat.save()
+    }
+  },
+  { connection }
+)
+
+worker.on('completed', (job) => {
+  console.log(`${job.id} has completed!`)
+})
+
+worker.on('failed', (job, err) => {
+  console.log(`${job.id} has failed with ${err.message}`)
+})
 export function createSocketServer(server) {
   const wss = new WebSocketServer({ server: server })
 
-  console.log("Server connection")
+  console.log('Server connection')
 
   wss.on('connection', (ws, request) => {
     const cookies = cookie.parse(request.headers.cookie || '')
@@ -50,44 +115,12 @@ export function createSocketServer(server) {
           const message = { content: parsedData.content, sender: sender }
           receiverSocket.send(JSON.stringify(message), { binary: false })
         }
-        const senderObjectId = new mongoose.Types.ObjectId(sender)
-        const receiverObjectId = new mongoose.Types.ObjectId(
-          parsedData.receiver
-        )
 
-        const message = new Message({
-          sender: senderObjectId,
+        messageQueue.add('saveMessageInDB', {
+          sender: sender,
           content: parsedData.content,
+          receiver: parsedData.receiver,
         })
-        message.save()
-
-        const chat = await Chat.findOne({
-          recipients: {
-            $all: [senderObjectId, receiverObjectId],
-          },
-        })
-
-        console.log(chat)
-
-        if (!chat) {
-          console.log('creating new chat')
-
-          const newChat = new Chat({
-            recipients: [senderObjectId, receiverObjectId],
-            isGroupChat: false,
-            messages: [message],
-          })
-
-          newChat.save()
-        } else {
-          const message = new Message({
-            sender: senderObjectId,
-            content: parsedData.content,
-          })
-          message.save()
-          chat.messages = [...chat.messages, message]
-          chat.save()
-        }
       } catch (error) {
         console.log('lol check request', error)
       }
