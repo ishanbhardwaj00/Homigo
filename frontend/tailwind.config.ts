@@ -59,6 +59,9 @@ const config: Config = {
         gray: {
           dark: '#858585',
         },
+        chat: {
+          DEFAULT: '#EAEAEA',
+        },
         button: {
           primary: {
             DEFAULT: '#a7ebcf',

@@ -15,7 +15,7 @@ const Navigation = ({
 
   if (location.pathname.includes('/chats/')) return <div className="h-0"></div>
   return (
-    <div className="h-20 bg-nav-light rounded-3xl flex justify-around items-center ">
+    <div className="h-20 bg-nav-light rounded-tl-3xl rounded-tr-3xl flex justify-around items-center ">
       {imageNames.map((img, index) => (
         <div className="h-8 w-8" key={index}>
           <img

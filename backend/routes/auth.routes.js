@@ -1,6 +1,7 @@
 import express from 'express'
 import User from '../models/users.model.js'
 import jwt from 'jsonwebtoken'
+import verifyJwt from '../middleware/verifyJwt.js'
 
 const router = express.Router()
 
@@ -139,41 +140,34 @@ router.post('/signup', async (req, res) => {
 })
 
 // Check Auth Route
-router.get('/checkAuth', async (req, res) => {
-  const accessToken = req.cookies.accessToken
+router.get('/checkAuth', verifyJwt, async (req, res) => {
+  const decodedToken = req.decodedToken
 
-  if (accessToken) {
-    const decodedToken = jwt.verify(
-      accessToken,
-      process.env.ACCESS_TOKEN_SECRET
-    )
+  if (decodedToken) {
+    console.log(decodedToken)
+    const user = await User.findById(decodedToken._id)
+    const userObject = {
+      id: user._id,
+      email: user.userCred.email,
+      fullName: user.userDetails.fullName,
+    }
 
-    if (decodedToken) {
-      console.log(decodedToken)
-      const user = await User.findById(decodedToken._id)
-      const userObject = {
-        id: user._id,
-        email: user.userCred.email,
-        fullName: user.userDetails.fullName,
-      }
+    if (user && !user.profileCompleted) {
+      console.log('Incomplete profile')
 
-      if (user && !user.profileCompleted) {
-        console.log('Incomplete profile')
-
-        return res.json({
-          success: true,
-          profileCompleted: false,
-          user: userObject,
-          message: 'Incomplete profile',
-        })
-      }
       return res.json({
         success: true,
+        profileCompleted: false,
         user: userObject,
-        profileCompleted: true,
-        message: 'Authenticated',
+        message: 'Incomplete profile',
       })
     }
+    return res.json({
+      success: true,
+      user: userObject,
+      profileCompleted: true,
+      message: 'Authenticated',
+    })
   }
   return res.json({
     success: false,

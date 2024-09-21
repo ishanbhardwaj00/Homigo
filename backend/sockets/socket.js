@@ -1,7 +1,6 @@
-import 'dotenv'
 import { WebSocketServer } from 'ws'
 import cookie from 'cookie'
-import jwt, { decode } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'

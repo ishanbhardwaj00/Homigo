@@ -38,7 +38,7 @@ export default ({ children }) => {
     getUserChats()
   }, [])
 
-  const [chats, setChats] = useState({})
+  const [chats, setChats] = useState(null)
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
     'http://localhost:5000'
   )
