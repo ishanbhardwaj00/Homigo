@@ -15,6 +15,8 @@ import { useForm } from 'react-hook-form'
 import chatContext, { ChatContext } from '../contexts/chatContext'
 import Loading from '../components/Loading'
 import { MatchContext } from '../contexts/matchContext'
+import axios from 'axios'
+import { AuthContext } from '../contexts/authContext'
 
 type MessageType = { type: string; message: string }
 const UserChat = () => {
@@ -31,11 +33,44 @@ const UserChat = () => {
   const { img, name } = location.state
   const { chats, setChats, sendJsonMessage, lastMessage, readyState } =
     useContext(ChatContext)
+  const { user } = useContext(AuthContext)
   const { matches } = useContext(MatchContext)
   const { userId } = useParams()
 
   useEffect(() => {
-    console.log(chats)
+    async function markAndSetReadReciepts() {
+      console.log(chats[userId])
+
+      if (chats[userId].lastMessage.sender === userId) {
+        try {
+          axios.post(
+            'http://localhost:5000/api/chats/read',
+            { receiver: userId },
+            { withCredentials: true }
+          )
+        } catch (error) {
+          console.log('axios bg task failed')
+        }
+
+        setChats((prevChats) => {
+          let updatedChats = prevChats
+          updatedChats = {
+            ...updatedChats,
+            [userId]: {
+              ...updatedChats[userId],
+              lastMessage: {
+                ...updatedChats[userId].lastMessage,
+                readBy: [user.id],
+              },
+            },
+          }
+          console.log(updatedChats)
+
+          return updatedChats
+        })
+      }
+    }
+    markAndSetReadReciepts()
   }, [])
 
   useEffect(() => {

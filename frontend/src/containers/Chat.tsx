@@ -4,16 +4,18 @@ import { ChatContext } from '../contexts/chatContext'
 import useWebSocket from 'react-use-websocket'
 import Loading from '../components/Loading'
 import { MatchContext } from '../contexts/matchContext'
+import { AuthContext } from '../contexts/authContext'
 
 const Chats = () => {
   const navigate = useNavigate()
   const { chats } = useContext(ChatContext)
-
+  const { user } = useContext(AuthContext)
   const { matches } = useContext(MatchContext)
 
   useEffect(() => {
     console.log('chats updated')
-  }, [chats])
+    console.log(chats)
+  }, [chats, user, matches])
   useEffect(() => {
     console.log('matches updated', matches)
   }, [matches])
@@ -84,10 +86,19 @@ const Chats = () => {
                   <span className="capitalize text-xl font-medium">
                     {matches[senderId]?.userDetails.fullName}
                   </span>
-                  <span className="text-gray-dark text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
-                    {chat?.messages?.at(chat?.messages?.length - 1)?.content ??
-                      null}
-                  </span>
+                  {chat?.lastMessage?.sender !== user?.id &&
+                  !chat?.lastMessage?.readBy.includes(user?.id) ? (
+                    <div className="text-gray-dark w-full flex justify-between font-bold text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
+                      {chat?.messages?.at(chat?.messages?.length - 1)
+                        ?.content ?? null}
+                      <span>nm</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-dark text-base text-ellipsis max-w-40 overflow-hidden whitespace-nowrap">
+                      {chat?.messages?.at(chat?.messages?.length - 1)
+                        ?.content ?? null}
+                    </span>
+                  )}
                 </div>
               </div>
             )

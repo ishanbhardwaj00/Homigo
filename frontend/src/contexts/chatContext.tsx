@@ -61,6 +61,7 @@ export default ({ children }) => {
             [sender]: {
               ...prevChats[sender],
               messages: [...prevChats[sender].messages, { sender, content }],
+              lastMessage: { sender, content, readBy: [] },
             },
           }
         } else {
@@ -69,7 +70,10 @@ export default ({ children }) => {
           // Add new sender and their first message
           return {
             ...prevChats,
-            [sender]: { messages: [{ sender, content }] },
+            [sender]: {
+              messages: [{ sender, content }],
+              lastMessage: { sender, content, readBy: [] },
+            },
           }
         }
       })

@@ -52,16 +52,13 @@ const worker = new Worker(
         recipients: [sender, receiver],
         isGroupChat: false,
         messages: [message],
+        lastMessage: message,
       })
 
       newChat.save()
     } else {
-      const message = new Message({
-        sender: sender,
-        content: content,
-      })
-      message.save()
       chat.messages = [...chat.messages, message]
+      chat.lastMessage = message
       chat.save()
     }
   },
