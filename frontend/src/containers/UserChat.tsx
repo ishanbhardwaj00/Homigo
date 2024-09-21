@@ -153,7 +153,7 @@ const UserChat = () => {
           <RxDotsVertical color="#232beb" size={32} />
         </button>
       </div>
-      <div className="flex flex-1 flex-col p-6 gap-4">
+      <div className="flex flex-1 flex-col p-6 gap-4 overflow-y-scroll">
         {chats?.[userId]?.messages === undefined ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
@@ -182,7 +182,7 @@ const UserChat = () => {
           })
         )}
       </div>
-      <div className="flex items-center p-6 animateRegistration">
+      <div className="flex items-center px-6 pt-2 pb-6 animateRegistration">
         <form
           className="flex items-center gap-3 w-full h-10 rounded-full"
           onSubmit={handleSubmit((input) => {
