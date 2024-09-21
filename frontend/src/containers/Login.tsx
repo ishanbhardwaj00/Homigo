@@ -1,38 +1,41 @@
-import { useState, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { passwordStrength } from "check-password-strength";
-import { AuthContext } from "../contexts/authContext";
-import Loading from "../components/Loading";
-import ErrorMessage from "../components/ErrorMessage";
-import axios from "axios";
-import { PulseLoader } from "react-spinners";
-import { useNavigate } from "react-router-dom";
+import { useState, useContext, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { passwordStrength } from 'check-password-strength'
+import { AuthContext } from '../contexts/authContext'
+import Loading from '../components/Loading'
+import ErrorMessage from '../components/ErrorMessage'
+import axios from 'axios'
+import { PulseLoader } from 'react-spinners'
+import { useNavigate } from 'react-router-dom'
 
 export default () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-  const [userInformation, setUserInformation] = useState({});
-  const [loginError, setLoginError] = useState<null | string>(null);
-  const { setAuthenticated } = useContext(AuthContext);
+  } = useForm()
+  const [userInformation, setUserInformation] = useState({})
+  const [loginError, setLoginError] = useState<null | string>(null)
+  const { authenticated, setAuthenticated } = useContext(AuthContext)
   useEffect(() => {
-    setLoading(true);
-    const userInformationJson = localStorage.getItem("userInformation");
+    if (authenticated) return navigate('/')
+    const userInformationJson = localStorage.getItem('userInformation')
 
     if (userInformationJson) {
-      setUserInformation(JSON.parse(userInformationJson));
+      setUserInformation(JSON.parse(userInformationJson))
     }
-    setLoading(false);
-  }, []);
+    setLoading(false)
+  }, [])
 
-  useEffect(() => {}, [userInformation]);
+  useEffect(() => {}, [userInformation])
+  useEffect(() => {
+    if (authenticated) return navigate('/')
+  }, [authenticated])
 
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [requestPending, setRequestPending] = useState(false);
-  if (loading) return <Loading />;
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [requestPending, setRequestPending] = useState(false)
+  if (loading || authenticated === null) return <Loading />
   return (
     <div className="flex flex-col items-center bg-step2 bg-no-repeat h-screen max-h-screen bg-bottom bg-auto animateRegistration">
       <div className="w-3/4 flex flex-col justify-start mt-16 gap-24">
@@ -43,28 +46,28 @@ export default () => {
         </div>
         <form
           onSubmit={handleSubmit(async (data) => {
-            console.log(data);
-            setRequestPending(true);
+            console.log(data)
+            setRequestPending(true)
             try {
               const response = await axios.post(
-                "http://localhost:5000/api/users/login",
+                'http://localhost:5000/api/users/login',
                 data,
                 { withCredentials: true }
-              );
-              console.log(response.data);
-              const { success, message, profileCompleted } = response.data;
+              )
+              console.log(response.data)
+              const { success, message, profileCompleted } = response.data
 
               if (success) {
                 if (profileCompleted === false)
-                  return navigate("/register?profileCompleted=false");
-                setAuthenticated(true);
-                navigate("/");
+                  return navigate('/register?profileCompleted=false')
+                setAuthenticated(true)
+                navigate('/')
               } else {
-                setLoginError(message);
+                setLoginError(message)
               }
-              setRequestPending(false);
+              setRequestPending(false)
             } catch (error) {
-              setLoginError("Some error occurred while making the request");
+              setLoginError('Some error occurred while making the request')
             }
           })}
           className="flex flex-col gap-12"
@@ -74,8 +77,8 @@ export default () => {
               <input
                 className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
                 type="email"
-                {...register("email", {
-                  required: "Email is required",
+                {...register('email', {
+                  required: 'Email is required',
                 })}
                 placeholder="Email Address"
               />
@@ -87,17 +90,17 @@ export default () => {
               <input
                 className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
                 type="password"
-                {...register("password", {
-                  required: "password is required",
+                {...register('password', {
+                  required: 'password is required',
                   minLength: {
                     value: 10,
-                    message: "Password should be at least 10 characters",
+                    message: 'Password should be at least 10 characters',
                   },
                   validate: (data) => {
                     return (
                       !(passwordStrength(data).id < 1) ||
-                      "Password is too weak. Add numbers and special characters to it."
-                    );
+                      'Password is too weak. Add numbers and special characters to it.'
+                    )
                   },
                 })}
                 placeholder="Password"
@@ -116,12 +119,12 @@ export default () => {
               {requestPending ? (
                 <PulseLoader size={8} color="#232beb" />
               ) : (
-                "Next"
+                'Next'
               )}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

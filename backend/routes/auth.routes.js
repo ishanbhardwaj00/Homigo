@@ -84,63 +84,63 @@ router.post('/logout', async (req, res) => {
 
 // Signup Route
 router.post('/signup', async (req, res) => {
-    console.log('post', req.body)
-    try {
-      const { email, password } = req.body
-  
-      const userExists = await User.findOne({ 'userCred.email': email })
-  
-      if (userExists) {
-        return res.send({ success: false, message: 'User already exists' })
-      }
-      const user = new User({
-        profileCompleted: false,
-  
-        userCred: {
-          email,
-          password,
-        },
-      })
-  
-      await user.save() // Save to the database
-  
-      const accessToken = user.generateAccessToken()
-      const refreshToken = user.generateRefreshToken()
-      user.userCred.refreshToken = refreshToken
-  
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true, // Makes sure the cookie is accessible only by web server
-        secure: false, // Send cookie over HTTPS only in production
-        maxAge: 60 * 24 * 60 * 60 * 1000, // 60 days
-        sameSite: 'strict',
-      })
-  
-      // Optionally, send refresh token as HTTP-only cookie
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: false,
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-        sameSite: 'strict',
-      })
-  
-      res.status(201).json({
-        success: true,
-        id: user._id,
-      })
-  
-      // res.json()
-    } catch (err) {
-      console.error(err)
-      res.status(500).json({
-        message: 'Error saving user data',
-        error: err.message,
-      })
+  console.log('post', req.body)
+  try {
+    const { email, password } = req.body
+
+    const userExists = await User.findOne({ 'userCred.email': email })
+
+    if (userExists) {
+      return res.send({ success: false, message: 'User already exists' })
     }
+    const user = new User({
+      profileCompleted: false,
+
+      userCred: {
+        email,
+        password,
+      },
+    })
+
+    await user.save() // Save to the database
+
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+    user.userCred.refreshToken = refreshToken
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true, // Makes sure the cookie is accessible only by web server
+      secure: false, // Send cookie over HTTPS only in production
+      maxAge: 60 * 24 * 60 * 60 * 1000, // 60 days
+      sameSite: 'strict',
+    })
+
+    // Optionally, send refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'strict',
+    })
+
+    res.status(201).json({
+      success: true,
+      id: user._id,
+    })
+
+    // res.json()
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({
+      message: 'Error saving user data',
+      error: err.message,
+    })
+  }
 })
 
 // Check Auth Route
 router.get('/checkAuth', async (req, res) => {
-    const accessToken = req.cookies.accessToken
+  const accessToken = req.cookies.accessToken
 
   if (accessToken) {
     const decodedToken = jwt.verify(
@@ -151,17 +151,25 @@ router.get('/checkAuth', async (req, res) => {
     if (decodedToken) {
       console.log(decodedToken)
       const user = await User.findById(decodedToken._id)
+      const userObject = {
+        id: user._id,
+        email: user.userCred.email,
+        fullName: user.userDetails.fullName,
+      }
+
       if (user && !user.profileCompleted) {
         console.log('Incomplete profile')
 
         return res.json({
           success: true,
           profileCompleted: false,
+          user: userObject,
           message: 'Incomplete profile',
         })
       }
       return res.json({
         success: true,
+        user: userObject,
         profileCompleted: true,
         message: 'Authenticated',
       })
@@ -170,6 +178,7 @@ router.get('/checkAuth', async (req, res) => {
   return res.json({
     success: false,
     profileCompleted: null,
+    user: null,
     message: 'Not authenticated',
   })
 })

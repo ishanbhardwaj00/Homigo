@@ -47,33 +47,51 @@ mongoose
 const PORT = process.env.PORT || 3000
 
 app.get('/chats', verifyJwt, async (req, res) => {
-  // console.log(req.decodedToken)
   const userId = new mongoose.Types.ObjectId(req.decodedToken._id)
-  console.log(userId)
 
   const userChats = await Chat.find({
     recipients: { $all: [userId] },
   })
     .populate('messages')
     .populate({ path: 'recipients', select: { metaDat: 1, userDetails: 1 } })
-  console.log(userChats)
+    .populate('lastMessage')
 
   const formattedChats = userChats.map((chat) => {
     return {
-      ...chat._doc, // Spread the rest of the chat document
+      ...chat._doc,
       recipients: chat.recipients.filter((recipient) => {
-        console.log(recipient._id.toString())
-        console.log(userId.toString())
-
-        return recipient._id.toString() !== userId.toString() // Exclude current user's ID
-      }), // Exclude current user's ID
+        return recipient._id.toString() !== userId.toString()
+      }),
     }
   })
 
-  console.log(formattedChats)
   res.json({ success: true, chats: formattedChats })
 })
 
+app.post('/api/chats/read', verifyJwt, async (req, res) => {
+  console.log('wil mark chat as read')
+
+  const sender = req.decodedToken._id
+  const receiver = req.body.receiver
+
+  const userChat = await Chat.findOne({
+    recipients: { $all: [sender, receiver] },
+  }).populate('lastMessage')
+
+  if (userChat.lastMessage) {
+    if (!userChat.lastMessage.readBy.includes(sender)) {
+      userChat.lastMessage.readBy.push(sender)
+      await userChat.lastMessage.save()
+      console.log('Sender added to readBy:', userChat.lastMessage.readBy)
+    } else {
+      console.log('Sender already in readBy')
+    }
+  } else {
+    console.log('lastMessage is not defined')
+  }
+  userChat.save()
+  return res.json({ success: true, message: 'marked message as read' })
+})
 const server = http.createServer(app)
 createSocketServer(server)
 server.listen(PORT, () => {

@@ -1,4 +1,3 @@
-'use client'
 import axios from 'axios'
 import {
   createContext,
@@ -37,7 +36,8 @@ export default function AuthContextProvider({
         { withCredentials: true }
       )
 
-      const { success, profileCompleted, message } = response.data
+      const { success, profileCompleted, user, message } = response.data
+      setUser(user)
       if (success && profileCompleted === false) {
         return navigate('/register?profileCompleted=false')
       }
@@ -45,7 +45,9 @@ export default function AuthContextProvider({
     }
     checkAuth()
   }, [])
-  useEffect(() => {}, [authenticated])
+  useEffect(() => {
+    console.log('user', user)
+  }, [authenticated, user])
 
   return (
     <AuthContext.Provider
