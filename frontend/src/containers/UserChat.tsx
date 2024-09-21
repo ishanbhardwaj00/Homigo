@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { FaChevronLeft } from 'react-icons/fa'
 import { RxDotsVertical } from 'react-icons/rx'
 import { IoMdSend } from 'react-icons/io'
@@ -36,12 +36,12 @@ const UserChat = () => {
   const { user } = useContext(AuthContext)
   const { matches } = useContext(MatchContext)
   const { userId } = useParams()
-
+  const scrollRef = useRef<HTMLDivElement>()
   useEffect(() => {
     async function markAndSetReadReciepts() {
       console.log(chats[userId])
 
-      if (chats[userId].lastMessage.sender === userId) {
+      if (chats[userId]?.lastMessage?.sender === userId) {
         try {
           axios.post(
             'http://localhost:5000/api/chats/read',
@@ -60,7 +60,7 @@ const UserChat = () => {
               ...updatedChats[userId],
               lastMessage: {
                 ...updatedChats[userId].lastMessage,
-                readBy: [user.id],
+                readBy: [user?.id],
               },
             },
           }
@@ -70,13 +70,15 @@ const UserChat = () => {
         })
       }
     }
-    markAndSetReadReciepts()
+    if (chats) markAndSetReadReciepts()
   }, [])
 
   useEffect(() => {
     if (chats) {
       console.log(chats)
     }
+    if (scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chats])
 
   // useEffect(() => {
@@ -128,7 +130,7 @@ const UserChat = () => {
 
   if (chats === null) return <Loading />
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-nav-light ">
       <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
         <div className="flex gap-8">
           <button
@@ -142,18 +144,23 @@ const UserChat = () => {
           <div className="flex gap-3 items-center">
             <span className="rounded-full h-14 w-14">
               <img
-                src={img}
+                src={chats[userId]?.recipients[0]?.metaDat?.image}
                 className="h-full w-full object-cover rounded-full"
               />
             </span>
-            <span className="capitalize text-xl font-semibold ">{name}</span>
+            <span className="capitalize text-xl font-semibold ">
+              {chats[userId]?.recipients[0]?.userDetails?.fullName}
+            </span>
           </div>
         </div>
         <button onClick={() => console.log('rxdots')}>
           <RxDotsVertical color="#232beb" size={32} />
         </button>
       </div>
-      <div className="flex flex-1 flex-col p-6 gap-4 overflow-y-scroll">
+      <div
+        ref={scrollRef}
+        className="flex flex-1 flex-col p-6 gap-4 overflow-y-scroll overflow-x-hidden"
+      >
         {chats?.[userId]?.messages === undefined ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
@@ -164,7 +171,7 @@ const UserChat = () => {
               return (
                 <span
                   key={index}
-                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-slate-300 text-wrap"
+                  className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-chat text-wrap"
                 >
                   {message.content}
                 </span>
@@ -201,8 +208,16 @@ const UserChat = () => {
                   ...updatedChats[userId],
                   messages: [
                     ...updatedChats[userId].messages,
-                    { sender: null, content: input.message },
+                    {
+                      sender: user?.id,
+                      content: input.message,
+                    },
                   ],
+                  lastMessage: {
+                    sender: user?.id,
+                    content: input.message,
+                    updatedAt: Date.now(),
+                  },
                 }
               } else {
                 console.log('first time')

@@ -1,27 +1,31 @@
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
 
 const verifyJwt = async (req, res, next) => {
-  const { accessToken } = req.cookies;
+  const { accessToken } = req.cookies
 
   if (!accessToken) {
-    console.log('Access token not found');
-    return res.status(401).send('<h1>You are not authorized to see this</h1>');
+    console.log('Access token not found')
+    return res.json({ success: false, message: 'Access token not found' })
   }
 
   try {
-    const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+    const decodedToken = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET
+    )
 
+    console.log('before crash')
     if (!decodedToken) {
-      console.log('Invalid token');
-      return res.status(401).send('<h1>You are not authorized to see this</h1>');
+      console.log('Invalid token')
+      return res.json({ success: false, message: 'Invalid Token' })
     }
 
-    req.decodedToken = decodedToken;
-    next();
+    req.decodedToken = decodedToken
+    next()
   } catch (err) {
-    console.error('Token verification error:', err);
-    return res.status(401).send('<h1>You are not authorized to see this</h1>');
+    console.error('Token verification error:', err)
+    return res.json({ success: false, message: 'Token Verificiation Error' })
   }
-};
+}
 
-export default verifyJwt;
+export default verifyJwt
