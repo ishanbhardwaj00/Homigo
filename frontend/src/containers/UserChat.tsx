@@ -81,50 +81,9 @@ const UserChat = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chats])
 
-  // useEffect(() => {
-  //   if (lastMessage) {
-  //     console.log(chats)
-
-  //     const { content, sender } = JSON.parse(lastMessage?.data)
-
-  //     setChats((prevChats: any) => {
-  //       console.log(prevChats)
-
-  //       if (prevChats[sender]) {
-  //         console.log(sender, prevChats)
-
-  //         return {
-  //           ...prevChats,
-  //           [sender]: {
-  //             ...prevChats[sender],
-  //             messages: [...prevChats[sender].messages, { sender, content }],
-  //           },
-  //         }
-  //       } else {
-  //         console.log('First time for this sender')
-  //         return {
-  //           ...prevChats,
-  //           [sender]: { messages: [{ sender, content }] },
-  //         }
-  //       }
-  //     })
-  //   }
-  // }, [lastMessage])
   useEffect(() => {
     if (lastMessage) {
       console.log('LAST Message', lastMessage.data)
-
-      // setChats((prevChats: any) => {
-      //   prevChats[userId].messages = [
-      //     ...prevChats[userId]?.messages,
-      //     { sender: userId, content: lastMessage.data },
-      //   ]
-      //   return prevChats
-      // })
-      // setMessages((messages) => [
-      //   ...messages,
-      //   { sender: userId, content: lastMessage.data },
-      // ])
     }
   }, [lastMessage])
 

@@ -16,7 +16,7 @@ export default () => {
   } = useForm()
   const [userInformation, setUserInformation] = useState({})
   const [loginError, setLoginError] = useState<null | string>(null)
-  const { authenticated, setAuthenticated } = useContext(AuthContext)
+  const { authenticated, setAuthenticated, setUser } = useContext(AuthContext)
   useEffect(() => {
     if (authenticated) return navigate('/')
     const userInformationJson = localStorage.getItem('userInformation')
@@ -54,20 +54,34 @@ export default () => {
                 data,
                 { withCredentials: true }
               )
-              console.log(response.data)
-              const { success, message, profileCompleted } = response.data
 
+              console.log(
+                'Response data:',
+                response.data,
+                'Status:',
+                response.status
+              )
+              const { success, message, user, profileCompleted } = response.data
+              setUser(user)
               if (success) {
-                if (profileCompleted === false)
+                if (!profileCompleted) {
                   return navigate('/register?profileCompleted=false')
+                }
                 setAuthenticated(true)
-                navigate('/')
+                console.log('NAVGAITNG RN TO HOME FRMO LOGIN')
+
+                return navigate('/')
               } else {
                 setLoginError(message)
               }
-              setRequestPending(false)
             } catch (error) {
-              setLoginError('Some error occurred while making the request')
+              console.error('Login error:', error)
+              setLoginError(
+                error?.response?.data?.message ||
+                  'Some error occurred while making the request'
+              )
+            } finally {
+              setRequestPending(false)
             }
           })}
           className="flex flex-col gap-12"

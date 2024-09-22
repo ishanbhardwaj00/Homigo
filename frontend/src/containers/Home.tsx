@@ -15,26 +15,8 @@ import {
 export default () => {
   const { authenticated } = useContext(AuthContext)
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
   const location = useLocation()
-  const [users, setUsers] = useState([])
   const [selected, setSelected] = useState(1)
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/users', {
-          withCredentials: true,
-        })
-        setUsers(response.data.users)
-        // console.log(response.data)
-      } catch (error) {
-        console.error('Error fetching users:', error)
-      }
-    }
-
-    fetchUsers()
-    setLoading(false)
-  }, [])
 
   useEffect(() => {
     if (location.pathname === '/')
@@ -46,9 +28,6 @@ export default () => {
   useEffect(() => {
     if (!authenticated) navigate('/')
   }, [authenticated])
-
-  if (loading) return <Loading />
-
   return (
     <div className="flex flex-col h-screen bg-home-light">
       {/* <Header selected={selected} /> */}

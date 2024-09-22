@@ -18,20 +18,16 @@ export default ({ children }) => {
         console.log('chats', chats)
 
         if (success) {
-          const map = {}
-
-          for (let chat of chats) {
-            map[chat?.recipients[0]?._id] = chat
-
-            console.log(map)
-          }
-
-          setChats(map)
+          setChats(chats)
         } else {
           console.log('no chats found')
+          setChatError(
+            'There was some problem while getting your chat, try refreshing the page'
+          )
         }
       } catch (error) {
         console.log(error)
+        setChatError('Some server error occured')
       }
     }
 
@@ -39,6 +35,7 @@ export default ({ children }) => {
   }, [])
 
   const [chats, setChats] = useState(null)
+  const [chatError, setChatError] = useState<string | null>(null)
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
     'http://localhost:5000'
   )
@@ -84,7 +81,13 @@ export default ({ children }) => {
   }, [chats])
   return (
     <ChatContext.Provider
-      value={{ chats, setChats, sendJsonMessage, lastMessage, readyState }}
+      value={{
+        chats,
+        setChats,
+        sendJsonMessage,
+        lastMessage,
+        readyState,
+      }}
     >
       {children}
     </ChatContext.Provider>

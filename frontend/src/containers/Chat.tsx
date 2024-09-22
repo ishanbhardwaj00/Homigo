@@ -42,16 +42,11 @@ function formatRelativeTime(relativeTime) {
 const Chats = () => {
   const navigate = useNavigate()
   const { chats } = useContext(ChatContext)
-  const { user } = useContext(AuthContext)
+  const { user, authLoading } = useContext(AuthContext)
   const { matches } = useContext(MatchContext)
 
-  useEffect(() => {
-    console.log('chats updated')
-    console.log(chats)
-  }, [chats, user, matches])
-
   console.log('Chat.tsx, ', chats)
-  if (chats === null || user === null) return <Loading />
+  if (chats === null || matches === null) return <Loading />
   if (Object.values(chats).length === 0)
     return (
       <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up bg-home-light">
@@ -115,35 +110,27 @@ const Chats = () => {
                 </div>
                 <div className="flex flex-col justify-center flex-1 max-w-40 ">
                   <span className="capitalize text-lg font-medium text-ellipsis overflow-hidden whitespace-nowrap">
-                    {matches[senderId]?.userDetails.fullName?.split(' ')[0]}
+                    {matches[senderId].userDetails.fullName.split(' ')[0]}
                   </span>
-                  {chat?.lastMessage?.sender !== user?.id &&
-                  !chat?.lastMessage?.readBy.includes(user?.id) ? (
+                  {chat.lastMessage.sender !== user.id &&
+                  !chat.lastMessage?.readBy.includes(user.id) ? (
                     <div className="text-black font-medium w-fulltext-base truncate">
                       <span>
-                        {
-                          chat?.messages?.at(chat?.messages?.length - 1)
-                            ?.content
-                        }
+                        {chat.messages.at(chat?.messages.length - 1)?.content}
                       </span>
                     </div>
                   ) : (
                     <div className="text-gray-dark flex gap-1 text-lg truncate ">
-                      {chat?.lastMessage?.sender === user?.id && (
-                        <span>You:</span>
-                      )}
+                      {chat.lastMessage.sender === user.id && <span>You:</span>}
                       <span className="truncate">
-                        {
-                          chat?.messages?.at(chat?.messages?.length - 1)
-                            ?.content
-                        }
+                        {chat.messages.at(chat.messages.length - 1)?.content}
                       </span>
                     </div>
                   )}
                 </div>
                 <div className="text-base text-gray-dark">
                   {formatRelativeTime(
-                    moment(chat?.lastMessage?.updatedAt).fromNow()
+                    moment(chat.lastMessage.updatedAt).fromNow()
                   )}
                 </div>
               </div>

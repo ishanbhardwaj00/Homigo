@@ -64,8 +64,12 @@ app.get('/chats', verifyJwt, async (req, res) => {
       }),
     }
   })
+  const chats = {}
+  formattedChats.forEach((chat) => {
+    chats[chat?.recipients[0]?._id] = chat
+  })
 
-  res.json({ success: true, chats: formattedChats })
+  res.json({ success: true, chats })
 })
 
 app.post('/api/chats/read', verifyJwt, async (req, res) => {

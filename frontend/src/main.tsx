@@ -14,6 +14,7 @@ import Main from './containers/Main.tsx'
 import Chats from './containers/Chat.tsx'
 import UserChat from './containers/UserChat.tsx'
 import ChatContainer from './containers/ChatContainer.tsx'
+import Profile from './containers/Profile.tsx'
 
 const router = createBrowserRouter([
   {
@@ -64,7 +65,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'profile',
-        element: <div className="flex flex-1">profile</div>,
+        element: <Profile />,
       },
       // {
       //   path: 'chats/:userId',
@@ -75,7 +76,7 @@ const router = createBrowserRouter([
 ])
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+  // <StrictMode>
+  <RouterProvider router={router} />
+  // </StrictMode>
 )

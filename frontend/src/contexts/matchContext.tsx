@@ -9,8 +9,7 @@ export const MatchContext = createContext({
 })
 
 export default ({ children }: { children: ReactNode }) => {
-  const [matches, setMatches] = useState({})
-  const [loading, setLoading] = useState(true)
+  const [matches, setMatches] = useState(null)
   const [index, setIndex] = useState(0)
   useEffect(() => {
     const fetchUsers = async () => {
@@ -37,9 +36,9 @@ export default ({ children }: { children: ReactNode }) => {
     }
 
     fetchUsers()
-    setLoading(false) // Call the async function inside useEffect
+    // Call the async function inside useEffect
   }, [])
-  if (loading) return <Loading />
+
   return (
     <MatchContext.Provider value={{ matches, index, setIndex }}>
       {children}
