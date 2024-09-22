@@ -1,12 +1,24 @@
 import express from 'express'
 import User from '../models/users.model.js'
 import verifyJwt from '../middleware/verifyJwt.js' // Move verifyJwt to utils for reuse
-
+import { upload } from '../middleware/multer.middleware.js'
+import { uploadOnCloudinary } from '../utils/cloudinary.js'
+import fs from 'fs/promises'
 const router = express.Router()
 
 
+router.post('/upload', upload.single('image'), (req, res) => {
+
+  console.log(req.file, req.body)
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  res.status(200).send('File uploaded successfully.');
+});
+
+
 // Update user profile (requires authentication)
-router.patch('/signup', verifyJwt, async (req, res) => {
+router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
   console.log(req.body)
   try {
     const { _id, email } = req.decodedToken
@@ -16,12 +28,36 @@ router.patch('/signup', verifyJwt, async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
+
+    let imageUrl = null;
+    if(req.file) {
+      const localFilePath = req.file.path;
+
+      try {
+        await fs.access(localFilePath);// Check for file existence
+
+        console.log(localFilePath)
+
+        const cloudinary_response = await uploadOnCloudinary(localFilePath);
+
+        console.log(cloudinary_response.url)
+
+        // Remove the file after upload
+        await fs.unlink(localFilePath);
+
+        if (cloudinary_response) {
+          imageUrl = cloudinary_response.url;
+        }
+      } catch (err) {
+        console.error("File not found or cannot be accessed:", localFilePath);
+      }
+    }
     const {
       verified,
       step,
       registered,
-      userDetails: { fullName, dateOfBirth, gender },
-      hobbies: {
+        fullName, dateOfBirth, gender,
+      // hobbies: {
         nature,
         dietaryPreferences,
         workStyle,
@@ -30,9 +66,10 @@ router.patch('/signup', verifyJwt, async (req, res) => {
         guestPolicy,
         regionalBackground,
         interests,
-      },
-      preferences: { locationPreferences, nonVegPreference, lease },
-      additionalInfo,
+      // },
+     locationPreferences, nonVegPreference, lease,
+      bio, monthlyRentPreferences,
+      // image
     } = req.body
     console.log(req.body)
 
@@ -43,9 +80,9 @@ router.patch('/signup', verifyJwt, async (req, res) => {
     }
 
     user.metaDat = {
-      image: additionalInfo.image,
-      bio: additionalInfo.bio,
-      monthlyRent: additionalInfo.monthlyRentPreferences,
+      image: imageUrl,
+      bio:bio,
+      monthlyRent: monthlyRentPreferences,
     }
 
     user.hobbies = {
