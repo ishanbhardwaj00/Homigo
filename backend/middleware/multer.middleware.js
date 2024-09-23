@@ -24,6 +24,8 @@ const storage = multer.diskStorage({
         // Set a static filename or modify as needed
         cb(null, 'testing.jpg');
     }
+
+    // console.log("Exiting middleware")
 });
 
 export const upload = multer({
