@@ -30,28 +30,65 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
 
 
     let imageUrl = null;
-    if(req.file) {
+    // if(req.file) {
+    //   const localFilePath = req.file.path;
+
+    //   try {
+    //     await fs.access(localFilePath);// Check for file existence
+
+    //     console.log(localFilePath)
+
+    //     const cloudinary_response = await uploadOnCloudinary(localFilePath);
+
+    //     console.log(cloudinary_response.url)
+
+    //     // Remove the file after upload
+    //     // await fs.unlink(localFilePath);
+
+    //     if (cloudinary_response) {
+    //       imageUrl = cloudinary_response.url;
+    //     }
+    //   } catch (err) {
+    //     console.error("File not found or cannot be accessed:", localFilePath);
+    //   }
+    // }
+
+    if (req.file && req.file.path) {
       const localFilePath = req.file.path;
-
       try {
-        await fs.access(localFilePath);// Check for file existence
-
-        console.log(localFilePath)
-
-        const cloudinary_response = await uploadOnCloudinary(localFilePath);
-
-        console.log(cloudinary_response.url)
-
-        // Remove the file after upload
-        await fs.unlink(localFilePath);
-
-        if (cloudinary_response) {
-          imageUrl = cloudinary_response.url;
-        }
+        await fs.access(localFilePath);
+        console.log('File exists at: ', localFilePath);
       } catch (err) {
-        console.error("File not found or cannot be accessed:", localFilePath);
+        console.error('File cannot be accessed: ', err);
       }
-    }
+  
+      try {
+            await fs.access(localFilePath);// Check for file existence
+    
+            console.log("Received local file path:", localFilePath)
+    
+            const cloudinary_response = await uploadOnCloudinary(localFilePath);
+    
+            console.log("Cloudinary response:", cloudinary_response.url)
+    
+            // Remove the file after upload
+            // await fs.unlink(localFilePath);
+    
+            if (cloudinary_response) {
+              imageUrl = cloudinary_response.url;
+            }
+          } catch (err) {
+            console.error("File not found or cannot be accessed:", localFilePath);
+          }
+        }
+          else {
+            console.error('No file uploaded or file path is missing.');
+          }
+      
+
+
+
+
     const {
       verified,
       step,

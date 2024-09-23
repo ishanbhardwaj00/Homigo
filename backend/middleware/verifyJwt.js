@@ -14,7 +14,7 @@ const verifyJwt = async (req, res, next) => {
       process.env.ACCESS_TOKEN_SECRET
     )
 
-    console.log('before crash')
+    // console.log('before crash')
     if (!decodedToken) {
       console.log('Invalid token')
       return res.json({ success: false, message: 'Invalid Token' })
