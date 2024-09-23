@@ -1,5 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify, render_template
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 import pandas as pd
+from io import BytesIO
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder,OrdinalEncoder
 from sklearn.compose import ColumnTransformer
@@ -9,6 +13,46 @@ import pandas as pd
 import ast
 
 app=Flask(__name__)
+
+def load_and_preprocess_image(file, target_size):
+    # Use BytesIO to read the file object
+    img = image.load_img(BytesIO(file.read()), target_size=target_size)
+
+    # Convert image to array
+    img_array = image.img_to_array(img)
+
+    # Rescale the image
+    img_array = img_array / 255.0
+
+    # Expand dimensions to match the input shape
+    img_array = np.expand_dims(img_array, axis=0)
+
+    return img, img_array
+
+@app.route('/img')
+def img():
+    return render_template('index1.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    model = load_model('Homigo/Flask/my_model.h5')
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    
+    # Check if the file is an image
+    if file and file.filename.endswith(('png', 'jpg', 'jpeg')):
+        img, img_array = load_and_preprocess_image(file, target_size=(256, 256))  # Adjust size as per model
+        prediction = model.predict(img_array)
+        
+        # Assuming your model outputs a single value or probability, e.g., 0 for fake and 1 for real
+        label = 'real' if prediction[0][0] > 0.8 else 'fake'
+        
+        return jsonify({'prediction': label})
+    else:
+        return jsonify({'error': 'Invalid file format. Please upload a PNG or JPG image.'}), 400
+    
 
 @app.route('/nn', methods=['GET', 'POST'])
 def index():
