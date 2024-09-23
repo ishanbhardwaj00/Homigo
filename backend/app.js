@@ -42,7 +42,7 @@ app.post('/cnn', async (req, res) => {
   try {
     // Sending a POST request to Flask app
     const response = await axios.post('http://localhost:8080/nn', {
-      email: 'parthtayal2001@gmail.com'
+      email: 'sayija4174@cetnob.com'
     });
 
     // Return the response from Flask to the client
