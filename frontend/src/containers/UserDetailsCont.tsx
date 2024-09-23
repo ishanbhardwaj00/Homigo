@@ -6,30 +6,29 @@ import { UserContext } from '../contexts/userContext'
 import questionnaire from '../utils/questionnaire'
 
 export default ({ setStep }: { setStep: any }) => {
+  const { userInformation } = useContext(UserContext)
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm()
+  } = useForm({
+    defaultValues: {
+      nature: userInformation.get('nature'),
+      dietaryPreferences: userInformation.get('dietaryPreferences'),
+      workStyle: userInformation.get('workStyle'),
+      smokingPreference: userInformation.get('smokingPreference'),
+      drinkingPreference: userInformation.get('drinkingPreference'),
+      guestPolicy: userInformation.get('guestPolicy'),
+      workHours: userInformation.get('workHours'),
+      regionalBackground: userInformation.get('regionalBackground'),
+      interests: userInformation.get('interests')?.split(','),
+    },
+  })
   const [loading, setLoading] = useState(false)
-  const { userInformation } = useContext(UserContext)
   useEffect(() => {
-    if (userInformation.current?.hobbies) {
-      reset({
-        nature: userInformation.current?.hobbies?.nature,
-        dietaryPreferences:
-          userInformation.current?.hobbies?.dietaryPreferences,
-        workStyle: userInformation.current?.hobbies?.workStyle,
-        smokingPreference: userInformation.current?.hobbies?.smokingPreference,
-        drinkingPreference:
-          userInformation.current?.hobbies?.drinkingPreference,
-        guestPolicy: userInformation.current?.hobbies?.guestPolicy,
-        workHours: userInformation.current?.hobbies?.workHours,
-        regionalBackground:
-          userInformation.current?.hobbies?.regionalBackground,
-        interests: userInformation.current?.hobbies?.interests,
-      })
+    if (userInformation) {
+      reset()
     }
   }, [])
   return (
@@ -53,11 +52,33 @@ export default ({ setStep }: { setStep: any }) => {
           className="flex flex-col gap-6"
           onSubmit={handleSubmit((hobbies) => {
             setLoading(true)
-            userInformation.current = { ...userInformation.current, hobbies }
+            console.log(hobbies)
+            userInformation.append(
+              'dietaryPreferences',
+              hobbies.dietaryPreferences
+            )
+            userInformation.append(
+              'drinkingPreference',
+              hobbies.drinkingPreference
+            )
+            userInformation.append('guestPolicy', hobbies.guestPolicy)
+            userInformation.append('interests', hobbies.interests)
+            userInformation.append('nature', hobbies.nature)
+            userInformation.append(
+              'regionalBackground',
+              hobbies.regionalBackground
+            )
+            userInformation.append(
+              'smokingPreference',
+              hobbies.smokingPreference
+            )
+            userInformation.append('workHours', hobbies.workHours)
+            userInformation.append('workStyle', hobbies.workStyle)
+
             setStep((step: number) => step + 1)
             setTimeout(() => {}, 300)
             setLoading(false)
-            console.log(hobbies)
+            console.log(...userInformation.entries())
           })}
         >
           {questionnaire.map((question) => (

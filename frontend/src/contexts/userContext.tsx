@@ -1,11 +1,7 @@
 import { createContext, useRef, MutableRefObject } from 'react'
 
-const defaultUserInformation: MutableRefObject<any> = { current: {} }
-
-export const UserContext = createContext<{
-  userInformation: MutableRefObject<any>
-}>({
-  userInformation: defaultUserInformation,
+export const UserContext = createContext({
+  userInformation: new FormData(),
 })
 
 export const UserContextProvider = ({
@@ -13,7 +9,7 @@ export const UserContextProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const userInformation = useRef({})
+  const userInformation = new FormData()
   return (
     <UserContext.Provider value={{ userInformation }}>
       {children}

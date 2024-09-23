@@ -4,7 +4,6 @@ import verifyJwt from '../middleware/verifyJwt.js' // Move verifyJwt to utils fo
 
 const router = express.Router()
 
-
 // Update user profile (requires authentication)
 router.patch('/signup', verifyJwt, async (req, res) => {
   console.log(req.body)
@@ -17,22 +16,23 @@ router.patch('/signup', verifyJwt, async (req, res) => {
     }
 
     const {
-      verified,
-      step,
-      registered,
-      userDetails: { fullName, dateOfBirth, gender },
-      hobbies: {
-        nature,
-        dietaryPreferences,
-        workStyle,
-        workHours,
-        smokingPreference,
-        guestPolicy,
-        regionalBackground,
-        interests,
-      },
-      preferences: { locationPreferences, nonVegPreference, lease },
-      additionalInfo,
+      fullName,
+      dateOfBirth,
+      gender,
+      nature,
+      dietaryPreferences,
+      workStyle,
+      workHours,
+      smokingPreference,
+      guestPolicy,
+      regionalBackground,
+      interests,
+      locationPreferences,
+      nonVegPreference,
+      lease,
+      image,
+      bio,
+      monthlyRentPreferences,
     } = req.body
     console.log(req.body)
 

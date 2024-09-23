@@ -2,7 +2,12 @@ import express from 'express'
 import nodemailer from 'nodemailer'
 import OTP from '../models/otp.model.js'
 import User from '../models/users.model.js'
-import { generateOTP, generateOTPExpiry, updateOTPForUser, isOtpValid } from '../utils/otp_gen.js'
+import {
+  generateOTP,
+  generateOTPExpiry,
+  updateOTPForUser,
+  isOtpValid,
+} from '../utils/otp_gen.js'
 
 const router = express.Router()
 
@@ -15,8 +20,8 @@ router.post('/generateOtp', async (req, res) => {
 
     if (userExists) {
       return res.status(200).json({
-        success: true,
-        message: 'This profile is incompleted',
+        success: false,
+        message: 'User already signed up',
       })
     }
     const otp = generateOTP()
@@ -68,9 +73,13 @@ router.post('/verifyOtp', async (req, res) => {
     const isValid = await isOtpValid(email, otp)
     if (isValid) {
       await OTP.deleteOne({ email })
-      res.status(200).json({ success: true, message: 'OTP verified successfully!' })
+      res
+        .status(200)
+        .json({ success: true, message: 'OTP verified successfully!' })
     } else {
-      res.status(400).json({ success: false, message: 'Invalid OTP or OTP expired' })
+      res
+        .status(400)
+        .json({ success: false, message: 'Invalid OTP or OTP expired' })
     }
   } catch (error) {
     console.error('Error verifying OTP:', error)

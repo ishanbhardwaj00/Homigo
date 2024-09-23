@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../contexts/authContext'
 import calculateAge from '../utils/calculateAge'
 import { BiSolidPencil } from 'react-icons/bi'
@@ -20,6 +20,8 @@ const Profile = () => {
   const [searchParams] = useSearchParams()
   useEffect(() => {}, [searchParams, user])
 
+  const [image, setImage] = useState(user?.metaDat?.image)
+
   if (searchParams.get('edit') === 'true') {
     return <EditPreferences />
   } else if (!user) return <Loading />
@@ -38,14 +40,29 @@ const Profile = () => {
       </div>
       <div className="flex flex-col items-center gap-2">
         <div className="relative h-40 w-40 bg-black rounded-full border-primary border-2">
-          <img
-            className="w-full h-full rounded-full object-cover"
-            src={user?.metaDat?.image}
-            alt="pfp.jpg"
+          <label htmlFor="fileInput">
+            <img
+              className="w-full h-full rounded-full object-cover"
+              src={image}
+              alt="pfp.jpg"
+            />
+            <div className="absolute flex items-center justify-center right-0 bottom-3 h-8 w-8 bg-primary border-2 border-white rounded-full">
+              <BiSolidPencil size={22} color="white" />
+            </div>
+          </label>
+          <input
+            id="fileInput"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files![0]
+              if (file) {
+                const imageUrl = URL.createObjectURL(file)
+                setImage(imageUrl)
+              }
+            }}
           />
-          <div className="absolute flex items-center justify-center right-0 bottom-3 h-8 w-8 bg-primary border-2 border-white rounded-full">
-            <BiSolidPencil size={22} color="white" />
-          </div>
         </div>
         <div className="text-2xl font-bold">
           <span className="">{user?.userDetails?.fullName?.split(' ')[0]}</span>

@@ -1,46 +1,38 @@
-"use client";
-import { useState, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import Loading from "../components/Loading";
-import ErrorMessage from "../components/ErrorMessage";
-import { GoArrowLeft } from "react-icons/go";
-import { UserContext } from "../contexts/userContext";
+'use client'
+import { useState, useContext, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import Loading from '../components/Loading'
+import ErrorMessage from '../components/ErrorMessage'
+import { GoArrowLeft } from 'react-icons/go'
+import { UserContext } from '../contexts/userContext'
 
 const locations = [
-  "Near Cyberhub",
-  "Near Unitech CyberPark",
-  "Near Golf Course Ext",
-  "Near Millenium City Centre",
-  "Near Old Gurgaon",
-  "Near IMT Manesar",
-  "Near Phase II",
-];
+  'Near Cyberhub',
+  'Near Unitech CyberPark',
+  'Near Golf Course Ext',
+  'Near Millenium City Centre',
+  'Near Old Gurgaon',
+  'Near IMT Manesar',
+  'Near Phase II',
+]
 export default ({ setStep }: { setStep: any }) => {
+  const { userInformation } = useContext(UserContext)
   const {
     register,
     handleSubmit,
     reset,
     getValues,
     formState: { errors, isSubmitting },
-  } = useForm();
-  const { userInformation } = useContext(UserContext);
+  } = useForm({
+    defaultValues: {
+      locationPreferences: userInformation
+        .get('locationPreferences')
+        ?.split(','),
+      nonVegPreference: userInformation.get('nonVegPreference'),
+      lease: userInformation.get('lease'),
+    },
+  })
 
-  useEffect(() => {
-    if (userInformation.current?.preferences) {
-      setLoading(true);
-      reset({
-        locationPreferences:
-          userInformation.current?.preferences.locationPreferences,
-        nonVegPreference: userInformation.current?.preferences.nonVegPreference,
-        lease: userInformation.current?.preferences.lease,
-      });
-      setLoading(false);
-    }
-  }, []);
-
-  const [loading, setLoading] = useState(false);
-
-  if (loading) return <Loading />;
   return (
     <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
       <div className="w-3/4  my-16 flex flex-col justify-between gap-14">
@@ -57,12 +49,12 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-7"
           onSubmit={handleSubmit((preferences) => {
-            setStep((step: number) => step + 1);
-            userInformation.current = {
-              ...userInformation.current,
-              preferences,
-            };
-            console.log(preferences);
+            setStep((step: number) => step + 1)
+            const { locationPreferences, nonVegPreference, lease } = preferences
+            userInformation.append('locationPreferences', locationPreferences)
+            userInformation.append('nonVegPreference', nonVegPreference)
+            userInformation.append('lease', lease)
+            console.log(preferences)
           })}
         >
           <div className="flex flex-col text-button-radio-button font-semibold gap-2">
@@ -83,8 +75,8 @@ export default ({ setStep }: { setStep: any }) => {
                     // className="appearance-none bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
                     className=" bg-transparent border border-solid border-gray-300 w-4 h-4 checked:border-primary"
                     id={location}
-                    {...register("locationPreferences", {
-                      required: "This field is required",
+                    {...register('locationPreferences', {
+                      required: 'This field is required',
                     })}
                   />
                   <div className="flex flex-col w-full gap-2">
@@ -111,8 +103,8 @@ export default ({ setStep }: { setStep: any }) => {
               <p className="text-xs font-thin text-button-radio-button"></p>
               <div className="flex gap-2 flex-wrap ">
                 {[
-                  "Yes, I’m comfortable with it",
-                  "No, I prefer a vegetarian-only environment",
+                  'Yes, I’m comfortable with it',
+                  'No, I prefer a vegetarian-only environment',
                 ].map((option, index) => (
                   <label
                     key={option}
@@ -126,7 +118,7 @@ export default ({ setStep }: { setStep: any }) => {
                       value={option}
                       id={option}
                       {...register(`nonVegPreference`, {
-                        required: "This field is required",
+                        required: 'This field is required',
                       })}
                     />
                   </label>
@@ -144,7 +136,7 @@ export default ({ setStep }: { setStep: any }) => {
               <p className="text-sm">What is your preferred lease duration?</p>
               <p className="text-xs font-thin text-button-radio-button"></p>
               <div className="flex gap-1 flex-wrap ">
-                {["No lease", "3 months", "6 months", "12 months"].map(
+                {['No lease', '3 months', '6 months', '12 months'].map(
                   (option, index) => (
                     <label
                       key={option}
@@ -154,7 +146,7 @@ export default ({ setStep }: { setStep: any }) => {
                       <span className="w-max">{option}</span>
                       <input
                         {...register(`lease`, {
-                          required: "This field is required",
+                          required: 'This field is required',
                         })}
                         className="hidden"
                         type="radio"
@@ -177,5 +169,5 @@ export default ({ setStep }: { setStep: any }) => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
