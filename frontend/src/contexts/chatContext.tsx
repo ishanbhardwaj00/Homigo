@@ -1,10 +1,13 @@
 import axios from 'axios'
 import { createContext, useEffect, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
+import Loading from '../components/Loading'
 
 export const ChatContext = createContext(null)
 
 export default ({ children }) => {
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     async function getUserChats() {
       try {
@@ -13,7 +16,7 @@ export default ({ children }) => {
         })
 
         const { success, chats } = response.data
-        console.log(response)
+        // console.log(response)
 
         console.log('chats', chats)
 
@@ -28,6 +31,8 @@ export default ({ children }) => {
       } catch (error) {
         console.log(error)
         setChatError('Some server error occured')
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -39,7 +44,6 @@ export default ({ children }) => {
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
     'http://localhost:5000'
   )
-
   useEffect(() => {
     if (lastMessage) {
       console.log(chats) // Logging chats to inspect
@@ -79,6 +83,7 @@ export default ({ children }) => {
   useEffect(() => {
     console.log(chats)
   }, [chats])
+
   return (
     <ChatContext.Provider
       value={{

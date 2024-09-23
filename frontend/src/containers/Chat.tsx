@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChatContext } from '../contexts/chatContext'
 import Loading from '../components/Loading'
@@ -44,9 +44,11 @@ const Chats = () => {
   const { chats } = useContext(ChatContext)
   const { user, authLoading } = useContext(AuthContext)
   const { matches } = useContext(MatchContext)
+  const [chatsArray, setChatsArray] = useState([])
 
   console.log('Chat.tsx, ', chats)
-  if (chats === null || matches === null) return <Loading />
+
+  if (!chats || !matches || !user) return <Loading />
   if (Object.values(chats).length === 0)
     return (
       <div className="flex flex-1 flex-col justify-center items-center gap-8 fade-in-scale-up bg-home-light">
@@ -88,54 +90,63 @@ const Chats = () => {
         </span>
         {/* cards */}
         <div className="flex flex-col gap-2 p-1">
-          {Object.entries(chats).map(([senderId, chat], index) => {
-            return (
-              <div
-                key={index}
-                onClick={() => {
-                  navigate(`/chats/${senderId}`, {
-                    state: {
-                      img: matches[senderId]?.metaDat?.image,
-                      name: matches[senderId]?.userDetails?.fullName,
-                    },
-                  })
-                }}
-                className="flex w-full p-1 px-7 gap-4 active:bg-slate-200 rounded-2xl items-center"
-              >
-                <div className="rounded-full h-20 w-20">
-                  <img
-                    src={matches[senderId]?.metaDat.image}
-                    className="h-full w-full object-cover rounded-full"
-                  />
+          {Object.entries(chats)
+            .sort(([senderIdA, chatA], [senderIdB, chatB]) => {
+              const timeA = new Date(chatA?.lastMessage?.updatedAt).getTime()
+              const timeB = new Date(chatB?.lastMessage?.updatedAt).getTime()
+              return timeB - timeA // Sort in descending order (most recent first)
+            })
+            .map(([senderId, chat], index) => {
+              return (
+                <div
+                  key={index}
+                  onClick={() => {
+                    navigate(`/chats/${senderId}`)
+                  }}
+                  className="flex w-full p-1 px-7 gap-4 active:bg-slate-200 rounded-2xl items-center"
+                >
+                  <div className="rounded-full h-20 w-20">
+                    <img
+                      src={matches[senderId]?.metaDat?.image}
+                      className="h-full w-full object-cover rounded-full"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center flex-1 max-w-40 ">
+                    <span className="capitalize text-lg font-medium text-ellipsis overflow-hidden whitespace-nowrap">
+                      {matches[senderId]?.userDetails?.fullName?.split(' ')[0]}
+                    </span>
+                    {chat?.lastMessage?.sender !== user.id &&
+                    !chat?.lastMessage?.readBy.includes(user.id) ? (
+                      <div className="text-black font-medium w-fulltext-base truncate">
+                        <span>
+                          {
+                            chat?.messages.at(chat?.messages.length - 1)
+                              ?.content
+                          }
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-gray-dark flex gap-1 text-lg truncate ">
+                        {chat?.lastMessage?.sender === user.id && (
+                          <span>You:</span>
+                        )}
+                        <span className="truncate">
+                          {
+                            chat?.messages.at(chat?.messages?.length - 1)
+                              ?.content
+                          }
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-base text-gray-dark">
+                    {formatRelativeTime(
+                      moment(chat?.lastMessage?.updatedAt).fromNow()
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col justify-center flex-1 max-w-40 ">
-                  <span className="capitalize text-lg font-medium text-ellipsis overflow-hidden whitespace-nowrap">
-                    {matches[senderId].userDetails.fullName.split(' ')[0]}
-                  </span>
-                  {chat.lastMessage.sender !== user.id &&
-                  !chat.lastMessage?.readBy.includes(user.id) ? (
-                    <div className="text-black font-medium w-fulltext-base truncate">
-                      <span>
-                        {chat.messages.at(chat?.messages.length - 1)?.content}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-gray-dark flex gap-1 text-lg truncate ">
-                      {chat.lastMessage.sender === user.id && <span>You:</span>}
-                      <span className="truncate">
-                        {chat.messages.at(chat.messages.length - 1)?.content}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-base text-gray-dark">
-                  {formatRelativeTime(
-                    moment(chat.lastMessage.updatedAt).fromNow()
-                  )}
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
         </div>
       </div>
     </div>

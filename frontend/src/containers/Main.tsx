@@ -16,9 +16,6 @@ const Main = () => {
       swiperRef.current.swiper.slideTo(savedIndex, 0) // Restore saved slide
     }
   }, [])
-  useEffect(() => {
-    console.log(matches)
-  }, [matches])
 
   if (matches === null) return <Loading />
   return (
@@ -114,12 +111,7 @@ const Main = () => {
                   <div className="flex w-full justify-center">
                     <button
                       onClick={() => {
-                        navigate(`/chats/${user?._id}`, {
-                          state: {
-                            name: user?.userDetails?.fullName?.split(' ')[0],
-                            img: user?.metaDat?.image,
-                          },
-                        })
+                        navigate(`/chats/${user?._id}`)
                         localStorage.setItem('swiperIndex', String(ind))
                       }}
                       className="w-11/12 rounded-full bg-button-primary py-3 text-2xl font-bold text-primary mt-6"

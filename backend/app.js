@@ -26,20 +26,30 @@ app.use('/api/users', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users', otpRoutes)
 
-app.get('/', (req, res) => {
-  res.send('Work in progress')
-})
-
-// Get all users (requires authentication)
-app.get('/users', verifyJwt, async (req, res) => {
-  const users = await User.find({})
+app.get('/users/:id', verifyJwt, async (req, res) => {
+  const id = req.params.id
+  const user = await User.findById(id)
+  console.log(user)
+  const { userCred, ...userObject } = { ...user }
   return res.json({
     success: true,
-    users,
+    user: userObject,
+  })
+})
+app.get('/users', verifyJwt, async (req, res) => {
+  const users = await User.find({})
+  const usersObject = {}
+  users.forEach((user) => {
+    const { userCred, ...rest } = user.toObject()
+
+    usersObject[user._id] = { ...rest }
+  })
+  return res.json({
+    success: true,
+    users: usersObject,
   })
 })
 
-// MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected!'))
