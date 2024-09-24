@@ -38,6 +38,19 @@ app.get('/users', verifyJwt, async (req, res) => {
   })
 })
 
+app.post('/cnn', async (req, res) => {
+  try {
+    // Sending a POST request to Flask app
+    const response = await axios.post('http://localhost:8080/nn', {
+      email: 'parthtayal2001@gmail.com'
+    });
+
+    // Return the response from Flask to the client
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error sending data to Flask' });
+  }
+});
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
