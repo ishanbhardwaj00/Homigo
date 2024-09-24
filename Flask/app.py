@@ -70,7 +70,7 @@ def index():
         # Convert MongoDB data to a Pandas DataFrame
         df = pd.json_normalize(data)
 
-        new_df=df[df['profileCompleted']==True]
+        new_df=df[df['profileCompleted']==True].copy()
         new_df.drop(columns=['__v','_id','profileCompleted','userCred.password','userCred.refreshToken','hobbies.nature','hobbies.dietaryPreferences','metaDat.image','metaDat.bio','userDetails.fullName'],inplace=True)
         new_df['userDetails.gender'].replace('Other','Male',inplace=True)
         age_groups = []
