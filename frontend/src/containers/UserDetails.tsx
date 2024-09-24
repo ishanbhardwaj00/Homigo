@@ -55,10 +55,11 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           onSubmit={handleSubmit((userDetails) => {
             const { fullName, dateOfBirth, pinCode, gender } = userDetails
-            userInformation.append('fullName', fullName)
-            userInformation.append('dateOfBirth', dateOfBirth)
-            userInformation.append('gender', gender)
-            userInformation.append('pinCode', pinCode)
+
+            userInformation.set('fullName', fullName)
+            userInformation.set('dateOfBirth', dateOfBirth)
+            userInformation.set('gender', gender)
+            userInformation.set('pinCode', pinCode)
 
             console.log(...userInformation.entries(), 'forma')
 

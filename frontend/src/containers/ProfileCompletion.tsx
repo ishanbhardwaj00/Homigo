@@ -32,7 +32,7 @@ export default ({ setStep }: { setStep: any }) => {
       reader.onloadend = () => {
         setImage(reader.result as string)
       }
-      userInformation.append('image', file)
+      userInformation.set('image', file)
       reader.readAsDataURL(file) // Converts the file to a Base64-encoded string
     }
   }
@@ -61,8 +61,8 @@ export default ({ setStep }: { setStep: any }) => {
           className="flex flex-col gap-6"
           onSubmit={handleSubmit(async (data) => {
             console.log(data)
-            userInformation.append('bio', data.bio)
-            userInformation.append(
+            userInformation.set('bio', data.bio)
+            userInformation.set(
               'monthlyRentPreferences',
               data.monthlyRentPreferences
             )

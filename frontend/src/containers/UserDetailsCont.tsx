@@ -22,7 +22,7 @@ export default ({ setStep }: { setStep: any }) => {
       guestPolicy: userInformation.get('guestPolicy'),
       workHours: userInformation.get('workHours'),
       regionalBackground: userInformation.get('regionalBackground'),
-      interests: userInformation.get('interests')?.split(','),
+      interests: JSON.parse(userInformation.get('interests')),
     },
   })
   const [loading, setLoading] = useState(false)
@@ -53,27 +53,24 @@ export default ({ setStep }: { setStep: any }) => {
           onSubmit={handleSubmit((hobbies) => {
             setLoading(true)
             console.log(hobbies)
-            userInformation.append(
+            userInformation.set(
               'dietaryPreferences',
               hobbies.dietaryPreferences
             )
-            userInformation.append(
+            userInformation.set(
               'drinkingPreference',
               hobbies.drinkingPreference
             )
-            userInformation.append('guestPolicy', hobbies.guestPolicy)
-            userInformation.append('interests', hobbies.interests)
-            userInformation.append('nature', hobbies.nature)
-            userInformation.append(
+            userInformation.set('guestPolicy', hobbies.guestPolicy)
+            userInformation.set('interests', JSON.stringify(hobbies.interests))
+            userInformation.set('nature', hobbies.nature)
+            userInformation.set(
               'regionalBackground',
               hobbies.regionalBackground
             )
-            userInformation.append(
-              'smokingPreference',
-              hobbies.smokingPreference
-            )
-            userInformation.append('workHours', hobbies.workHours)
-            userInformation.append('workStyle', hobbies.workStyle)
+            userInformation.set('smokingPreference', hobbies.smokingPreference)
+            userInformation.set('workHours', hobbies.workHours)
+            userInformation.set('workStyle', hobbies.workStyle)
 
             setStep((step: number) => step + 1)
             setTimeout(() => {}, 300)

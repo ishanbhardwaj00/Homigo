@@ -25,9 +25,9 @@ export default ({ setStep }: { setStep: any }) => {
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
-      locationPreferences: userInformation
-        .get('locationPreferences')
-        ?.split(','),
+      locationPreferences: JSON.parse(
+        userInformation.get('locationPreferences')
+      ),
       nonVegPreference: userInformation.get('nonVegPreference'),
       lease: userInformation.get('lease'),
     },
@@ -51,9 +51,12 @@ export default ({ setStep }: { setStep: any }) => {
           onSubmit={handleSubmit((preferences) => {
             setStep((step: number) => step + 1)
             const { locationPreferences, nonVegPreference, lease } = preferences
-            userInformation.append('locationPreferences', locationPreferences)
-            userInformation.append('nonVegPreference', nonVegPreference)
-            userInformation.append('lease', lease)
+            userInformation.set(
+              'locationPreferences',
+              JSON.stringify(locationPreferences)
+            )
+            userInformation.set('nonVegPreference', nonVegPreference)
+            userInformation.set('lease', lease)
             console.log(preferences)
           })}
         >

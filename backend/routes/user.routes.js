@@ -3,19 +3,18 @@ import User from '../models/users.model.js'
 import verifyJwt from '../middleware/verifyJwt.js' // Move verifyJwt to utils for reuse
 import { upload } from '../middleware/multer.middleware.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
+import path from 'path'
+
 import fs from 'fs/promises'
 const router = express.Router()
 
-
 router.post('/upload', upload.single('image'), (req, res) => {
-
   console.log(req.file, req.body)
   if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).send('No file uploaded.')
   }
-  res.status(200).send('File uploaded successfully.');
-});
-
+  res.status(200).send('File uploaded successfully.')
+})
 
 // Update user profile (requires authentication)
 router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
@@ -28,66 +27,45 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-
-    let imageUrl = null;
-    // if(req.file) {
-    //   const localFilePath = req.file.path;
-
-    //   try {
-    //     await fs.access(localFilePath);// Check for file existence
-
-    //     console.log(localFilePath)
-
-    //     const cloudinary_response = await uploadOnCloudinary(localFilePath);
-
-    //     console.log(cloudinary_response.url)
-
-    //     // Remove the file after upload
-    //     // await fs.unlink(localFilePath);
-
-    //     if (cloudinary_response) {
-    //       imageUrl = cloudinary_response.url;
-    //     }
-    //   } catch (err) {
-    //     console.error("File not found or cannot be accessed:", localFilePath);
-    //   }
-    // }
+    let imageUrl = null
+    console.log(req.file)
 
     if (req.file && req.file.path) {
-      const localFilePath = req.file.path;
+      const localFilePath = req.file.path
       try {
-        await fs.access(localFilePath);
-        console.log('File exists at: ', localFilePath);
+        await fs.access(localFilePath)
+        console.log('File exists at: ', localFilePath)
       } catch (err) {
-        console.error('File cannot be accessed: ', err);
+        console.error('File cannot be accessed: ', err)
       }
-  
+
       try {
-            await fs.access(localFilePath);// Check for file existence
-    
-            console.log("Received local file path:", localFilePath)
-    
-            const cloudinary_response = await uploadOnCloudinary(localFilePath);
-    
-            console.log("Cloudinary response:", cloudinary_response.url)
-    
-            // Remove the file after upload
-            // await fs.unlink(localFilePath);
-    
-            if (cloudinary_response) {
-              imageUrl = cloudinary_response.url;
-            }
-          } catch (err) {
-            console.error("File not found or cannot be accessed:", localFilePath);
-          }
+        await fs.access(localFilePath) // Check for file existence
+
+        console.log('Received local file path:', localFilePath)
+        const localPath = path.join(
+          __dirname,
+          '..',
+          'public',
+          'temp',
+          req.file.filename
+        )
+        const cloudinary_response = await uploadOnCloudinary(localPath)
+
+        console.log('Cloudinary response:', cloudinary_response.url)
+
+        // Remove the file after upload
+        // await fs.unlink(localFilePath);
+
+        if (cloudinary_response) {
+          imageUrl = cloudinary_response.url
         }
-          else {
-            console.error('No file uploaded or file path is missing.');
-          }
-      
-
-
-
+      } catch (err) {
+        console.error('File not found or cannot be accessed:', localFilePath)
+      }
+    } else {
+      console.error('No file uploaded or file path is missing.')
+    }
 
     const {
       fullName,
@@ -118,7 +96,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
 
     user.metaDat = {
       image: imageUrl,
-      bio:bio,
+      bio: bio,
       monthlyRent: monthlyRentPreferences,
     }
 

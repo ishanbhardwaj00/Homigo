@@ -148,6 +148,11 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
   if (decodedToken) {
     console.log(decodedToken)
     const user = await User.findById(decodedToken._id)
+
+    if (!user) {
+      res.clearCookie('accessToken')
+      res.clearCookie('refreshToken')
+    }
     const { userCred, ...userObject } = user._doc
 
     if (user && !user.profileCompleted) {
