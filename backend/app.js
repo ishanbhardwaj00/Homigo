@@ -38,52 +38,55 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
   })
 })
 app.get('/users', verifyJwt, async (req, res) => {
-  try {
-    console.log('Headers:', req.headers);
-    console.log('Cookies:', req.cookies);
 
-    // Retrieve the JWT token from the request headers or cookies
-    const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
+  console.log(await User.find({}))
+  // try {
+  //   console.log('Headers:', req.headers);
+  //   console.log('Cookies:', req.cookies);
 
-    if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
-    }
+  //   // Retrieve the JWT token from the request headers or cookies
+  //   const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
 
-    // Decode the JWT to get the user information
-    // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  //   if (!token) {
+  //     return res.status(401).json({ success: false, message: 'No token provided' });
+  //   }
+
+  //   // Decode the JWT to get the user information
+  //   // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     
-    const userEmail = req.decodedToken.email;
-    console.log("Extracted email from token", userEmail)
+  //   const userEmail = req.decodedToken.email;
+  //   console.log("Extracted email from token", userEmail)
 
-    // Send POST request to Flask app with the user's email
-    const response = await axios.post('http://localhost:8080/nn', {
-      email: userEmail
-    });
+  //   // Send POST request to Flask app with the user's email
+  //   const response = await axios.post('http://localhost:8080/nn', {
+  //     email: userEmail
+  //   });
 
-    // Assuming Flask responds with a 'users' object
-    const users = response.data
+  //   // Assuming Flask responds with a 'users' object
+  //   const users = response.data
 
-    console.log("Users: ", users)
+  //   // console.log("Users: ", users)
 
-    // Process the users and strip out sensitive information
-    const usersObject = users.reduce((acc, user) => {
-      const { userCred, ...rest } = user;
-      acc[user._id] = rest;
-      return acc;
-    }, {});
+  //   // Process the users and strip out sensitive information
+  //   const usersObject = users.reduce((acc, user) => {
+  //     const { userCred, ...rest } = user;
+  //     acc[user._id] = rest;
+  //     return acc;
+  //   }, {});
 
-    // Return the processed users to the client
-    return res.json({
-      success: true,
-      users: usersObject,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch users or decode token',
-      error: error.message,
-    });
-  }
+  //   // console.log(JSON.parse(usersObject))
+  //   // Return the processed users to the client
+  //   return res.json({
+  //     success: true,
+  //     users: usersObject,
+  //   });
+  // } catch (error) {
+  //   return res.status(500).json({
+  //     success: false,
+  //     message: 'Failed to fetch users or decode token',
+  //     error: error.message,
+  //   });
+  // }
 });
 
 app.post('/cnn', async (req, res) => {

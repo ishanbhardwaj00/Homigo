@@ -43,14 +43,16 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
         await fs.access(localFilePath) // Check for file existence
 
         console.log('Received local file path:', localFilePath)
-        const localPath = path.join(
-          __dirname,
-          '..',
-          'public',
-          'temp',
-          req.file.filename
-        )
-        const cloudinary_response = await uploadOnCloudinary(localPath)
+        // const localPath = path.join(
+        //   __dirname,
+        //   '..',
+        //   'public',
+        //   'temp',
+        //   req.file.filename
+        // )
+
+        console.log("File waiting to be uploaded")
+        const cloudinary_response = await uploadOnCloudinary(localFilePath)
 
         console.log('Cloudinary response:', cloudinary_response.url)
 
@@ -79,6 +81,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       guestPolicy,
       regionalBackground,
       interests,
+      drinkingPreference,
       locationPreferences,
       nonVegPreference,
       lease,
@@ -109,6 +112,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       guestPolicy,
       regionalBackground,
       interests,
+      drinkingPreference
     }
     user.preferences = {
       location: locationPreferences,

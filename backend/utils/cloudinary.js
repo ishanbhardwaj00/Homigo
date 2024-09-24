@@ -14,6 +14,8 @@ const uploadOnCloudinary = async (localFilePath) => {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   })
 
+  console.log("Received file path in cloudinary function: ", localFilePath)
+
   try {
     console.log('Inside the uploading function')
 

@@ -200,7 +200,7 @@ def index():
         similarities=similarities*100
         rm['similar_score']=similarities
         rm=rm.drop(columns=['userCred.refreshToken'])
-        # print(rm)
+        print(rm)
         rm['_id']=rm['_id'].astype(str)
         # print(rm['_id'])
         rm_data=rm.to_dict(orient='records')
