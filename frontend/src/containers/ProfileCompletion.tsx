@@ -80,6 +80,7 @@ export default ({ setStep }: { setStep: any }) => {
               console.log(response.data)
               setUser(userInformation)
               setAuthenticated(true)
+              setUser(response.data.user)
               // router.replace("/");
             } catch (error) {
               console.log(error)

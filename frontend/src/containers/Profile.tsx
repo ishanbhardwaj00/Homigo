@@ -66,6 +66,7 @@ const Profile = () => {
     return <EditPreferences />
   } else if (!user) return <Loading />
 
+  if (!user) return <Loading />
   return (
     <div className="flex flex-col flex-1 gap-6 bg-nav-light fade-in-scale-up px-8 pb-4 overflow-y-scroll">
       <div className="flex flex-row-reverse h-10">
