@@ -34,7 +34,7 @@ const worker = new Worker(
       sender: sender,
       content: content,
     })
-    message.save()
+    await message.save()
 
     const chat = await Chat.findOne({
       recipients: {
@@ -54,7 +54,7 @@ const worker = new Worker(
         lastMessage: message,
       })
 
-      newChat.save()
+      await newChat.save()
     } else {
       chat.messages = [...chat.messages, message]
       chat.lastMessage = message

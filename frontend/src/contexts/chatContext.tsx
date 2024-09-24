@@ -1,10 +1,13 @@
 import axios from 'axios'
 import { createContext, useEffect, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
+import Loading from '../components/Loading'
 
 export const ChatContext = createContext(null)
 
 export default ({ children }) => {
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     async function getUserChats() {
       try {
@@ -13,25 +16,23 @@ export default ({ children }) => {
         })
 
         const { success, chats } = response.data
-        console.log(response)
+        // console.log(response)
 
         console.log('chats', chats)
 
         if (success) {
-          const map = {}
-
-          for (let chat of chats) {
-            map[chat?.recipients[0]?._id] = chat
-
-            console.log(map)
-          }
-
-          setChats(map)
+          setChats(chats)
         } else {
           console.log('no chats found')
+          setChatError(
+            'There was some problem while getting your chat, try refreshing the page'
+          )
         }
       } catch (error) {
         console.log(error)
+        setChatError('Some server error occured')
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -39,10 +40,10 @@ export default ({ children }) => {
   }, [])
 
   const [chats, setChats] = useState(null)
+  const [chatError, setChatError] = useState<string | null>(null)
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
     'http://localhost:5000'
   )
-
   useEffect(() => {
     if (lastMessage) {
       console.log(chats) // Logging chats to inspect
@@ -82,9 +83,16 @@ export default ({ children }) => {
   useEffect(() => {
     console.log(chats)
   }, [chats])
+
   return (
     <ChatContext.Provider
-      value={{ chats, setChats, sendJsonMessage, lastMessage, readyState }}
+      value={{
+        chats,
+        setChats,
+        sendJsonMessage,
+        lastMessage,
+        readyState,
+      }}
     >
       {children}
     </ChatContext.Provider>

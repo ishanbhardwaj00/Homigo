@@ -1,15 +1,16 @@
-import { useState, useRef, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { AuthContext } from "../contexts/authContext";
-import { FaArrowLeft } from "react-icons/fa";
-import { BarLoader, PulseLoader } from "react-spinners";
-import Loading from "../components/Loading";
-import ErrorMessage from "../components/ErrorMessage";
-import { GoArrowLeft } from "react-icons/go";
-import axios from "axios";
-import { UserContext, UserContextProvider } from "../contexts/userContext";
+import { useState, useRef, useContext, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { AuthContext } from '../contexts/authContext'
+import { FaArrowLeft } from 'react-icons/fa'
+import { BarLoader, PulseLoader } from 'react-spinners'
+import Loading from '../components/Loading'
+import ErrorMessage from '../components/ErrorMessage'
+import { GoArrowLeft } from 'react-icons/go'
+import axios from 'axios'
+import { UserContext, UserContextProvider } from '../contexts/userContext'
 
 export default ({ setStep }: { setStep: any }) => {
+  const { userInformation } = useContext(UserContext)
   const {
     register,
     handleSubmit,
@@ -17,44 +18,30 @@ export default ({ setStep }: { setStep: any }) => {
     getValues,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      bio: userInformation.get('bio'),
+      monthlyRentPreferences: userInformation.get('monthlyRentPreferences'),
+    },
+  })
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        setValue("image", reader.result);
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file); // Converts the file to a Base64-encoded string
+        setImage(reader.result as string)
+      }
+      userInformation.append('image', file)
+      reader.readAsDataURL(file) // Converts the file to a Base64-encoded string
     }
-  };
+  }
   const { authenticated, setAuthenticated, user, setUser } =
-    useContext(AuthContext);
+    useContext(AuthContext)
 
-  useEffect(() => {
-    setLoading(true);
-    if (userInformation.current?.additionalInfo) {
-      setLoading(true);
-      reset({
-        image: userInformation.current?.additionalInfo?.image,
-        bio: userInformation.current?.additionalInfo?.bio,
-        monthlyRentPreferences:
-          userInformation.current?.additionalInfo?.monthlyRentPreferences,
-      });
-      setImage(userInformation.current?.additionalInfo?.image);
-      setLoading(false);
-    }
-    setLoading(false);
-  }, []);
-
-  const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState(null)
   // const router = useRouter();
-  const [requestPending, setRequestPending] = useState(false);
-  const { userInformation } = useContext(UserContext);
-  if (loading) return <Loading />;
+  const [requestPending, setRequestPending] = useState(false)
   return (
     <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
       <div className="w-3/4  py-8 flex flex-col justify-between gap-12">
@@ -73,37 +60,40 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-6"
           onSubmit={handleSubmit(async (data) => {
-            setRequestPending(true);
-            const additionalInfo = { ...data, image: image };
-            userInformation.current = {
-              ...userInformation.current,
-              additionalInfo,
-            };
+            console.log(data)
+            userInformation.append('bio', data.bio)
+            userInformation.append(
+              'monthlyRentPreferences',
+              data.monthlyRentPreferences
+            )
+            console.log(...userInformation.entries())
+            setRequestPending(true)
 
             try {
               const response = await axios.patch(
-                "http://localhost:5000/api/users/signup",
-                userInformation.current,
-                { withCredentials: true }
-              );
-              console.log(response.data);
-              setUser(userInformation);
-              setAuthenticated(true);
+                'http://localhost:5000/api/users/signup',
+                userInformation,
+                {
+                  withCredentials: true,
+                }
+              )
+              console.log(response.data)
+              setUser(userInformation)
+              setAuthenticated(true)
               // router.replace("/");
             } catch (error) {
-              console.log(error);
+              console.log(error)
             } finally {
-              setRequestPending(false);
+              setRequestPending(false)
             }
           })}
         >
           <div className="avatar-container self-center">
             <input
-              {...register("image")}
               type="file"
               accept="image/*"
               id="file-input"
-              style={{ display: "none" }}
+              style={{ display: 'none' }}
               onChange={handleFileChange}
             />
             <label
@@ -111,11 +101,7 @@ export default ({ setStep }: { setStep: any }) => {
               className="avatar-label border-primary border"
             >
               {image ? (
-                <img
-                  src={getValues("image")}
-                  alt="Avatar"
-                  className="avatar-image"
-                />
+                <img src={image} alt="Avatar" className="avatar-image" />
               ) : (
                 <div className="flex avatar-placeholder text-sm">
                   <span className="text-3xl font-bold">+</span>
@@ -136,8 +122,8 @@ export default ({ setStep }: { setStep: any }) => {
             </p>
             <div className="flex justify-center items-center">
               <textarea
-                {...register("bio", {
-                  required: "This field is required",
+                {...register('bio', {
+                  required: 'This field is required',
                 })}
                 className="w-full h-36 border rounded-2xl p-3 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
                 placeholder="Tell us about you – your vibe, your quirks, and what makes you a great roommate!"
@@ -154,10 +140,10 @@ export default ({ setStep }: { setStep: any }) => {
             </p>
             <div className="flex">
               <input
-                {...register("monthlyRentPreferences", {
-                  required: "This field is required",
+                {...register('monthlyRentPreferences', {
+                  required: 'This field is required',
                   validate: (data) => {
-                    return !isNaN(data) || "Should be a number";
+                    return !isNaN(data) || 'Should be a number'
                   },
                 })}
                 className="w-full border rounded-3xl py-3 px-4 text-base border-button-radio-button focus:border-blue-500 active:ring-blue-500 transition duration-300 ease-in-out"
@@ -171,17 +157,17 @@ export default ({ setStep }: { setStep: any }) => {
             )}
           </div>
           <button
-            disabled={requestPending}
+            // disabled={requestPending}
             className="w-full rounded-full bg-button-primary py-4 text-2xl font-bold text-primary mt-8"
           >
             {requestPending ? (
               <PulseLoader color="#232beb" size={8} />
             ) : (
-              "Start Matching"
+              'Start Matching'
             )}
           </button>
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

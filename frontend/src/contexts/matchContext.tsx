@@ -3,14 +3,15 @@ import { createContext, ReactNode, useEffect, useState } from 'react'
 import Loading from '../components/Loading'
 
 export const MatchContext = createContext({
-  matches: [],
+  matches: {},
+  setMatches: (obj: any) => {},
   index: 0,
   setIndex: (index: number) => {},
 })
 
 export default ({ children }: { children: ReactNode }) => {
-  const [matches, setMatches] = useState({})
   const [loading, setLoading] = useState(true)
+  const [matches, setMatches] = useState(null)
   const [index, setIndex] = useState(0)
   useEffect(() => {
     const fetchUsers = async () => {
@@ -21,27 +22,22 @@ export default ({ children }: { children: ReactNode }) => {
 
         console.log(response.data)
         const { success, users } = response.data
-        const usersMap = {}
-        if (success) {
-          users.forEach((user) => {
-            usersMap[user._id] = user
-          })
 
-          console.log(usersMap)
-        }
-        setMatches(usersMap)
-        // console.log(response.data)
+        setMatches(users)
+        console.log(users)
       } catch (error) {
         console.error('Error fetching users:', error)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchUsers()
-    setLoading(false) // Call the async function inside useEffect
+    // Call the async function inside useEffect
   }, [])
-  if (loading) return <Loading />
+
   return (
-    <MatchContext.Provider value={{ matches, index, setIndex }}>
+    <MatchContext.Provider value={{ matches, setMatches, index, setIndex }}>
       {children}
     </MatchContext.Provider>
   )

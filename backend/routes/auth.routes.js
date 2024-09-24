@@ -65,9 +65,11 @@ router.post('/login', async (req, res) => {
     })
 
     // Return tokens to the client
+    const { userCred, ...userObject } = user._doc
     res.status(200).json({
       success: true,
       profileCompleted: user.profileCompleted,
+      user: userObject,
       message: 'Login successful',
     })
   } catch (err) {
@@ -77,7 +79,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Logout Route
-router.post('/logout', async (req, res) => {
+router.get('/logout', async (req, res) => {
   res.clearCookie('accessToken')
   res.clearCookie('refreshToken')
   res.json({ success: true, message: 'Logged out' })
@@ -146,11 +148,7 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
   if (decodedToken) {
     console.log(decodedToken)
     const user = await User.findById(decodedToken._id)
-    const userObject = {
-      id: user._id,
-      email: user.userCred.email,
-      fullName: user.userDetails.fullName,
-    }
+    const { userCred, ...userObject } = user._doc
 
     if (user && !user.profileCompleted) {
       console.log('Incomplete profile')

@@ -3,27 +3,8 @@ import 'swiper/css'
 import { SwiperSlide, Swiper, useSwiper, SwiperRef } from 'swiper/react'
 import { MatchContext } from '../contexts/matchContext'
 import { useNavigate } from 'react-router-dom'
-function calculateAge(dobString: string) {
-  // Step 1: Parse the date of birth string into a Date object
-  const dob = new Date(dobString)
-
-  // Step 2: Get today's date
-  const today = new Date()
-
-  // Step 3: Calculate the difference in years
-  let age = today.getFullYear() - dob.getFullYear()
-
-  // Step 4: Adjust age if the birth date hasn't occurred yet this year
-  const monthDifference = today.getMonth() - dob.getMonth()
-  if (
-    monthDifference < 0 ||
-    (monthDifference === 0 && today.getDate() < dob.getDate())
-  ) {
-    age-- // Subtract one year if birthday hasn't happened yet
-  }
-
-  return age
-}
+import Loading from '../components/Loading'
+import calculateAge from '../utils/calculateAge'
 
 const Main = () => {
   const navigate = useNavigate()
@@ -35,6 +16,8 @@ const Main = () => {
       swiperRef.current.swiper.slideTo(savedIndex, 0) // Restore saved slide
     }
   }, [])
+
+  if (matches === null) return <Loading />
   return (
     <div className="flex flex-1 w-screen overflow-scroll bg-match bg-auto bg-center bg-no-repeat p-8 fade-in bg-home-light ">
       <Swiper
@@ -128,12 +111,7 @@ const Main = () => {
                   <div className="flex w-full justify-center">
                     <button
                       onClick={() => {
-                        navigate(`/chats/${user?._id}`, {
-                          state: {
-                            name: user?.userDetails?.fullName?.split(' ')[0],
-                            img: user?.metaDat?.image,
-                          },
-                        })
+                        navigate(`/chats/${user?._id}`)
                         localStorage.setItem('swiperIndex', String(ind))
                       }}
                       className="w-11/12 rounded-full bg-button-primary py-3 text-2xl font-bold text-primary mt-6"

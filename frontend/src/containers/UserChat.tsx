@@ -29,19 +29,18 @@ const UserChat = () => {
   } = useForm({ mode: 'onChange' })
 
   const navigate = useNavigate()
-  const location = useLocation()
-  const { img, name } = location.state
   const { chats, setChats, sendJsonMessage, lastMessage, readyState } =
     useContext(ChatContext)
   const { user } = useContext(AuthContext)
-  const { matches } = useContext(MatchContext)
+  const { matches, setMatches } = useContext(MatchContext)
   const { userId } = useParams()
   const scrollRef = useRef<HTMLDivElement>()
+
   useEffect(() => {
     async function markAndSetReadReciepts() {
-      console.log(chats[userId])
+      if (chats[userId].lastMessage.sender === userId) {
+        console.log('gotta mark')
 
-      if (chats[userId]?.lastMessage?.sender === userId) {
         try {
           axios.post(
             'http://localhost:5000/api/chats/read',
@@ -60,7 +59,7 @@ const UserChat = () => {
               ...updatedChats[userId],
               lastMessage: {
                 ...updatedChats[userId].lastMessage,
-                readBy: [user?.id],
+                readBy: [user._id],
               },
             },
           }
@@ -70,9 +69,33 @@ const UserChat = () => {
         })
       }
     }
-    if (chats) markAndSetReadReciepts()
+    if (chats?.[userId]) markAndSetReadReciepts()
   }, [])
 
+  useEffect(() => {
+    if (matches) {
+      async function getUser() {
+        const response = await axios.get(
+          `http://localhost:5000/users/${userId}`,
+          {
+            withCredentials: true,
+          }
+        )
+        setMatches((prevMatches) => {
+          const updatedMatches = prevMatches
+
+          updatedMatches[userId] = response.data.user
+          return updatedMatches
+        })
+        console.log(response.data)
+      }
+
+      if (!matches[userId]) {
+        console.log('setting')
+        getUser()
+      }
+    }
+  }, [matches])
   useEffect(() => {
     if (chats) {
       console.log(chats)
@@ -81,54 +104,7 @@ const UserChat = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [chats])
 
-  // useEffect(() => {
-  //   if (lastMessage) {
-  //     console.log(chats)
-
-  //     const { content, sender } = JSON.parse(lastMessage?.data)
-
-  //     setChats((prevChats: any) => {
-  //       console.log(prevChats)
-
-  //       if (prevChats[sender]) {
-  //         console.log(sender, prevChats)
-
-  //         return {
-  //           ...prevChats,
-  //           [sender]: {
-  //             ...prevChats[sender],
-  //             messages: [...prevChats[sender].messages, { sender, content }],
-  //           },
-  //         }
-  //       } else {
-  //         console.log('First time for this sender')
-  //         return {
-  //           ...prevChats,
-  //           [sender]: { messages: [{ sender, content }] },
-  //         }
-  //       }
-  //     })
-  //   }
-  // }, [lastMessage])
-  useEffect(() => {
-    if (lastMessage) {
-      console.log('LAST Message', lastMessage.data)
-
-      // setChats((prevChats: any) => {
-      //   prevChats[userId].messages = [
-      //     ...prevChats[userId]?.messages,
-      //     { sender: userId, content: lastMessage.data },
-      //   ]
-      //   return prevChats
-      // })
-      // setMessages((messages) => [
-      //   ...messages,
-      //   { sender: userId, content: lastMessage.data },
-      // ])
-    }
-  }, [lastMessage])
-
-  if (chats === null) return <Loading />
+  if (!chats || !matches || !user) return <Loading />
   return (
     <div className="flex flex-col h-screen bg-nav-light ">
       <div className="flex items-center py-3 gap-8 px-3 border border-b-2 justify-between animateChatHeader">
@@ -144,12 +120,12 @@ const UserChat = () => {
           <div className="flex gap-3 items-center">
             <span className="rounded-full h-14 w-14">
               <img
-                src={chats[userId]?.recipients[0]?.metaDat?.image}
+                src={matches[userId]?.metaDat?.image}
                 className="h-full w-full object-cover rounded-full"
               />
             </span>
             <span className="capitalize text-xl font-semibold ">
-              {chats[userId]?.recipients[0]?.userDetails?.fullName}
+              {matches[userId]?.userDetails?.fullName}
             </span>
           </div>
         </div>
@@ -161,19 +137,19 @@ const UserChat = () => {
         ref={scrollRef}
         className="flex flex-1 flex-col p-6 gap-4 overflow-y-scroll overflow-x-hidden"
       >
-        {chats?.[userId]?.messages === undefined ? (
+        {!chats?.[userId]?.messages ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
         ) : (
-          chats[userId].messages.map((message, index) => {
-            if (message.sender === userId) {
+          chats[userId]?.messages?.map((message, index) => {
+            if (message?.sender === userId) {
               return (
                 <span
                   key={index}
                   className="animateSenderChat self-start max-w-3/4 p-3 items-center rounded-tl-xl rounded-tr-xl rounded-br-xl bg-chat text-wrap"
                 >
-                  {message.content}
+                  {message?.content}
                 </span>
               )
             } else {
@@ -182,7 +158,7 @@ const UserChat = () => {
                   key={index}
                   className="animateRecieverChat self-end max-w-3/4 p-3  rounded-tl-xl items-center  rounded-tr-xl rounded-bl-xl bg-primary-light text-white text-wrap"
                 >
-                  {message.content}
+                  {message?.content}
                 </span>
               )
             }
@@ -207,14 +183,14 @@ const UserChat = () => {
                 updatedChats[userId] = {
                   ...updatedChats[userId],
                   messages: [
-                    ...updatedChats[userId].messages,
+                    ...updatedChats[userId]?.messages,
                     {
-                      sender: user?.id,
+                      sender: user?._id,
                       content: input.message,
                     },
                   ],
                   lastMessage: {
-                    sender: user?.id,
+                    sender: user?._id,
                     content: input.message,
                     updatedAt: Date.now(),
                   },
@@ -225,7 +201,7 @@ const UserChat = () => {
 
                 ///recipient data can be null be careful during pagination
                 updatedChats[userId] = {
-                  messages: [{ sender: null, content: input.message }],
+                  messages: [{ sender: user?._id, content: input.message }],
                 }
               }
 

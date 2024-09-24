@@ -90,23 +90,23 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
 
 
     const {
-      verified,
-      step,
-      registered,
-        fullName, dateOfBirth, gender,
-      // hobbies: {
-        nature,
-        dietaryPreferences,
-        workStyle,
-        workHours,
-        smokingPreference,
-        guestPolicy,
-        regionalBackground,
-        interests,
-      // },
-     locationPreferences, nonVegPreference, lease,
-      bio, monthlyRentPreferences,
-      // image
+      fullName,
+      dateOfBirth,
+      gender,
+      nature,
+      dietaryPreferences,
+      workStyle,
+      workHours,
+      smokingPreference,
+      guestPolicy,
+      regionalBackground,
+      interests,
+      locationPreferences,
+      nonVegPreference,
+      lease,
+      image,
+      bio,
+      monthlyRentPreferences,
     } = req.body
     console.log(req.body)
 

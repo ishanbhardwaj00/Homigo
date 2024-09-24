@@ -12,12 +12,16 @@ type AuthType = {
   authenticated: boolean | null
   setUser: Dispatch<SetStateAction<any>>
   setAuthenticated: Dispatch<SetStateAction<boolean>>
+  authLoading: boolean
+  setAuthLoading: Dispatch<SetStateAction<boolean>>
 }
 export const AuthContext = createContext<AuthType>({
   user: null,
   authenticated: null,
   setUser: () => {},
   setAuthenticated: () => {},
+  authLoading: true,
+  setAuthLoading: () => {},
 })
 
 export default function AuthContextProvider({
@@ -31,27 +35,33 @@ export default function AuthContextProvider({
 
   useEffect(() => {
     async function checkAuth() {
-      const response = await axios.get(
-        'http://localhost:5000/api/users/checkAuth',
-        { withCredentials: true }
-      )
+      try {
+        const response = await axios.get(
+          'http://localhost:5000/api/users/checkAuth',
+          { withCredentials: true }
+        )
 
-      const { success, profileCompleted, user, message } = response.data
-      setUser(user)
-      if (success && profileCompleted === false) {
-        return navigate('/register?profileCompleted=false')
+        const { success, profileCompleted, user } = response.data
+        console.log(response.data)
+
+        setUser(user)
+        if (success && profileCompleted === false) {
+          return navigate('/register?profileCompleted=false')
+        }
+        setAuthenticated(success)
+      } catch (error) {
+        console.log('Auth error')
       }
-      setAuthenticated(success)
     }
     checkAuth()
   }, [])
   useEffect(() => {
     console.log('user', user)
-  }, [authenticated, user])
+  }, [user])
 
   return (
     <AuthContext.Provider
-      value={{ user, authenticated, setUser, setAuthenticated }}
+      value={{ user, authenticated, setAuthenticated, setUser }}
     >
       {children}
     </AuthContext.Provider>

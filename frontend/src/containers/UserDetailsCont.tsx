@@ -1,115 +1,36 @@
-import { useState, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import ErrorMessage from "../components/ErrorMessage";
-import { GoArrowLeft } from "react-icons/go";
-import { UserContext } from "../contexts/userContext";
-const questionnare = [
-  {
-    id: "nature",
-    heading: "nature",
-    type: "radio",
-    options: ["introvert", "extrovert", "ambivert"],
-  },
-  {
-    id: "dietaryPreferences",
-    heading: "Dietary Preferences",
-    type: "radio",
-    options: ["Vegetarian", "Non-Vegetarian"],
-  },
-  {
-    id: "workStyle",
-    heading: "Work Style",
-    type: "radio",
-    options: ["Works from Home", "Goes To Office", "Hybrid Work Setting"],
-  },
-  {
-    id: "workHours",
-    heading: "Work Hours",
-    type: "radio",
-    options: ["Daytime Shift", "Nighttime Shift"],
-  },
-  {
-    id: "smokingPreference",
-    heading: "Smoking Preference",
-    type: "radio",
-    options: ["Smoker", "Non-Smoker"],
-  },
-  {
-    id: "drinkingPreference",
-    heading: "Drinking Preference",
-    type: "radio",
-    options: ["Social Drinker", "Frequent Drinker", "Teetotaller"],
-  },
-  {
-    id: "guestPolicy",
-    heading: "Guest Policy",
-    type: "radio",
-    options: [
-      "Have Guests Over Often",
-      "Have Guests Over Occasionally",
-      "Have Guests Over Rarely",
-    ],
-  },
-  {
-    id: "regionalBackground",
-    heading: "Regional Background",
-    type: "radio",
-    options: [
-      "North India",
-      "East India",
-      "West India",
-      "South India",
-      "North-East India",
-      "Central India",
-    ],
-  },
-  {
-    id: "interests",
-    heading: "Hobbies & Interests",
-    type: "checkbox",
-    options: [
-      "Books",
-      "Movies",
-      "Gym",
-      "Traveling",
-      "Sports",
-      "Dance",
-      "Partying",
-      "Gaming",
-      "Music",
-      "Cooking",
-      "Anime",
-    ],
-  },
-];
+import { useState, useContext, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import ErrorMessage from '../components/ErrorMessage'
+import { GoArrowLeft } from 'react-icons/go'
+import { UserContext } from '../contexts/userContext'
+import questionnaire from '../utils/questionnaire'
 
 export default ({ setStep }: { setStep: any }) => {
+  const { userInformation } = useContext(UserContext)
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm();
-  const [loading, setLoading] = useState(false);
-  const { userInformation } = useContext(UserContext);
+  } = useForm({
+    defaultValues: {
+      nature: userInformation.get('nature'),
+      dietaryPreferences: userInformation.get('dietaryPreferences'),
+      workStyle: userInformation.get('workStyle'),
+      smokingPreference: userInformation.get('smokingPreference'),
+      drinkingPreference: userInformation.get('drinkingPreference'),
+      guestPolicy: userInformation.get('guestPolicy'),
+      workHours: userInformation.get('workHours'),
+      regionalBackground: userInformation.get('regionalBackground'),
+      interests: userInformation.get('interests')?.split(','),
+    },
+  })
+  const [loading, setLoading] = useState(false)
   useEffect(() => {
-    if (userInformation.current?.hobbies) {
-      reset({
-        nature: userInformation.current?.hobbies?.nature,
-        dietaryPreferences:
-          userInformation.current?.hobbies?.dietaryPreferences,
-        workStyle: userInformation.current?.hobbies?.workStyle,
-        smokingPreference: userInformation.current?.hobbies?.smokingPreference,
-        drinkingPreference:
-          userInformation.current?.hobbies?.drinkingPreference,
-        guestPolicy: userInformation.current?.hobbies?.guestPolicy,
-        workHours: userInformation.current?.hobbies?.workHours,
-        regionalBackground:
-          userInformation.current?.hobbies?.regionalBackground,
-        interests: userInformation.current?.hobbies?.interests,
-      });
+    if (userInformation) {
+      reset()
     }
-  }, []);
+  }, [])
   return (
     // <div className="flex flex-col items-center justify-center bg-custom-pattern bg-no-repeat bg-center bg-cover animateRegistration overflow-scroll">
     <div className="flex flex-col items-center justify-center  animateRegistration overflow-scroll">
@@ -130,15 +51,37 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-6"
           onSubmit={handleSubmit((hobbies) => {
-            setLoading(true);
-            userInformation.current = { ...userInformation.current, hobbies };
-            setStep((step: number) => step + 1);
-            setTimeout(() => {}, 300);
-            setLoading(false);
-            console.log(hobbies);
+            setLoading(true)
+            console.log(hobbies)
+            userInformation.append(
+              'dietaryPreferences',
+              hobbies.dietaryPreferences
+            )
+            userInformation.append(
+              'drinkingPreference',
+              hobbies.drinkingPreference
+            )
+            userInformation.append('guestPolicy', hobbies.guestPolicy)
+            userInformation.append('interests', hobbies.interests)
+            userInformation.append('nature', hobbies.nature)
+            userInformation.append(
+              'regionalBackground',
+              hobbies.regionalBackground
+            )
+            userInformation.append(
+              'smokingPreference',
+              hobbies.smokingPreference
+            )
+            userInformation.append('workHours', hobbies.workHours)
+            userInformation.append('workStyle', hobbies.workStyle)
+
+            setStep((step: number) => step + 1)
+            setTimeout(() => {}, 300)
+            setLoading(false)
+            console.log(...userInformation.entries())
           })}
         >
-          {questionnare.map((question) => (
+          {questionnaire.map((question) => (
             <div key={question.id} className="flex flex-col capitalize gap-1">
               <span className="font-semibold text-base">
                 {question.heading}
@@ -153,7 +96,7 @@ export default ({ setStep }: { setStep: any }) => {
                     <span className="w-max">{option}</span>
                     <input
                       {...register(`${question.id}`, {
-                        required: "This field is required",
+                        required: 'This field is required',
                       })}
                       className="hidden"
                       type={question.type}
@@ -177,5 +120,5 @@ export default ({ setStep }: { setStep: any }) => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

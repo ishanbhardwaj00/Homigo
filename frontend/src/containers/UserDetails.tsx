@@ -1,55 +1,48 @@
-import { useState, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { AuthContext } from "../contexts/authContext";
-import Loading from "../components/Loading";
-import ErrorMessage from "../components/ErrorMessage";
-import { GoArrowLeft } from "react-icons/go";
-import axios from "axios";
-import { UserContext } from "../contexts/userContext";
-import { useNavigate } from "react-router-dom";
+import { useState, useContext, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { AuthContext } from '../contexts/authContext'
+import Loading from '../components/Loading'
+import ErrorMessage from '../components/ErrorMessage'
+import { GoArrowLeft } from 'react-icons/go'
+import axios from 'axios'
+import { UserContext } from '../contexts/userContext'
+import { useNavigate } from 'react-router-dom'
 
 export default ({ setStep }: { setStep: any }) => {
-  const { userInformation } = useContext(UserContext);
-  const [loading, setLoading] = useState(false);
-  const {} = useContext(AuthContext);
+  const { userInformation } = useContext(UserContext)
+  const [loading, setLoading] = useState(false)
+  const {} = useContext(AuthContext)
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      fullName: userInformation.get('fullName'),
+      dateOfBirth: userInformation.get('dateOfBirth'),
+      pinCode: userInformation.get('pinCode'),
+      gender: userInformation.get('gender'),
+    },
+  })
 
-  useEffect(() => {
-    setLoading(true);
-    if (userInformation?.current?.userDetails) {
-      // Reset the form only after userInformation is updated
-      reset({
-        fullName: userInformation.current?.userDetails?.fullName || "",
-        dateOfBirth: userInformation.current?.userDetails?.dateOfBirth || "",
-        pinCode: userInformation.current?.userDetails?.pinCode || "",
-        gender: userInformation.current?.userDetails?.gender || "",
-      });
-    }
-    setLoading(false);
-  }, [userInformation]);
-
-  console.log(userInformation);
-  const navigate = useNavigate();
-  if (loading) return <Loading />;
+  console.log(userInformation)
+  const navigate = useNavigate()
+  if (loading) return <Loading />
   return (
     <div className="flex flex-col items-center justify-center h-screen max-h-screen bg-bottom animateRegistration">
       <div className="w-3/4  flex flex-col justify-evenly gap-16 mt-16">
         <button
           onClick={async () => {
             const response = await axios.post(
-              "http://localhost:5000/api/users/logout",
+              'http://localhost:5000/api/users/logout',
               {},
               { withCredentials: true }
-            );
-            console.log(response);
+            )
+            console.log(response)
 
-            navigate("/register");
-            setStep((step: number) => step - 2);
+            navigate('/register')
+            setStep((step: number) => step - 2)
           }}
         >
           <GoArrowLeft size={24} />
@@ -61,12 +54,15 @@ export default ({ setStep }: { setStep: any }) => {
         </div>
         <form
           onSubmit={handleSubmit((userDetails) => {
-            console.log(userDetails);
-            userInformation.current = {
-              ...userInformation.current,
-              userDetails,
-            };
-            setStep((step: number) => step + 1);
+            const { fullName, dateOfBirth, pinCode, gender } = userDetails
+            userInformation.append('fullName', fullName)
+            userInformation.append('dateOfBirth', dateOfBirth)
+            userInformation.append('gender', gender)
+            userInformation.append('pinCode', pinCode)
+
+            console.log(...userInformation.entries(), 'forma')
+
+            setStep((step: number) => step + 1)
           })}
           className="flex flex-col gap-8"
         >
@@ -75,8 +71,8 @@ export default ({ setStep }: { setStep: any }) => {
             <input
               className="w-full outline-1 outline p-4 outline-black rounded-full focus:outline-2"
               type="text"
-              {...register("fullName", {
-                required: "This field is required",
+              {...register('fullName', {
+                required: 'This field is required',
               })}
               placeholder="John Doe"
             />
@@ -89,8 +85,8 @@ export default ({ setStep }: { setStep: any }) => {
             <input
               className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
               type="date"
-              {...register("dateOfBirth", {
-                required: "Date is required",
+              {...register('dateOfBirth', {
+                required: 'Date is required',
               })}
             />
             {errors.dateOfBirth && (
@@ -103,8 +99,8 @@ export default ({ setStep }: { setStep: any }) => {
               className="w-full outline-1 outline p-4 text-black outline-black rounded-full focus:outline-1"
               type="text"
               placeholder="110065"
-              {...register("pinCode", {
-                required: "Date is required",
+              {...register('pinCode', {
+                required: 'Date is required',
                 valueAsNumber: true,
               })}
             />
@@ -115,7 +111,7 @@ export default ({ setStep }: { setStep: any }) => {
           <div className="flex flex-col gap-2">
             <p className="text-black font-bold ml-2">What's your gender?</p>
             <div className="flex flex-col gap-1">
-              {["Male", "Female", "Other"].map((gender) => (
+              {['Male', 'Female', 'Other'].map((gender) => (
                 <label
                   key={gender}
                   htmlFor={gender}
@@ -124,8 +120,8 @@ export default ({ setStep }: { setStep: any }) => {
                   <span>{gender}</span>
                   <input
                     className="rounded-full w-5 h-5 outline-none border-primary"
-                    {...register("gender", {
-                      required: "This field is required",
+                    {...register('gender', {
+                      required: 'This field is required',
                     })}
                     type="radio"
                     name="gender"
@@ -145,5 +141,5 @@ export default ({ setStep }: { setStep: any }) => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
