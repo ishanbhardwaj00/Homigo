@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken'
 
 const verifyJwt = async (req, res, next) => {
+
+  console.log("Inside 'verifyJwt' middleware")
   const { accessToken } = req.cookies
 
   if (!accessToken) {
