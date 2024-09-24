@@ -38,7 +38,7 @@ const UserChat = () => {
 
   useEffect(() => {
     async function markAndSetReadReciepts() {
-      if (chats[userId]?.lastMessage.sender === userId) {
+      if (chats[userId].lastMessage.sender === userId) {
         console.log('gotta mark')
 
         try {
@@ -59,7 +59,7 @@ const UserChat = () => {
               ...updatedChats[userId],
               lastMessage: {
                 ...updatedChats[userId].lastMessage,
-                readBy: [user.id],
+                readBy: [user._id],
               },
             },
           }
@@ -69,8 +69,9 @@ const UserChat = () => {
         })
       }
     }
-    if (chats) markAndSetReadReciepts()
+    if (chats?.[userId]) markAndSetReadReciepts()
   }, [])
+
   useEffect(() => {
     if (matches) {
       async function getUser() {
@@ -136,7 +137,7 @@ const UserChat = () => {
         ref={scrollRef}
         className="flex flex-1 flex-col p-6 gap-4 overflow-y-scroll overflow-x-hidden"
       >
-        {chats?.[userId]?.messages === undefined ? (
+        {!chats?.[userId]?.messages ? (
           <div className="flex flex-1 justify-center fade-in-scale-up">
             <img className="w-2/3" src="/images/ice_breaking.svg" alt="" />
           </div>
@@ -184,12 +185,12 @@ const UserChat = () => {
                   messages: [
                     ...updatedChats[userId]?.messages,
                     {
-                      sender: user?.id,
+                      sender: user?._id,
                       content: input.message,
                     },
                   ],
                   lastMessage: {
-                    sender: user?.id,
+                    sender: user?._id,
                     content: input.message,
                     updatedAt: Date.now(),
                   },
@@ -200,7 +201,7 @@ const UserChat = () => {
 
                 ///recipient data can be null be careful during pagination
                 updatedChats[userId] = {
-                  messages: [{ sender: user?.id, content: input.message }],
+                  messages: [{ sender: user?._id, content: input.message }],
                 }
               }
 

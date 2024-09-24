@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Logout Route
-router.post('/logout', async (req, res) => {
+router.get('/logout', async (req, res) => {
   res.clearCookie('accessToken')
   res.clearCookie('refreshToken')
   res.json({ success: true, message: 'Logged out' })

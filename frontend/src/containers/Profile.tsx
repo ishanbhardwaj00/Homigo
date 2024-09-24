@@ -6,15 +6,17 @@ import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Loading from '../components/Loading'
 import EditPreferences from './EditPreferences'
+import axios from 'axios'
 
 const Profile = () => {
-  const { user } = useContext(AuthContext)
+  const { user, setAuthenticated } = useContext(AuthContext)
   const { register } = useForm({
     defaultValues: {
       bio: user?.metaDat?.bio,
       monthlyRentPreferences: user?.metaDat?.monthlyRent,
     },
   })
+
   const navigate = useNavigate()
 
   const [searchParams] = useSearchParams()
@@ -22,23 +24,61 @@ const Profile = () => {
 
   const [image, setImage] = useState(user?.metaDat?.image)
 
+  const settings = [
+    {
+      name: 'Account Settings',
+      color: 'text-radio-button',
+      onClick: () => {},
+    },
+    {
+      name: 'Privacy Policy',
+      color: 'text-radio-button',
+      onClick: () => {},
+    },
+    {
+      name: 'Terms & Conditions',
+      color: 'text-radio-button',
+      onClick: () => {},
+    },
+    {
+      name: 'Log out',
+      color: 'text-radio-button',
+      onClick: async () => {
+        try {
+          const response = await axios.get(
+            'http://localhost:5000/api/users/logout',
+            { withCredentials: true }
+          )
+          setAuthenticated(false)
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
+    {
+      name: 'Delete Account',
+      color: 'text-red-400',
+      onClick: () => {},
+    },
+  ]
+
   if (searchParams.get('edit') === 'true') {
     return <EditPreferences />
   } else if (!user) return <Loading />
 
   return (
-    <div className="flex flex-col flex-1 gap-6 bg-nav-light fade-in-scale-up">
+    <div className="flex flex-col flex-1 gap-6 bg-nav-light fade-in-scale-up px-8 pb-4 overflow-y-scroll">
       <div className="flex flex-row-reverse h-10">
         <button
           onClick={() => {
             console.log('welcome')
           }}
-          className="text-lg text-primary-light font-bold px-6 py-3"
+          className="text-lg text-primary-light font-bold py-3"
         >
           Save
         </button>
       </div>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col gap-2 items-center">
         <div className="relative h-40 w-40 bg-black rounded-full border-primary border-2">
           <label htmlFor="fileInput">
             <img
@@ -64,7 +104,7 @@ const Profile = () => {
             }}
           />
         </div>
-        <div className="text-2xl font-bold">
+        <div className="text-2xl font-semibold">
           <span className="">{user?.userDetails?.fullName?.split(' ')[0]}</span>
           <span className="">
             , {calculateAge(user?.userDetails?.dateOfBirth)}
@@ -80,7 +120,7 @@ const Profile = () => {
         </button>
       </div>
       <div className="flex flex-col items-center">
-        <form className="w-4/5 flex gap-5 flex-col">
+        <form className="w-full flex gap-7 flex-col">
           <div className="flex flex-col gap-1">
             <div className="flex gap-1 items-center">
               <span className="text-base font-medium text-button-radio-button ml-3">
@@ -119,6 +159,16 @@ const Profile = () => {
             )} */}
           </div>
         </form>
+      </div>
+      <div className="flex flex-col gap-6 ml-2 mt-2">
+        {settings.map((setting) => (
+          <div
+            onClick={setting.onClick}
+            className={`${setting?.color} font-medium text-base`}
+          >
+            {setting.name}
+          </div>
+        ))}
       </div>
     </div>
   )

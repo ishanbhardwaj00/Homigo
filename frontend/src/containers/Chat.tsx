@@ -63,7 +63,7 @@ const Chats = () => {
 
   // UseEffect to set sorted chats initially and when a new message comes in
   useEffect(() => {
-    setSortedChats(sortChats(chats))
+    if (chats) setSortedChats(sortChats(chats))
   }, [chats])
   if (!chats || !matches || !user) return <Loading />
   if (Object.values(chats).length === 0)
@@ -108,7 +108,9 @@ const Chats = () => {
         </span>
         {/* cards */}
         <div className="flex flex-col gap-2 p-1">
-          {sortedChats.map(([senderId, chat], index) => {
+          {Object.entries(chats).map(([senderId, chat], index) => {
+            console.log(user, chat)
+
             return (
               <div
                 key={index}
@@ -127,8 +129,8 @@ const Chats = () => {
                   <span className="capitalize text-lg font-medium text-ellipsis overflow-hidden whitespace-nowrap">
                     {matches[senderId]?.userDetails?.fullName?.split(' ')[0]}
                   </span>
-                  {chat?.lastMessage?.sender !== user.id &&
-                  !chat?.lastMessage?.readBy.includes(user.id) ? (
+                  {chat?.lastMessage?.sender !== user?._id &&
+                  !chat?.lastMessage?.readBy?.includes(user?._id) ? (
                     <div className="text-black font-medium w-fulltext-base truncate">
                       <span>
                         {chat?.messages.at(chat?.messages.length - 1)?.content}
@@ -136,7 +138,7 @@ const Chats = () => {
                     </div>
                   ) : (
                     <div className="text-gray-dark flex gap-1 text-lg truncate ">
-                      {chat?.lastMessage?.sender === user.id && (
+                      {chat?.lastMessage?.sender === user._id && (
                         <span>You:</span>
                       )}
                       <span className="truncate">

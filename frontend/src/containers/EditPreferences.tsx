@@ -21,22 +21,22 @@ const EditPreferences = () => {
     },
   })
   return (
-    <div className="flex flex-1 flex-col fade-in-scale-up overflow-y-scroll gap-6 bg-nav-light py-6">
-      <div className="flex justify-around flex-1 font-semibold">
+    <div className="flex flex-1 flex-col fade-in-scale-up overflow-y-scroll gap-8 pb-10 bg-nav-light">
+      <div className="flex justify-between fixed z-50 font-semibold p-6 bg-nav-light w-full ">
         <span
           onClick={() => {
             navigate(-1)
           }}
-          className="text-lg text-red-500"
+          className="text-base text-red-500"
         >
           Discard
         </span>
-        <span className="text-lg text-primary ">Save</span>
+        <span className="text-base text-primary ">Save</span>
       </div>
-      <div className="flex flex-col gap-6 w-4/5 self-center">
+      <div className="flex flex-col gap-6 w-full pl-10 pr-6">
         {questionnaire.map((question) => (
           <div key={question.id} className="flex flex-col capitalize gap-1">
-            <span className="font-medium text-base">{question.heading}</span>
+            <div className="font-medium text-base">{question.heading}</div>
             <div className="flex flex-row gap-2 align items-start flex-wrap">
               {question.options.map((option, index) => (
                 <label
