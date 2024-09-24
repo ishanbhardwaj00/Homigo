@@ -10,6 +10,7 @@ from sklearn.compose import ColumnTransformer
 import numpy as np
 from pymongo import MongoClient
 import pandas as pd
+from unflatten import unflatten
 import ast
 
 app=Flask(__name__)
@@ -206,7 +207,7 @@ def index():
         rm_data=rm.to_dict(orient='records')
         
         
-        return rm_data
+        return unflatten(rm_data)
 
 if __name__ == '__main__':
     app.run(debug=True,port=8080)

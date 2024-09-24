@@ -51,7 +51,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
         //   req.file.filename
         // )
 
-        console.log("File waiting to be uploaded")
+        console.log('File waiting to be uploaded')
         const cloudinary_response = await uploadOnCloudinary(localFilePath)
 
         console.log('Cloudinary response:', cloudinary_response.url)
@@ -111,11 +111,11 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       smokingPreference,
       guestPolicy,
       regionalBackground,
-      interests,
-      drinkingPreference
+      interests: JSON.parse(interests),
+      drinkingPreference,
     }
     user.preferences = {
-      location: locationPreferences,
+      location: JSON.parse(locationPreferences),
       nonVegPreferences: nonVegPreference,
       lease,
     }
