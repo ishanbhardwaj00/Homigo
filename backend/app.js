@@ -20,6 +20,8 @@ import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
 import location from './routes/location.routes.js'
+import stays from './routes/stays.routes.js'
+
 import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
 
@@ -28,6 +30,7 @@ app.use('/api/users', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users', otpRoutes)
 app.use('/api/users', location)
+app.use('/api/users', stays)
 
 app.get('/users/:id', verifyJwt, async (req, res) => {
   const id = req.params.id
