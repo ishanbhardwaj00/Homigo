@@ -15,6 +15,10 @@ import Chats from './containers/Chat.tsx'
 import UserChat from './containers/UserChat.tsx'
 import ChatContainer from './containers/ChatContainer.tsx'
 import Profile from './containers/Profile.tsx'
+import Stays from './containers/Stays.tsx'
+import StaysContainer from './containers/StaysContainer.tsx'
+import StayListing from './containers/StayListing.tsx'
+import StaysContextProvider from './contexts/staysContext.tsx'
 
 const router = createBrowserRouter([
   {
@@ -40,7 +44,9 @@ const router = createBrowserRouter([
     element: (
       <AuthContextProvider>
         <MatchContextProvider>
-          <Parent />
+          <StaysContextProvider>
+            <Parent />
+          </StaysContextProvider>
         </MatchContextProvider>
       </AuthContextProvider>
     ),
@@ -48,6 +54,20 @@ const router = createBrowserRouter([
       {
         path: '',
         element: <Main />,
+      },
+      {
+        path: 'stays',
+        element: <StaysContainer />,
+        children: [
+          {
+            path: '',
+            element: <Stays />,
+          },
+          {
+            path: ':stayId',
+            element: <StayListing />,
+          },
+        ],
       },
       {
         path: 'chats',
@@ -67,10 +87,6 @@ const router = createBrowserRouter([
         path: 'profile',
         element: <Profile />,
       },
-      // {
-      //   path: 'chats/:userId',
-      //   element: :
-      // },
     ],
   },
 ])

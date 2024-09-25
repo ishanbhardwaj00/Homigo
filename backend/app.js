@@ -7,6 +7,7 @@ import http from 'http'
 import { createSocketServer } from './sockets/socket.js'
 import Chat from './models/chat.model.js'
 import jwt from 'jsonwebtoken'
+import { MongoClient } from 'mongodb'
 
 // Middleware
 const app = express()
@@ -73,71 +74,93 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
 //   }
 // });
 
-app.get('/users', verifyJwt, async (req, res) => {
+app.get('/stays', async (req, res) => {
+  const url =
+    'mongodb+srv://arjunvirm:Bravearcher20@cluster0.0cg5y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0' // Replace with your connection string
+  const client = new MongoClient(url)
 
+  try {
+    // Connect to the MongoDB cluster
+    await client.connect()
+
+    // Specify the database and collection
+    const database = client.db('test') // Replace with your database name
+    const collection = database.collection('stays') // Replace with your collection name
+
+    const documents = await collection.find({}).toArray()
+
+    res.json({ stays: documents })
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  }
+})
+
+app.get('/users', verifyJwt, async (req, res) => {
   // console.log(await User.find({}))
   try {
-    console.log('Headers:', req.headers);
-    console.log('Cookies:', req.cookies);
+    console.log('Headers:', req.headers)
+    console.log('Cookies:', req.cookies)
 
     // Retrieve the JWT token from the request headers or cookies
     const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'No token provided' })
     }
 
     // Decode the JWT to get the user information
     // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    
-    const userEmail = req.decodedToken.email;
-    console.log("Extracted email from token", userEmail)
+
+    const userEmail = req.decodedToken.email
+    console.log('Extracted email from token', userEmail)
 
     // Send POST request to Flask app with the user's email
     const response = await axios.post('http://localhost:8080/nn', {
-      email: userEmail
-    });
+      email: userEmail,
+    })
 
     // Assuming Flask responds with a 'users' object
     const users = response.data
 
-    console.log("Users: ", users)
+    console.log('Users: ', users)
 
     // Process the users and strip out sensitive information
     const usersObject = users.reduce((acc, user) => {
-      const { userCred, ...rest } = user;
-      acc[user._id] = rest;
-      return acc;
-    }, {});
+      const { userCred, ...rest } = user
+      acc[user._id] = rest
+      return acc
+    }, {})
 
     // console.log(JSON.parse(usersObject))
     // Return the processed users to the client
     return res.json({
       success: true,
       users: usersObject,
-    });
+    })
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch users or decode token',
       error: error.message,
-    });
+    })
   }
-});
+})
 
 app.post('/cnn', async (req, res) => {
   try {
     // Sending a POST request to Flask app
     const response = await axios.post('http://localhost:8080/nn', {
-      email: 'parthtayal2001@gmail.com'
-    });
+      email: 'parthtayal2001@gmail.com',
+    })
 
     // Return the response from Flask to the client
-    res.json(response.data);
+    res.json(response.data)
   } catch (error) {
-    res.status(500).json({ error: 'Error sending data to Flask' });
+    res.status(500).json({ error: 'Error sending data to Flask' })
   }
-});
+})
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
