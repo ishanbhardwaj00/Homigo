@@ -8,12 +8,54 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder,OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 import numpy as np
+from datetime import datetime
 from pymongo import MongoClient
 import pandas as pd
-from unflatten import unflatten
 import ast
 
 app=Flask(__name__)
+
+def transform_object(original):
+    date_of_birth = original['userDetails.dateOfBirth']
+    
+    # If it's a string, parse it. If it's a timestamp, format it directly
+    if isinstance(date_of_birth, str):
+        # Convert the string to a datetime object
+        date_of_birth = datetime.strptime(date_of_birth, '%a, %d %b %Y %H:%M:%S %Z')
+    
+    # Format the datetime object (or Timestamp) to the desired ISO 8601 format
+    formatted_date_of_birth = date_of_birth.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    return {
+        "userDetails": {
+            "gender": original['userDetails.gender'],
+            "fullName": original['userDetails.fullName'],
+             "dateOfBirth": formatted_date_of_birth
+        },
+        "metaDat": {
+            "image": original['metaDat.image'],
+            "bio": original['metaDat.bio'],
+            "monthlyRent": original['metaDat.monthlyRent']
+        },
+        "hobbies": {
+            "nature": original['hobbies.nature'],
+            "dietaryPreferences": original['hobbies.dietaryPreferences'],
+            "workStyle": original['hobbies.workStyle'],
+            "workHours": original['hobbies.workHours'],
+            "smokingPreference": original['hobbies.smokingPreference'],
+            "guestPolicy": original['hobbies.guestPolicy'],
+            "regionalBackground": original['hobbies.regionalBackground'],
+            "interests":original['hobbies.interests'],  # Parse string to list
+            "drinkingPreference": original['hobbies.drinkingPreference']
+        },
+        "preferences": {
+            "location": original['preferences.location'],  # Parse string to list
+            "nonVegPreferences": original['preferences.nonVegPreferences'],
+            "lease": original['preferences.lease']
+        },
+        "_id": original['_id'],
+        "profileCompleted": original['profileCompleted'],
+        "__v": original['__v']
+    }
 
 def load_and_preprocess_image(file, target_size):
     # Use BytesIO to read the file object
@@ -205,9 +247,10 @@ def index():
         rm['_id']=rm['_id'].astype(str)
         # print(rm['_id'])
         rm_data=rm.to_dict(orient='records')
-        
-        
-        return unflatten(rm_data)
+        li=[]
+        for i in rm_data:
+            li.append(transform_object(i))
+        return (li)
 
 if __name__ == '__main__':
     app.run(debug=True,port=8080)
