@@ -54,7 +54,8 @@ def transform_object(original):
         },
         "_id": original['_id'],
         "profileCompleted": original['profileCompleted'],
-        "__v": original['__v']
+        "__v": original['__v'],
+        "similarity":original['similar_score']
     }
 
 def load_and_preprocess_image(file, target_size):
