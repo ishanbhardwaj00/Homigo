@@ -19,6 +19,7 @@ app.use(cookieParser())
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
+import location from './routes/location.routes.js'
 import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
 
@@ -26,6 +27,7 @@ import User from './models/users.model.js'
 app.use('/api/users', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users', otpRoutes)
+app.use('/api/users', location)
 
 app.get('/users/:id', verifyJwt, async (req, res) => {
   const id = req.params.id
@@ -37,56 +39,90 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
     user: userObject,
   })
 })
+
+// app.put('/api/users/:id', verifyJwt, async (req, res) => {
+//   const id = req.params.id;
+//   const updateData = req.body;  // The updated fields sent in the request body
+
+//   try {
+//     // Ensure that only the logged-in user can update their own details
+//     if (req.decodedToken._id !== id) {
+//       return res.status(403).json({ success: false, message: "Unauthorized to update this user." });
+//     }
+
+//     // Ensure that password is hashed if it's being updated
+//     if (updateData.userCred && updateData.userCred.password) {
+//       const salt = await bcrypt.genSalt(10);
+//       updateData.userCred.password = await bcrypt.hash(updateData.userCred.password, salt);
+//     }
+
+//     // Find the user by ID and update the relevant fields
+//     const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ success: false, message: "User not found." });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "User details updated successfully.",
+//       user: updatedUser,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ success: false, message: "Error updating user details", error: error.message });
+//   }
+// });
+
 app.get('/users', verifyJwt, async (req, res) => {
 
-  console.log(await User.find({}))
-  // try {
-  //   console.log('Headers:', req.headers);
-  //   console.log('Cookies:', req.cookies);
+  // console.log(await User.find({}))
+  try {
+    console.log('Headers:', req.headers);
+    console.log('Cookies:', req.cookies);
 
-  //   // Retrieve the JWT token from the request headers or cookies
-  //   const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
+    // Retrieve the JWT token from the request headers or cookies
+    const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
 
-  //   if (!token) {
-  //     return res.status(401).json({ success: false, message: 'No token provided' });
-  //   }
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
 
-  //   // Decode the JWT to get the user information
-  //   // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    // Decode the JWT to get the user information
+    // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     
-  //   const userEmail = req.decodedToken.email;
-  //   console.log("Extracted email from token", userEmail)
+    const userEmail = req.decodedToken.email;
+    console.log("Extracted email from token", userEmail)
 
-  //   // Send POST request to Flask app with the user's email
-  //   const response = await axios.post('http://localhost:8080/nn', {
-  //     email: userEmail
-  //   });
+    // Send POST request to Flask app with the user's email
+    const response = await axios.post('http://localhost:8080/nn', {
+      email: userEmail
+    });
 
-  //   // Assuming Flask responds with a 'users' object
-  //   const users = response.data
+    // Assuming Flask responds with a 'users' object
+    const users = response.data
 
-  //   // console.log("Users: ", users)
+    console.log("Users: ", users)
 
-  //   // Process the users and strip out sensitive information
-  //   const usersObject = users.reduce((acc, user) => {
-  //     const { userCred, ...rest } = user;
-  //     acc[user._id] = rest;
-  //     return acc;
-  //   }, {});
+    // Process the users and strip out sensitive information
+    const usersObject = users.reduce((acc, user) => {
+      const { userCred, ...rest } = user;
+      acc[user._id] = rest;
+      return acc;
+    }, {});
 
-  //   // console.log(JSON.parse(usersObject))
-  //   // Return the processed users to the client
-  //   return res.json({
-  //     success: true,
-  //     users: usersObject,
-  //   });
-  // } catch (error) {
-  //   return res.status(500).json({
-  //     success: false,
-  //     message: 'Failed to fetch users or decode token',
-  //     error: error.message,
-  //   });
-  // }
+    // console.log(JSON.parse(usersObject))
+    // Return the processed users to the client
+    return res.json({
+      success: true,
+      users: usersObject,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users or decode token',
+      error: error.message,
+    });
+  }
 });
 
 app.post('/cnn', async (req, res) => {
