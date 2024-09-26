@@ -2,6 +2,9 @@ from flask import Flask, jsonify, render_template,request
 # import tensorflow as tf
 # from tensorflow.keras.models import load_model
 # from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing.image import img_to_array
+from PIL import Image
+import base64
 import pandas as pd
 from io import BytesIO
 from sklearn.neighbors import NearestNeighbors
@@ -191,25 +194,27 @@ def transform_object(original):
         "similarity":original['similar_score']
     }
 
-def load_and_preprocess_image_from_url(img_url, target_size):
-    response = requests.get(img_url)
-    
-    if response.status_code == 200:
-        img = image.load_img(BytesIO(response.content), target_size=target_size)
-        img_array = image.img_to_array(img)
+def load_and_preprocess_image_from_url(image64, target_size):
+        image_data = base64.b64decode(image64)
+        img = Image.open(BytesIO(image_data))
+        
+        # Resize the image to the target size
+        img = img.resize(target_size)
+        
+        # Convert the PIL image to a NumPy array
+        img_array = img_to_array(img)
         img_array = img_array / 255.0
         img_array = np.expand_dims(img_array, axis=0)
-        return img, img_array
-    else:
-        raise Exception(f"Failed to retrieve image from URL: {response.status_code}")
+        return img_array
 
 @app.route('/predict', methods=['POST'])
 def predict():
     model = load_model('Homigo/Flask/my_model.h5')
-    img_url = 'https://res.cloudinary.com/dqpuvkk1i/image/upload/v1727100859/sgem5xmyfpkxn237dtqk.jpg'
+    image64 =ast.literal_eval(request.data.decode())['image']
+    
     target_size = (256, 256)
 
-    img, img_array = load_and_preprocess_image_from_url(img_url, target_size)
+    img_array = load_and_preprocess_image_from_url(image64, target_size)
     prediction = model.predict(img_array)
     label = 'real' if prediction[0][0] > 0.8 else 'fake'
     return jsonify({'prediction': label})
