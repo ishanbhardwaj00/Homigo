@@ -62,6 +62,9 @@ const config: Config = {
         chat: {
           DEFAULT: '#EAEAEA',
         },
+        location: {
+          DEFAULT: '#EDEEFF',
+        },
         button: {
           primary: {
             DEFAULT: '#a7ebcf',

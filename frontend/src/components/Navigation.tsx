@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
-const imageNames = ['profile.svg', 'match.svg', 'chat.svg']
+const imageNames = ['profile.svg', 'match.svg', 'stays.svg', 'chat.svg']
 
 const Navigation = ({
   setSelected,
@@ -13,7 +13,11 @@ const Navigation = ({
   const navigate = useNavigate()
   const location = useLocation()
 
-  if (location.pathname.includes('/chats/')) return <div className="h-0"></div>
+  if (
+    location.pathname.includes('/chats/') ||
+    location.pathname.includes('/stays/')
+  )
+    return <div className="h-0"></div>
   return (
     <div className="h-20 bg-nav-light rounded-tl-3xl rounded-tr-3xl flex justify-around items-center ">
       {imageNames.map((img, index) => (
@@ -28,6 +32,8 @@ const Navigation = ({
               } else if (index === 1) {
                 navigate('/')
               } else if (index === 2) {
+                navigate('/stays')
+              } else if (index === 3) {
                 navigate('/chats')
               }
               setSelected(index)

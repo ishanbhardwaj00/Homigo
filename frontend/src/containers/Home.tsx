@@ -17,7 +17,8 @@ export default () => {
   useEffect(() => {
     if (location.pathname === '/') setSelected(1)
     else if (location.pathname === '/profile') setSelected(0)
-    if (location.pathname === '/chats') setSelected(2)
+    if (location.pathname === '/chats') setSelected(3)
+    if (location.pathname === '/stays') setSelected(2)
   }, [location.pathname])
 
   useEffect(() => {

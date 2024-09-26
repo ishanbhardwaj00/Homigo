@@ -475,3 +475,17 @@ template {
 ::-webkit-scrollbar {
   display: none;
 }
+
+.font-poppins-medium {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+}
+
+.font-poppins-semi {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+.font-poppins-light {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+}

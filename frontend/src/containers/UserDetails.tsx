@@ -53,13 +53,12 @@ export default ({ setStep }: { setStep: any }) => {
           <span>In?</span>
         </div>
         <form
-          onSubmit={handleSubmit((userDetails) => {
+          onSubmit={handleSubmit(async (userDetails) => {
             const { fullName, dateOfBirth, pinCode, gender } = userDetails
 
             userInformation.set('fullName', fullName)
             userInformation.set('dateOfBirth', dateOfBirth)
             userInformation.set('gender', gender)
-            userInformation.set('pinCode', pinCode)
 
             console.log(...userInformation.entries(), 'forma')
 
@@ -88,6 +87,22 @@ export default ({ setStep }: { setStep: any }) => {
               type="date"
               {...register('dateOfBirth', {
                 required: 'Date is required',
+                validate: (value: any) => {
+                  const dob = new Date(value)
+                  const today = new Date()
+                  const age = today.getFullYear() - dob.getFullYear()
+                  const hasBirthdayOccurred =
+                    today.getMonth() > dob.getMonth() ||
+                    (today.getMonth() === dob.getMonth() &&
+                      today.getDate() >= dob.getDate())
+
+                  const validAge = hasBirthdayOccurred ? age : age - 1
+
+                  if (validAge < 15 || validAge > 65) {
+                    return 'You must be between 15 and 65 years old.'
+                  }
+                  return true
+                },
               })}
             />
             {errors.dateOfBirth && (
@@ -103,6 +118,25 @@ export default ({ setStep }: { setStep: any }) => {
               {...register('pinCode', {
                 required: 'Date is required',
                 valueAsNumber: true,
+                validate: async (data) => {
+                  const response = await axios.get(
+                    `https://api.postalpincode.in/pincode/${data}`
+                  )
+                  console.log(response.data)
+
+                  const locationData = response.data
+                  if (!locationData[0].PostOffice) {
+                    return 'Invalid Pincode'
+                  }
+                  const city =
+                    locationData[0].PostOffice[0].District +
+                    ', ' +
+                    locationData[0].PostOffice[0].State
+                  console.log(city)
+
+                  userInformation.set('location', city)
+                  return true
+                },
               })}
             />
             {errors.pinCode && (

@@ -22,6 +22,7 @@ export default ({ setStep }: { setStep: any }) => {
     defaultValues: {
       bio: userInformation.get('bio'),
       monthlyRentPreferences: userInformation.get('monthlyRentPreferences'),
+      image: null,
     },
   })
 
@@ -91,6 +92,19 @@ export default ({ setStep }: { setStep: any }) => {
         >
           <div className="avatar-container self-center">
             <input
+              {...register('image', {
+                required: true,
+                validate: async () => {
+                  if (image) {
+                    const response = await axios.post(
+                      'http://localhost:5000/verifyImage',
+                      { image }
+                    )
+                    console.log(response.data)
+                  }
+                  return true
+                },
+              })}
               type="file"
               accept="image/*"
               id="file-input"

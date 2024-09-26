@@ -7,6 +7,7 @@ import http from 'http'
 import { createSocketServer } from './sockets/socket.js'
 import Chat from './models/chat.model.js'
 import jwt from 'jsonwebtoken'
+import { MongoClient } from 'mongodb'
 
 // Middleware
 const app = express()
@@ -19,9 +20,6 @@ app.use(cookieParser())
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
-import location from './routes/location.routes.js'
-import stays from './routes/stays.routes.js'
-
 import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
 
@@ -29,8 +27,6 @@ import User from './models/users.model.js'
 app.use('/api/users', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users', otpRoutes)
-app.use('/api/users', location)
-app.use('/api/users', stays)
 
 app.get('/users/:id', verifyJwt, async (req, res) => {
   const id = req.params.id
@@ -76,71 +72,92 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
 //   }
 // });
 
-app.get('/users', verifyJwt, async (req, res) => {
+app.post('/stays', verifyJwt, async (req, res) => {
+  console.log(req.user)
 
-  // console.log(await User.find({}))
+  const rent = req.body.user.metaDat.monthlyRent
+
+  console.log(req.body)
+
+  const locations = req.body.user.preferences.location
+
+  console.log('Rent', rent)
+  console.log('Locations', locations)
+
+  console.log(rent, locations)
+
   try {
-    console.log('Headers:', req.headers);
-    console.log('Cookies:', req.cookies);
+    const response = await axios.post('http://localhost:8080/recommend', {
+      rent,
+      locations,
+    })
+    res.json({ success: true, stays: response.data })
+  } catch (error) {
+    console.log('fetching stays from ml error')
 
+    res.json({ success: false, stays: null })
+  }
+})
+
+app.get('/users', verifyJwt, async (req, res) => {
+  try {
     // Retrieve the JWT token from the request headers or cookies
     const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
+      return res
+        .status(401)
+        .json({ success: false, message: 'No token provided' })
     }
 
     // Decode the JWT to get the user information
     // const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    
-    const userEmail = req.decodedToken.email;
-    console.log("Extracted email from token", userEmail)
 
-    // Send POST request to Flask app with the user's email
+    const userEmail = req.decodedToken.email
+    console.log('Extracted email from token', userEmail)
+
     const response = await axios.post('http://localhost:8080/nn', {
-      email: userEmail
-    });
+      email: userEmail,
+    })
 
     // Assuming Flask responds with a 'users' object
     const users = response.data
 
-    console.log("Users: ", users)
-
     // Process the users and strip out sensitive information
     const usersObject = users.reduce((acc, user) => {
-      const { userCred, ...rest } = user;
-      acc[user._id] = rest;
-      return acc;
-    }, {});
+      const { userCred, ...rest } = user
+      acc[user._id] = rest
+      return acc
+    }, {})
 
     // console.log(JSON.parse(usersObject))
     // Return the processed users to the client
     return res.json({
       success: true,
       users: usersObject,
-    });
+    })
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch users or decode token',
       error: error.message,
-    });
+    })
   }
-});
+})
 
 app.post('/cnn', async (req, res) => {
   try {
     // Sending a POST request to Flask app
     const response = await axios.post('http://localhost:8080/nn', {
-      email: 'parthtayal2001@gmail.com'
-    });
+      email: 'parthtayal2001@gmail.com',
+    })
 
     // Return the response from Flask to the client
-    res.json(response.data);
+    res.json(response.data)
   } catch (error) {
-    res.status(500).json({ error: 'Error sending data to Flask' });
+    res.status(500).json({ error: 'Error sending data to Flask' })
   }
-});
+})
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -199,6 +216,7 @@ app.post('/api/chats/read', verifyJwt, async (req, res) => {
   userChat.save()
   return res.json({ success: true, message: 'marked message as read' })
 })
+
 const server = http.createServer(app)
 createSocketServer(server)
 server.listen(PORT, () => {

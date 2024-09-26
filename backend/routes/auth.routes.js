@@ -2,6 +2,7 @@ import express from 'express'
 import User from '../models/users.model.js'
 import jwt from 'jsonwebtoken'
 import verifyJwt from '../middleware/verifyJwt.js'
+import axios from 'axios'
 
 const router = express.Router()
 
@@ -179,5 +180,16 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
     message: 'Not authenticated',
   })
 })
+router.post('/verifyImage', async(req, res) => {
+  const {image} = req.body;
+  console.log(req.body);
+  const response = await axios.post('http://localhost:8080/predict', {image});
 
+  console.log(response.data);
+
+  return res.send({...response.data});
+  
+})
 export default router
+
+

@@ -1,7 +1,10 @@
-from flask import Flask, request, jsonify, render_template,requests
+from flask import Flask, jsonify, render_template,request
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing.image import img_to_array
+from PIL import Image
+import base64
 import pandas as pd
 from io import BytesIO
 from sklearn.neighbors import NearestNeighbors
@@ -83,7 +86,10 @@ def recommend():
         new_df2.drop('Rent',axis=1,inplace=True)
 
         # Create DataFrame from the input
-        user = pd.DataFrame({'rent': 12201,'locations': [['Near Cyberhub', 'Near Golf Course Ext', 'Near Millenium City Centre']]})
+        input_rent =ast.literal_eval(request.data.decode())['rent']
+        input_locations =ast.literal_eval(request.data.decode())['locations']
+        
+        user = pd.DataFrame({'rent': input_rent,'locations': input_locations})
 
         for rent in user['rent']:
             if rent < 5000:
@@ -188,25 +194,27 @@ def transform_object(original):
         "similarity":original['similar_score']
     }
 
-def load_and_preprocess_image_from_url(img_url, target_size):
-    response = requests.get(img_url)
-    
-    if response.status_code == 200:
-        img = image.load_img(BytesIO(response.content), target_size=target_size)
-        img_array = image.img_to_array(img)
+def load_and_preprocess_image_from_url(image64, target_size):
+        image_data = base64.b64decode(image64)
+        img = Image.open(BytesIO(image_data))
+        
+        # Resize the image to the target size
+        img = img.resize(target_size)
+        
+        # Convert the PIL image to a NumPy array
+        img_array = img_to_array(img)
         img_array = img_array / 255.0
         img_array = np.expand_dims(img_array, axis=0)
-        return img, img_array
-    else:
-        raise Exception(f"Failed to retrieve image from URL: {response.status_code}")
+        return img_array
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = load_model('Homigo/Flask/my_model.h5')
-    img_url = 'https://res.cloudinary.com/dqpuvkk1i/image/upload/v1727100859/sgem5xmyfpkxn237dtqk.jpg'
+    model = load_model('/home/e02964/Desktop/Homigo/Homigo/Flask/my_model.h5')
+    image64 =ast.literal_eval(request.data.decode())['image']
+    
     target_size = (256, 256)
 
-    img, img_array = load_and_preprocess_image_from_url(img_url, target_size)
+    img_array = load_and_preprocess_image_from_url(image64, target_size)
     prediction = model.predict(img_array)
     label = 'real' if prediction[0][0] > 0.8 else 'fake'
     return jsonify({'prediction': label})
@@ -220,8 +228,6 @@ def index():
         client = MongoClient(mongo_uri)
         db = client['test']
         collection = db['users']
-
-        print("Connected to mongo")
         # Retrieve data from MongoDB collection
         data = list(collection.find({}))  # You can add query filters inside the find() method if needed
 
@@ -230,7 +236,7 @@ def index():
 
         new_df=df[df['profileCompleted']==True].copy()
         new_df.drop(columns=['__v','_id','profileCompleted','userCred.password','userCred.refreshToken','hobbies.nature','hobbies.dietaryPreferences','metaDat.image','metaDat.bio','userDetails.fullName'],inplace=True)
-        new_df['userDetails.gender'].replace('Other','Male',inplace=True)
+        new_df['userDetails.gender']=new_df['userDetails.gender'].replace('Other','Male')
         age_groups = []
 
         # Iterate over each age in the DataFrame
@@ -318,8 +324,8 @@ def index():
         else:
             new_df=new_df[new_df['userDetails.gender']=='Female']
 
-        new_df = new_df.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent'])
-        new_user=new_user.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent'])
+        new_df = new_df.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent', 'userDetails.location'])
+        new_user=new_user.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent', 'userDetails.location'])
 
         transformer=ColumnTransformer(transformers=[('tnf1',OneHotEncoder(drop='first'),['hobbies.smokingPreference']),
                                         ('tnf2',OrdinalEncoder(categories=[['Have Guests Over Rarely','Have Guests Over Occasionally','Have Guests Over Often']]),['hobbies.guestPolicy']),
@@ -355,7 +361,6 @@ def index():
         similarities=similarities*100
         rm['similar_score']=similarities
         rm=rm.drop(columns=['userCred.refreshToken'])
-        print(rm)
         rm['_id']=rm['_id'].astype(str)
         # print(rm['_id'])
         rm_data=rm.to_dict(orient='records')
