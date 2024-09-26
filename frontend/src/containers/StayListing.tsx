@@ -32,6 +32,17 @@ const StayListing = () => {
         </div>
       </div>
       <div className="flex flex-col px-6 py-3 gap-8">
+        <div className="flex items-center gap-1 capitalize text-xs text-button-radio-button font-poppins-light">
+          <span>Posted By</span>
+          <span>
+            <img
+              className="h-5 w-5 rounded-full "
+              src="/images/blank.png"
+              alt=""
+            />
+          </span>
+          <span className="text-xs font-">{stay?.CLASS_HEADING}</span>
+        </div>
         <span className="text-2xl font-poppins-semi leading-7">
           {stay.PROP_HEADING}
         </span>
@@ -52,9 +63,9 @@ const StayListing = () => {
               <td className="border px-4 py-2">Rs. {stay.Rent} Per Month</td>
             </tr>
             <tr>
-              <td className="border px-4 py-2 font-poppins-medium">Dealer</td>
+              <td className="border px-4 py-2 font-poppins-medium">Near</td>
               <td className="border px-4 py-2 capitalize">
-                {stay.CLASS_HEADING}
+                {stay.NEAR[0]?.replace('Near', '').trim()}
               </td>
             </tr>
             <tr>

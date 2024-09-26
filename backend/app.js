@@ -20,7 +20,6 @@ app.use(cookieParser())
 import authRoutes from './routes/auth.routes.js'
 import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
-import location from './routes/location.routes.js'
 import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
 
@@ -28,7 +27,6 @@ import User from './models/users.model.js'
 app.use('/api/users', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/users', otpRoutes)
-app.use('/api/users', location)
 
 app.get('/users/:id', verifyJwt, async (req, res) => {
   const id = req.params.id
@@ -74,33 +72,35 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
 //   }
 // });
 
-app.get('/stays', async (req, res) => {
-  const url =
-    'mongodb+srv://arjunvirm:Bravearcher20@cluster0.0cg5y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0' // Replace with your connection string
-  const client = new MongoClient(url)
+app.post('/stays', verifyJwt, async (req, res) => {
+  console.log(req.user)
+
+  const rent = req.body.user.metaDat.monthlyRent
+
+  console.log(req.body)
+
+  const locations = req.body.user.preferences.location
+
+  console.log('Rent', rent)
+  console.log('Locations', locations)
+
+  console.log(rent, locations)
 
   try {
-    // Connect to the MongoDB cluster
-    await client.connect()
-
-    // Specify the database and collection
-    const database = client.db('test') // Replace with your database name
-    const collection = database.collection('stays') // Replace with your collection name
-
-    const documents = await collection.find({}).toArray()
-
-    res.json({ stays: documents })
+    const response = await axios.post('http://localhost:8080/recommend', {
+      rent,
+      locations,
+    })
+    res.json({ success: true, stays: response.data })
   } catch (error) {
-    console.error('Error fetching data:', error)
+    console.log('fetching stays from ml error')
+
+    res.json({ success: false, stays: null })
   }
 })
 
 app.get('/users', verifyJwt, async (req, res) => {
-  // console.log(await User.find({}))
   try {
-    console.log('Headers:', req.headers)
-    console.log('Cookies:', req.cookies)
-
     // Retrieve the JWT token from the request headers or cookies
     const token = req.decodedToken //|| req.headers.authorization?.split(' ')[1];
 
@@ -116,15 +116,12 @@ app.get('/users', verifyJwt, async (req, res) => {
     const userEmail = req.decodedToken.email
     console.log('Extracted email from token', userEmail)
 
-    // Send POST request to Flask app with the user's email
     const response = await axios.post('http://localhost:8080/nn', {
       email: userEmail,
     })
 
     // Assuming Flask responds with a 'users' object
     const users = response.data
-
-    console.log('Users: ', users)
 
     // Process the users and strip out sensitive information
     const usersObject = users.reduce((acc, user) => {
@@ -219,6 +216,7 @@ app.post('/api/chats/read', verifyJwt, async (req, res) => {
   userChat.save()
   return res.json({ success: true, message: 'marked message as read' })
 })
+
 const server = http.createServer(app)
 createSocketServer(server)
 server.listen(PORT, () => {

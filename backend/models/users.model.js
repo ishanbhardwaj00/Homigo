@@ -53,6 +53,11 @@ const userSchema = new Schema({
       trim: true,
       // index: true
     },
+    location: {
+      type: String,
+      required: false,
+      trim: true,
+    },
   },
 
   metaDat: {

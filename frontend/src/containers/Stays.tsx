@@ -8,10 +8,8 @@ import { StaysContext } from '../contexts/staysContext'
 import Loading from '../components/Loading'
 
 function formatNumberToIndianStyle(num) {
-  // Convert number to string
   const numString = num.toString()
 
-  // Split the string into integer and decimal parts if any
   const [integerPart, decimalPart] = numString.split('.')
 
   // Use a regular expression to add commas
@@ -30,22 +28,65 @@ function formatNumberToIndianStyle(num) {
 
 const Stays = () => {
   const { stays } = useContext(StaysContext)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [staysArray, setStaysArray] = useState(Object.values(stays))
 
   const navigate = useNavigate()
 
+  useEffect(() => {
+    console.log('ipdated stays', stays)
+    if (stays) {
+      setStaysArray(Object.values(stays))
+    } else {
+      setStaysArray([])
+    }
+  }, [stays])
+  useEffect(() => {
+    if (stays) {
+      setStaysArray(() => {
+        const arr = Object.values(stays)
+        return searchProperties(arr, searchQuery)
+      })
+    }
+  }, [searchQuery])
+
+  function searchProperties(properties, searchQuery) {
+    return properties.filter((property) => {
+      const lowerSearchQuery = searchQuery.toLowerCase()
+
+      return (
+        property.LOCALITY.toLowerCase().includes(lowerSearchQuery) ||
+        property.FURNISH.toLowerCase().includes(lowerSearchQuery) ||
+        property.PROPERTY_TYPE.toLowerCase().includes(lowerSearchQuery) ||
+        property.PROP_HEADING.toLowerCase().includes(lowerSearchQuery) ||
+        property.DESCRIPTION.toLowerCase().includes(lowerSearchQuery) ||
+        property.CLASS_HEADING.toLowerCase().includes(lowerSearchQuery) ||
+        (property.USPS &&
+          property.USPS.some((usp) =>
+            usp.toLowerCase().includes(lowerSearchQuery)
+          )) ||
+        property.FLOOR_NUM.toLowerCase().includes(lowerSearchQuery) ||
+        property.Rent.toString().includes(lowerSearchQuery) ||
+        property.BEDROOM_NUM.toString().includes(lowerSearchQuery) ||
+        property.BATHROOM_NUM.toString().includes(lowerSearchQuery)
+      )
+    })
+  }
+
   if (!stays) return <Loading />
   return (
-    <div className="flex flex-col flex-1 p-6 fade-in-scale-up overflow-scroll">
+    <div className="flex flex-col flex-1 p-6 overflow-scroll">
       <div className="h-16">
-        <Searchbar />
+        <Searchbar setSearchQuery={setSearchQuery} />
       </div>
       <div className="flex flex-col flex-1 overflow-y-scroll gap-4">
-        {Object.values(stays).map((stay) => (
+        {staysArray.map((stay) => (
           <div
+            key={stay?._id}
             onClick={() => {
-              navigate(`/stays/${stay._id}`)
+              navigate(`/stays/${stay?._id}`)
             }}
-            className="flex flex-col w-full bg-white rounded-lg shadow-lg"
+            className="flex flex-col w-full bg-white rounded-lg shadow-lg fade-in-scale-up"
           >
             <div className="flex justify-between p-4 pb-3 items-center ">
               <span className="py-1 px-2 text-button-radio-button bg-location font-medium text-xs  rounded-full font-poppins-medium">

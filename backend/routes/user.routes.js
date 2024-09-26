@@ -79,6 +79,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       workHours,
       smokingPreference,
       guestPolicy,
+      location,
       regionalBackground,
       interests,
       drinkingPreference,
@@ -95,6 +96,7 @@ router.patch('/signup', verifyJwt, upload.single('image'), async (req, res) => {
       fullName,
       dateOfBirth,
       gender,
+      location,
     }
 
     user.metaDat = {

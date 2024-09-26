@@ -45,12 +45,12 @@ const Main = () => {
                   />
                   <div className="ml-2 flex flex-col gap-3">
                     <div className="flex flex-col mt-5 gap-1">
-                      <span className="text-3xl font-bold leading-sm">
+                      <span className="text-3xl font-poppins-semi leading-sm">
                         {user?.userDetails?.fullName?.split(' ')[0]},{' '}
                         {calculateAge(user?.userDetails?.dateOfBirth)}
                       </span>
-                      <span className="text-lg font-light">
-                        Gurgaon, Haryana
+                      <span className="text-lg font-poppins-light">
+                        {user?.userDetails?.location ?? 'Gurgaon, Haryana'}
                       </span>
                     </div>
                     <div className="flex text-primary items-center gap-1 mt-2">
@@ -59,20 +59,23 @@ const Main = () => {
                         className="h-6 w-6"
                         alt=""
                       />
-                      <span className="font-bold text-xl">98%</span>
-                      <span className="font-light text-sm">
-                        | 25/30 Preferences Matched
+                      <span className="font-bold text-xl">
+                        {parseInt(user?.similarity)}% Match
                       </span>
                     </div>
                   </div>
 
                   <div className="w-full bg-userdetails mt-5 flex flex-col gap-8 py-4 px-5 rounded-xl justify-center">
                     <div className="flex flex-col gap-1">
-                      <span className="font-semibold text-lg">About Me</span>
+                      <span className="font-poppins-medium text-lg">
+                        About Me
+                      </span>
                       <span className="font-light ">{user?.metaDat?.bio}</span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <span className="font-semibold text-lg">Basic Info</span>
+                      <span className="font-poppins-medium text-lg">
+                        Basic Info
+                      </span>
                       {user?.hobbies && (
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(user?.hobbies)
@@ -89,7 +92,7 @@ const Main = () => {
                       )}
                     </div>
                     <div className="flex flex-col gap-2">
-                      <span className="font-semibold text-lg">
+                      <span className="font-poppins-medium text-lg">
                         Hobbies & Interests
                       </span>
                       {user?.hobbies?.interests && (
