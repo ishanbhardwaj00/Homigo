@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template,requests
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
@@ -84,7 +84,7 @@ def recommend():
 
         # Create DataFrame from the input
         user = pd.DataFrame({'rent': 12201,'locations': [['Near Cyberhub', 'Near Golf Course Ext', 'Near Millenium City Centre']]})
-        
+
         for rent in user['rent']:
             if rent < 5000:
                 rent_group='0-5000'
@@ -188,44 +188,28 @@ def transform_object(original):
         "similarity":original['similar_score']
     }
 
-def load_and_preprocess_image(file, target_size):
-    # Use BytesIO to read the file object
-    img = image.load_img(BytesIO(file.read()), target_size=target_size)
-
-    # Convert image to array
-    img_array = image.img_to_array(img)
-
-    # Rescale the image
-    img_array = img_array / 255.0
-
-    # Expand dimensions to match the input shape
-    img_array = np.expand_dims(img_array, axis=0)
-
-    return img, img_array
-
-@app.route('/img')
-def img():
-    return render_template('index1.html')
+def load_and_preprocess_image_from_url(img_url, target_size):
+    response = requests.get(img_url)
+    
+    if response.status_code == 200:
+        img = image.load_img(BytesIO(response.content), target_size=target_size)
+        img_array = image.img_to_array(img)
+        img_array = img_array / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+        return img, img_array
+    else:
+        raise Exception(f"Failed to retrieve image from URL: {response.status_code}")
 
 @app.route('/predict', methods=['POST'])
 def predict():
     model = load_model('Homigo/Flask/my_model.h5')
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-    
-    file = request.files['file']
-    
-    # Check if the file is an image
-    if file and file.filename.endswith(('png', 'jpg', 'jpeg')):
-        img, img_array = load_and_preprocess_image(file, target_size=(256, 256))  # Adjust size as per model
-        prediction = model.predict(img_array)
-        
-        # Assuming your model outputs a single value or probability, e.g., 0 for fake and 1 for real
-        label = 'real' if prediction[0][0] > 0.8 else 'fake'
-        
-        return jsonify({'prediction': label})
-    else:
-        return jsonify({'error': 'Invalid file format. Please upload a PNG or JPG image.'}), 400
+    img_url = 'https://res.cloudinary.com/dqpuvkk1i/image/upload/v1727100859/sgem5xmyfpkxn237dtqk.jpg'
+    target_size = (256, 256)
+
+    img, img_array = load_and_preprocess_image_from_url(img_url, target_size)
+    prediction = model.predict(img_array)
+    label = 'real' if prediction[0][0] > 0.8 else 'fake'
+    return jsonify({'prediction': label})
     
 
 @app.route('/nn', methods=['GET', 'POST'])
