@@ -84,6 +84,7 @@ def recommend():
 
         # Create DataFrame from the input
         user = pd.DataFrame({'rent': 12201,'locations': [['Near Cyberhub', 'Near Golf Course Ext', 'Near Millenium City Centre']]})
+        
         for rent in user['rent']:
             if rent < 5000:
                 rent_group='0-5000'
