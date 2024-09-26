@@ -15,6 +15,135 @@ import ast
 
 app=Flask(__name__)
 
+def convert_location(row):
+    columns = ['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II']
+    return [1 if col in row else 0 for col in columns]
+
+
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    if request.method == 'POST':
+        mongo_uri = 'mongodb+srv://arjunvirm:Bravearcher20@cluster0.0cg5y.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+        client = MongoClient(mongo_uri)
+        db = client['test']
+        collection = db['stays']
+        data = list(collection.find({})) 
+        df = pd.json_normalize(data)
+        new_df=df[['Rent','NEAR']].copy()
+        location=new_df['NEAR']
+        binary_location = pd.DataFrame(location.apply(convert_location).tolist(), columns=['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II'],index=new_df.index)
+        new_df2= pd.concat([new_df['Rent'], binary_location], axis=1)
+        rent_groups = []
+
+        # Iterate over each rent in the DataFrame
+        for rent in new_df2['Rent']:
+            if rent < 5000:
+                rent_groups.append('0-5000')
+            elif 5000 <= rent < 10000:
+                rent_groups.append('5000-10000')
+            elif 10000 <= rent < 15000:
+                rent_groups.append('10000-15000')
+            elif 15000 <= rent < 20000:
+                rent_groups.append('15000-20000')
+            elif 20000 <= rent < 25000:
+                rent_groups.append('20000-25000')
+            elif 25000 <= rent < 30000:
+                rent_groups.append('25000-30000')
+            elif 30000 <= rent < 35000:
+                rent_groups.append('30000-35000')
+            elif 35000 <= rent < 40000:
+                rent_groups.append('35000-40000')
+            elif 40000 <= rent < 45000:
+                rent_groups.append('40000-45000')
+            elif 45000 <= rent < 50000:
+                rent_groups.append('45000-50000')
+            elif 50000 <= rent < 55000:
+                rent_groups.append('50000-55000')
+            elif 55000 <= rent < 60000:
+                rent_groups.append('55000-60000')
+            elif 60000 <= rent < 65000:
+                rent_groups.append('60000-65000')
+            elif 65000 <= rent < 70000:
+                rent_groups.append('65000-70000')
+            elif 70000 <= rent < 75000:
+                rent_groups.append('70000-75000')
+            elif 75000 <= rent < 80000:
+                rent_groups.append('75000-80000')
+            elif 80000 <= rent < 85000:
+                rent_groups.append('80000-85000')
+            elif 85000 <= rent < 90000:
+                rent_groups.append('85000-90000')
+            elif 90000 <= rent < 95000:
+                rent_groups.append('90000-95000')
+            elif 95000 <= rent < 100000:
+                rent_groups.append('95000-100000')
+            else:
+                rent_groups.append('100000+')
+        new_df2['rent_group'] = rent_groups
+        new_df2.drop('Rent',axis=1,inplace=True)
+
+        # Create DataFrame from the input
+        user = pd.DataFrame({'rent': 12201,'locations': [['Near Cyberhub', 'Near Golf Course Ext', 'Near Millenium City Centre']]})
+        for rent in user['rent']:
+            if rent < 5000:
+                rent_group='0-5000'
+            elif 5000 <= rent < 10000:
+                rent_group='5000-10000'
+            elif 10000 <= rent < 15000:
+                rent_group='10000-15000'
+            elif 15000 <= rent < 20000:
+                rent_group='15000-20000'
+            elif 20000 <= rent < 25000:
+                rent_group='20000-25000'
+            elif 25000 <= rent < 30000:
+                rent_group='25000-30000'
+            elif 30000 <= rent < 35000:
+                rent_group='30000-35000'
+            elif 35000 <= rent < 40000:
+                rent_group='35000-40000'
+            elif 40000 <= rent < 45000:
+                rent_group='40000-45000'
+            elif 45000 <= rent < 50000:
+                rent_group='45000-50000'
+            elif 50000 <= rent < 55000:
+                rent_group='50000-55000'
+            elif 55000 <= rent < 60000:
+                rent_group='55000-60000'
+            elif 60000 <= rent < 65000:
+                rent_group='60000-65000'
+            elif 65000 <= rent < 70000:
+                rent_group='65000-70000'
+            elif 70000 <= rent < 75000:
+                rent_group='70000-75000'
+            elif 75000 <= rent < 80000:
+                rent_group='75000-80000'
+            elif 80000 <= rent < 85000:
+                rent_group='80000-85000'
+            elif 85000 <= rent < 90000:
+                rent_group='85000-90000'
+            elif 90000 <= rent < 95000:
+                rent_group='90000-95000'
+            elif 95000 <= rent < 100000:
+                rent_group='95000-100000'
+            else:
+                rent_group='100000+'
+                
+        user['rent_group'] = rent_group
+        location=user['locations']
+        binary_location = pd.DataFrame(location.apply(convert_location).tolist(), columns=['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II'],index=user.index)
+        new_user= pd.concat([binary_location,user['rent_group']], axis=1)
+        transformer=ColumnTransformer(transformers=[('tnf1',OrdinalEncoder(categories=[['0-5000','5000-10000','10000-15000','15000-20000','20000-25000','25000-30000','30000-35000','35000-40000','40000-45000','45000-50000','50000-55000','55000-60000','60000-65000','65000-70000','70000-75000','75000-80000','80000-85000','85000-90000','90000-95000','95000-100000','100000+']]),['rent_group'])],remainder='passthrough')
+        new_df3=transformer.fit_transform(new_df2)
+        new_user2=transformer.transform(new_user)
+        knn = NearestNeighbors(n_neighbors=df.shape[0])
+        knn.fit(new_df3)
+        distances, indices = knn.kneighbors(new_user2)
+        nearest_profiles = df.iloc[indices[0]]
+        matches=pd.DataFrame(nearest_profiles)
+        matches['_id']=matches['_id'].astype(str)
+        matches_data=matches.to_dict(orient='records')
+        return matches_data
+
 def transform_object(original):
     date_of_birth = original['userDetails.dateOfBirth']
     
@@ -191,9 +320,6 @@ def index():
         binary_interest = pd.DataFrame(interest.apply(convert_interest).tolist(), columns=['Books','Movies','Gym','Travelling','Sports','Dance','Partying','Gaming','Music','Cooking','Anime'],index=new_df.index)
         new_df=pd.concat([new_df,binary_interest],axis=1)
 
-        def convert_location(row):
-            columns = ['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II']
-            return [1 if col in row else 0 for col in columns]
         location=new_df['preferences.location']
         binary_location = pd.DataFrame(location.apply(convert_location).tolist(), columns=['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II'],index=new_df.index)
         new_df= pd.concat([new_df, binary_location], axis=1)
