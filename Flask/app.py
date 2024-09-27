@@ -15,8 +15,12 @@ from datetime import datetime
 from pymongo import MongoClient
 import pandas as pd
 import ast
+from mtcnn import MTCNN
 
 app=Flask(__name__)
+
+model = load_model('/home/e02964/Desktop/Homigo/Homigo/Flask/my_model.h5')
+
 
 def convert_location(row):
     columns = ['Near Cyberhub','Near Unitech Cyberpark','Near Golf Course Ext','Near Millenium City Centre','Near Old Gurgaon','Near IMT Manesar','Near Phase II']
@@ -207,18 +211,37 @@ def load_and_preprocess_image_from_url(image64, target_size):
         img_array = np.expand_dims(img_array, axis=0)
         return img_array
 
+def check(base64_str):
+    # Decode base64 string
+    image_data = base64.b64decode(base64_str)
+    # Convert binary data to image
+    image = Image.open(BytesIO(image_data))
+    # Convert image to RGB format
+    image = image.convert('RGB')
+    return image
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = load_model('./my_model.h5')
     image64 =ast.literal_eval(request.data.decode())['image']
     image64=image64[22:]
     
-    target_size = (256, 256)
+    
+    image=check(image64)
+    np_image=np.array(image)
+    detector=MTCNN()
+    boxes=detector.detect_faces(np_image)
+    if len(boxes)<=0:
+        return jsonify({'msg':'No Human Face Detected', 'success': False})
 
+    target_size = (256, 256)
     img_array = load_and_preprocess_image_from_url(image64, target_size)
     prediction = model.predict(img_array)
     label = 'real' if prediction[0][0] > 0.8 else 'fake'
-    return jsonify({'prediction': label})
+    if label=='real':
+        return jsonify({'msg': 'Success', 'success': True})
+
+    return jsonify({'msg':'AI Generated Image Detected','success':False})
     
 
 @app.route('/nn', methods=['GET', 'POST'])
