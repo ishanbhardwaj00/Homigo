@@ -164,6 +164,7 @@ const Profile = () => {
       <div className="flex flex-col gap-6 ml-2 mt-2">
         {settings.map((setting) => (
           <div
+            key={setting.name}
             onClick={setting.onClick}
             className={`${setting?.color} font-medium text-base`}
           >

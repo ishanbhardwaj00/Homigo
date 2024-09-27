@@ -16,6 +16,7 @@ const Main = () => {
       swiperRef.current.swiper.slideTo(savedIndex, 0) // Restore saved slide
     }
   }, [])
+  useEffect(() => {}, [matches])
 
   if (matches === null) return <Loading />
   return (
@@ -29,7 +30,8 @@ const Main = () => {
           localStorage.setItem('swiperIndex', String(swiper.activeIndex))
         }}
       >
-        {Object.values(matches).length > 0 &&
+        {matches &&
+          Object.values(matches).length > 0 &&
           Object.values(matches).map(
             (user: any, ind: number) =>
               user?.profileCompleted && (

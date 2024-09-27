@@ -16,17 +16,16 @@ export default ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/users', {
+        const response = await axios.get('/backend/users', {
           withCredentials: true,
         })
 
-        console.log(response.data)
         const { success, users } = response.data
 
         setMatches(users)
-        console.log(users)
       } catch (error) {
         console.error('Error fetching users:', error)
+        setMatches(null)
       } finally {
         setLoading(false)
       }

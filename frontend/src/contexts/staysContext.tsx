@@ -11,17 +11,14 @@ export default ({ children }) => {
   const { user } = useContext(AuthContext)
   useEffect(() => {
     const fetchStays = async () => {
-      console.log(user, 'STAYS YSER')
-
       try {
         const response = await axios.post(
-          'http://localhost:5000/stays',
+          '/backend/stays',
           { user },
           {
             withCredentials: true,
           }
         )
-        console.log(response.data.stays)
         const staysMap = {}
 
         const arr = response.data.stays
@@ -30,7 +27,6 @@ export default ({ children }) => {
           staysMap[el._id] = el
         })
         setStays(staysMap)
-        console.log(staysMap)
       } catch (error) {
         console.error('Error fetching stays:', error)
       }

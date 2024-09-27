@@ -36,13 +36,11 @@ export default function AuthContextProvider({
   useEffect(() => {
     async function checkAuth() {
       try {
-        const response = await axios.get(
-          'http://localhost:5000/api/users/checkAuth',
-          { withCredentials: true }
-        )
+        const response = await axios.get('/backend/api/users/checkAuth', {
+          withCredentials: true,
+        })
 
         const { success, profileCompleted, user } = response.data
-        console.log(response.data)
 
         setUser(user)
         if (success && profileCompleted === false) {
@@ -55,9 +53,7 @@ export default function AuthContextProvider({
     }
     checkAuth()
   }, [])
-  useEffect(() => {
-    console.log('user', user)
-  }, [user])
+  useEffect(() => {}, [user])
 
   return (
     <AuthContext.Provider

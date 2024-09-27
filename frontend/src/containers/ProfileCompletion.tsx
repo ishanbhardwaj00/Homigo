@@ -73,7 +73,7 @@ export default ({ setStep }: { setStep: any }) => {
             const img = image?.split(',')[1]
             try {
               const response = await axios.post(
-                'http://localhost:5000/api/users/verifyImage',
+                '/api/users/verifyImage',
                 { img },
                 { withCredentials: true }
               )
@@ -83,7 +83,7 @@ export default ({ setStep }: { setStep: any }) => {
               } else {
                 console.log(...userInformation.entries())
                 const response = await axios.patch(
-                  'http://localhost:5000/api/users/signup',
+                  '/api/users/signup',
                   userInformation,
                   {
                     withCredentials: true,

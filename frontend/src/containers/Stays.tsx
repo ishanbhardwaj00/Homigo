@@ -34,7 +34,6 @@ const Stays = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    console.log('ipdated stays', stays)
     if (stays) {
       setStaysArray(Object.values(stays))
     } else {

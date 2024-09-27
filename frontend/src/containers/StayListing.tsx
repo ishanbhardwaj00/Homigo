@@ -8,7 +8,6 @@ const StayListing = () => {
   const navigate = useNavigate()
   const { stays } = useContext(StaysContext)
   const { stayId } = useParams()
-  console.log(stayId)
   const [stay, setStay] = useState(null)
   useEffect(() => {
     if (stays) setStay(stays[stayId])
@@ -87,9 +86,12 @@ const StayListing = () => {
         <div className="flex flex-col gap-2">
           <span className="text-lg font-poppins-semi ">Amenties</span>
           <div className="flex flex-wrap gap-2">
-            {stay?.USPS.map((amenity) => {
+            {stay?.USPS.map((amenity, ind) => {
               return (
-                <span className="py-2 px-4 border border-black border-solid max-w-max rounded-full text-center">
+                <span
+                  key={ind}
+                  className="py-2 px-4 border border-black border-solid max-w-max rounded-full text-center"
+                >
                   {amenity}
                 </span>
               )

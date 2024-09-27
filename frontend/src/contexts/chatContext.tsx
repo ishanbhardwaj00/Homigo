@@ -11,14 +11,11 @@ export default ({ children }) => {
   useEffect(() => {
     async function getUserChats() {
       try {
-        const response = await axios.get('http://localhost:5000/chats', {
+        const response = await axios.get('/backend/chats', {
           withCredentials: true,
         })
 
         const { success, chats } = response.data
-        // console.log(response)
-
-        console.log('chats', chats)
 
         if (success) {
           setChats(chats)
@@ -42,7 +39,7 @@ export default ({ children }) => {
   const [chats, setChats] = useState(null)
   const [chatError, setChatError] = useState<string | null>(null)
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket(
-    'http://localhost:5000'
+    'ws://localhost:5000'
   )
   useEffect(() => {
     if (lastMessage) {
@@ -80,9 +77,7 @@ export default ({ children }) => {
       })
     }
   }, [lastMessage])
-  useEffect(() => {
-    console.log(chats)
-  }, [chats])
+  useEffect(() => {}, [chats, readyState])
 
   return (
     <ChatContext.Provider
