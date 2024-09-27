@@ -169,7 +169,8 @@ def transform_object(original):
         "userDetails": {
             "gender": original['userDetails.gender'],
             "fullName": original['userDetails.fullName'],
-             "dateOfBirth": formatted_date_of_birth
+             "dateOfBirth": formatted_date_of_birth,
+             "location": original['userDetails.location']
         },
         "metaDat": {
             "image": original['metaDat.image'],
@@ -346,7 +347,9 @@ def index():
             new_df=new_df[new_df['userDetails.gender']=='Male']
         else:
             new_df=new_df[new_df['userDetails.gender']=='Female']
-
+            
+        rndf=new_df.copy()
+        rndf=rndf.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent'])
         new_df = new_df.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent', 'userDetails.location'])
         new_user=new_user.drop(columns=['userCred.email','hobbies.interests','preferences.location','userDetails.gender','userDetails.dateOfBirth','metaDat.monthlyRent', 'userDetails.location'])
 
@@ -373,7 +376,7 @@ def index():
         distances, indices = knn.kneighbors(new_user2)
 
         # Retrieve the nearest profiles from the original DataFrame
-        nearest_profiles = new_df.iloc[indices[0]]
+        nearest_profiles = rndf.iloc[indices[0]]
         matches=pd.DataFrame(nearest_profiles[1:])
 
         ind=matches.index

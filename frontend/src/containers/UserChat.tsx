@@ -214,6 +214,7 @@ const UserChat = () => {
               jsonMessage: JSON.stringify(message),
               keep: true,
             })
+            reset({ message: '' })
           })}
         >
           <input

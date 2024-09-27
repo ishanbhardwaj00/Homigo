@@ -50,7 +50,7 @@ const Main = () => {
                         {calculateAge(user?.userDetails?.dateOfBirth)}
                       </span>
                       <span className="text-lg font-poppins-light">
-                        {user?.userDetails?.location ?? 'Gurgaon, Haryana'}
+                        {user?.userDetails?.location}
                       </span>
                     </div>
                     <div className="flex text-primary items-center gap-1 mt-2">
