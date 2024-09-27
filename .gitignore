@@ -3,7 +3,6 @@
 /backend/node_modules
 
 /.git
-/Flask/my_model.h5
 
 # Logs
 /frontend/logs
