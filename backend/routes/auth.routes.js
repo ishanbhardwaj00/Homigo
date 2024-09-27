@@ -185,7 +185,7 @@ router.post('/verifyImage', async (req, res) => {
   console.log(req.body)
 
   try{
-    const response = await axios.post('http://localhost:8080/predict', { image })
+    const response = await axios.post('/predict', { image })
   } catch (err) {
     console.error("Prediction failed:",err)
     res.status(500).send("Failed to load your matches")

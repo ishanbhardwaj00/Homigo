@@ -33,5 +33,6 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
     "ws": "^8.18.0"
-  }
+  },
+  "proxy":"http://localhost:8080"
 }

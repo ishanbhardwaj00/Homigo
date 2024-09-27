@@ -87,7 +87,7 @@ app.post('/stays', verifyJwt, async (req, res) => {
   console.log(rent, locations)
 
   try {
-    const response = await axios.post('http://localhost:8080/recommend', {
+    const response = await axios.post('/recommend', {
       rent,
       locations,
     })
@@ -116,9 +116,16 @@ app.get('/users', verifyJwt, async (req, res) => {
     const userEmail = req.decodedToken.email
     console.log('Extracted email from token', userEmail)
 
-    const response = await axios.post('http://localhost:8080/nn', {
+    let response;
+    try{
+    response = await axios.post('/nn', {
       email: userEmail,
     })
+  } catch(err){
+    cconsole.error('Error in axios request:', err.message);
+    return res.status(500).json({ success: false, message: 'Error in external service' });
+   
+  }
 
     // Assuming Flask responds with a 'users' object
     const users = response.data
@@ -148,7 +155,7 @@ app.get('/users', verifyJwt, async (req, res) => {
 app.post('/cnn', async (req, res) => {
   try {
     // Sending a POST request to Flask app
-    const response = await axios.post('http://localhost:8080/nn', {
+    const response = await axios.post('/nn', {
       email: 'parthtayal2001@gmail.com',
     })
 
