@@ -118,7 +118,7 @@ app.get('/users', verifyJwt, async (req, res) => {
 
     let response;
     try{
-    response = await axios.post('/nn', {
+    response = await axios.post('https://localhost:8080/nn', {
       email: userEmail,
     })
   } catch(err){
