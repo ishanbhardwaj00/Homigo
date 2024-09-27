@@ -61,6 +61,8 @@ export default ({ setStep }: { setStep: any }) => {
         <form
           className="flex flex-col gap-6"
           onSubmit={handleSubmit(async (data) => {
+            setImageError(null)
+            setRequestPending(true)
             console.log(data)
             userInformation.set('bio', data.bio)
             userInformation.set(
@@ -68,39 +70,31 @@ export default ({ setStep }: { setStep: any }) => {
               data.monthlyRentPreferences
             )
             console.log(image)
-
+            const img = image?.split(',')[1]
             try {
               const response = await axios.post(
                 'http://localhost:5000/api/users/verifyImage',
-                { image },
+                { img },
                 { withCredentials: true }
               )
-              console.log(response.data.prediction)
-              if (response.data.prediction !== 'real') {
-                setImageError('Fake image mf')
+              const { success, msg } = response.data
+              if (!success) {
+                setImageError(msg)
               } else {
                 console.log(...userInformation.entries())
-                setRequestPending(true)
-
-                try {
-                  const response = await axios.patch(
-                    'http://localhost:5000/api/users/signup',
-                    userInformation,
-                    {
-                      withCredentials: true,
-                    }
-                  )
-                  console.log(response.data)
-                  setUser(userInformation)
-                  setAuthenticated(true)
-                  setUser(response.data.user)
-                  // router.replace("/");
-                } catch (error) {
-                  console.log(error)
-                } finally {
-                  setRequestPending(false)
-                }
+                const response = await axios.patch(
+                  'http://localhost:5000/api/users/signup',
+                  userInformation,
+                  {
+                    withCredentials: true,
+                  }
+                )
+                console.log(response.data)
+                setUser(userInformation)
+                setAuthenticated(true)
+                setUser(response.data.user)
               }
+              setRequestPending(false)
             } catch (error) {
               console.log(error)
             } finally {

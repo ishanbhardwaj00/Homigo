@@ -19,7 +19,7 @@ from mtcnn import MTCNN
 
 app=Flask(__name__)
 
-model = load_model('/home/e02964/Desktop/Homigo/Homigo/Flask/my_model.h5')
+model = load_model('/home/hscuser/Desktop/my_model.h5')
 
 
 def convert_location(row):
@@ -223,9 +223,8 @@ def check(base64_str):
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    image64 =ast.literal_eval(request.data.decode())['image']
-    image64=image64[22:]
-    
+    print(request.data.decode())
+    image64 =ast.literal_eval(request.data.decode())['img']    
     
     image=check(image64)
     np_image=np.array(image)

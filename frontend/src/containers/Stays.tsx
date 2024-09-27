@@ -42,6 +42,8 @@ const Stays = () => {
     }
   }, [stays])
   useEffect(() => {
+    console.log(searchQuery)
+
     if (stays) {
       setStaysArray(() => {
         const arr = Object.values(stays)
@@ -67,7 +69,7 @@ const Stays = () => {
           )) ||
         property.FLOOR_NUM.toLowerCase().includes(lowerSearchQuery) ||
         property.Rent.toString().includes(lowerSearchQuery) ||
-        property.BEDROOM_NUM.toString().includes(lowerSearchQuery) ||
+        property.BEDROOM_NUM.toLowerCase().includes(lowerSearchQuery) ||
         property.BATHROOM_NUM.toString().includes(lowerSearchQuery)
       )
     })
@@ -111,7 +113,7 @@ const Stays = () => {
                 <span className="text-sm text-gray-400">/ month</span>
               </div>
               <div className="text-sm text-button-radio-button">
-                <span>{stay?.BEDROOM_NUM} Private Rooms | </span>
+                <span>{stay?.BEDROOM_NUM} | </span>
                 <span>{stay?.FURNISH} | </span>
                 <span>{stay?.FLOOR_NUM} Floor</span>
               </div>

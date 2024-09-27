@@ -149,6 +149,7 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
   if (decodedToken) {
     console.log(decodedToken)
     const user = await User.findById(decodedToken._id)
+    console.log('USERRRRRRRRR', user)
 
     if (!user) {
       res.clearCookie('accessToken')
@@ -181,9 +182,9 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
   })
 })
 router.post('/verifyImage', async (req, res) => {
-  const { image } = req.body
+  const { img } = req.body
   console.log(req.body)
-  const response = await axios.post('http://localhost:8080/predict', { image })
+  const response = await axios.post('http://localhost:8080/predict', { img })
 
   console.log(response.data)
 
