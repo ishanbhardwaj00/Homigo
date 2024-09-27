@@ -184,7 +184,14 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
 router.post('/verifyImage', async (req, res) => {
   const { img } = req.body
   console.log(req.body)
-  const response = await axios.post('http://localhost:8080/predict', { img })
+
+  try{
+    const response = await axios.post('/predict', { img })
+  } catch (err) {
+    console.error("Prediction failed:",err)
+    res.status(500).send("Failed to load your matches")
+
+  }
 
   console.log(response.data)
 

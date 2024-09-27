@@ -1,6 +1,4 @@
 import express from 'express'
-// import router from './auth.routes'
-// import verifyJwt from '../middleware/verifyJwt'
 
 const router = express.Router()
 
@@ -16,10 +14,20 @@ router.get('/stays', async (req, res) => {
         }
 
         // Send the data to the Flask endpoint at localhost:8080/eco
-        const flaskResponse = await axios.post('http://localhost:8080/eco', {
-            rentPreference,
-            location
-        },);
+
+        let flaskResponse;
+try {
+    flaskResponse = await axios.post('/eco', {
+        rentPreference,
+        location
+    });
+    // You can handle the response here if needed
+    console.log(flaskResponse.data);
+} catch (err) {
+    // Handle the error here
+    console.error('Error in axios request:', err.message);
+}
+
 
         // Respond back to the client with Flask's response
         return res.status(200).json({
