@@ -1,6 +1,4 @@
 import express from 'express'
-// import router from './auth.routes'
-// import verifyJwt from '../middleware/verifyJwt'
 
 const router = express.Router()
 

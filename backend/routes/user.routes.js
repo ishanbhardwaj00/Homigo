@@ -3,7 +3,7 @@ import User from '../models/users.model.js'
 import verifyJwt from '../middleware/verifyJwt.js' // Move verifyJwt to utils for reuse
 import { upload } from '../middleware/multer.middleware.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
-import path from 'path'
+// import path from 'path'
 
 import fs from 'fs/promises'
 const router = express.Router()
