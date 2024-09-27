@@ -25,7 +25,7 @@ export default ({ setStep }: { setStep: any }) => {
       image: null,
     },
   })
-
+  const [imageError, setImageError] = useState(null)
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -40,7 +40,7 @@ export default ({ setStep }: { setStep: any }) => {
   const { authenticated, setAuthenticated, user, setUser } =
     useContext(AuthContext)
 
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState<null | string>(null)
   // const router = useRouter();
   const [requestPending, setRequestPending] = useState(false)
   return (
@@ -67,22 +67,40 @@ export default ({ setStep }: { setStep: any }) => {
               'monthlyRentPreferences',
               data.monthlyRentPreferences
             )
-            console.log(...userInformation.entries())
-            setRequestPending(true)
+            console.log(image)
 
             try {
-              const response = await axios.patch(
-                'http://localhost:5000/api/users/signup',
-                userInformation,
-                {
-                  withCredentials: true,
-                }
+              const response = await axios.post(
+                'http://localhost:5000/api/users/verifyImage',
+                { image },
+                { withCredentials: true }
               )
-              console.log(response.data)
-              setUser(userInformation)
-              setAuthenticated(true)
-              setUser(response.data.user)
-              // router.replace("/");
+              console.log(response.data.prediction)
+              if (response.data.prediction !== 'real') {
+                setImageError('Fake image mf')
+              } else {
+                console.log(...userInformation.entries())
+                setRequestPending(true)
+
+                try {
+                  const response = await axios.patch(
+                    'http://localhost:5000/api/users/signup',
+                    userInformation,
+                    {
+                      withCredentials: true,
+                    }
+                  )
+                  console.log(response.data)
+                  setUser(userInformation)
+                  setAuthenticated(true)
+                  setUser(response.data.user)
+                  // router.replace("/");
+                } catch (error) {
+                  console.log(error)
+                } finally {
+                  setRequestPending(false)
+                }
+              }
             } catch (error) {
               console.log(error)
             } finally {
@@ -92,19 +110,6 @@ export default ({ setStep }: { setStep: any }) => {
         >
           <div className="avatar-container self-center">
             <input
-              {...register('image', {
-                required: true,
-                validate: async () => {
-                  if (image) {
-                    const response = await axios.post(
-                      'http://localhost:5000/verifyImage',
-                      { image }
-                    )
-                    console.log(response.data)
-                  }
-                  return true
-                },
-              })}
               type="file"
               accept="image/*"
               id="file-input"
@@ -130,6 +135,8 @@ export default ({ setStep }: { setStep: any }) => {
           {errors.image && (
             <ErrorMessage text={errors.image.message!.toString()} />
           )}
+
+          {imageError && <ErrorMessage text={imageError} />}
 
           <div className="flex flex-col gap-2">
             <p className="text-base font-semibold text-button-radio-button ml-2">

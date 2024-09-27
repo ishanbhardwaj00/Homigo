@@ -209,8 +209,9 @@ def load_and_preprocess_image_from_url(image64, target_size):
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    model = load_model('/home/e02964/Desktop/Homigo/Homigo/Flask/my_model.h5')
+    model = load_model('./my_model.h5')
     image64 =ast.literal_eval(request.data.decode())['image']
+    image64=image64[22:]
     
     target_size = (256, 256)
 
