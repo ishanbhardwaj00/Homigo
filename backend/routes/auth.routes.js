@@ -149,7 +149,6 @@ router.get('/checkAuth', verifyJwt, async (req, res) => {
   if (decodedToken) {
     console.log(decodedToken)
     const user = await User.findById(decodedToken._id)
-    console.log('USERRRRRRRRR', user)
 
     if (!user) {
       res.clearCookie('accessToken')
@@ -185,12 +184,11 @@ router.post('/verifyImage', async (req, res) => {
   const { img } = req.body
   console.log(req.body)
 
-  try{
+  try {
     const response = await axios.post('/predict', { img })
   } catch (err) {
-    console.error("Prediction failed:",err)
-    res.status(500).send("Failed to load your matches")
-
+    console.error('Prediction failed:', err)
+    res.status(500).send('Failed to load your matches')
   }
 
   console.log(response.data)

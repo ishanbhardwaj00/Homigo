@@ -2,14 +2,13 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import mongoose, { mongo } from 'mongoose'
-import axios from 'axios'
 import http from 'http'
 import { createSocketServer } from './sockets/socket.js'
 import Chat from './models/chat.model.js'
 import jwt from 'jsonwebtoken'
 import { MongoClient } from 'mongodb'
+import flaskAxios from './utils/flaskAxios.js'
 
-// Middleware
 const app = express()
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true }))
@@ -22,6 +21,7 @@ import userRoutes from './routes/user.routes.js'
 import otpRoutes from './routes/otp.routes.js'
 import verifyJwt from './middleware/verifyJwt.js'
 import User from './models/users.model.js'
+import axios from 'axios'
 
 // Use routes
 app.use('/api/users', authRoutes)
@@ -31,7 +31,6 @@ app.use('/api/users', otpRoutes)
 app.get('/users/:id', verifyJwt, async (req, res) => {
   const id = req.params.id
   const user = await User.findById(id)
-  console.log(user)
   const { userCred, ...userObject } = { ...user }
   return res.json({
     success: true,
@@ -73,21 +72,12 @@ app.get('/users/:id', verifyJwt, async (req, res) => {
 // });
 
 app.post('/stays', verifyJwt, async (req, res) => {
-  console.log(req.user)
-
-  const rent = req.body.user.metaDat.monthlyRent
-
-  console.log(req.body)
-
-  const locations = req.body.user.preferences.location
-
-  console.log('Rent', rent)
-  console.log('Locations', locations)
-
-  console.log(rent, locations)
-
   try {
-    const response = await axios.post('/recommend', {
+    const rent = req.body.user.metaDat.monthlyRent
+
+    const locations = req.body.user.preferences.location
+
+    const response = await flaskAxios.post('/recommend', {
       rent,
       locations,
     })
@@ -116,16 +106,17 @@ app.get('/users', verifyJwt, async (req, res) => {
     const userEmail = req.decodedToken.email
     console.log('Extracted email from token', userEmail)
 
-    let response;
-    try{
-    response = await axios.post('https://localhost:8080/nn', {
-      email: userEmail,
-    })
-  } catch(err){
-    cconsole.error('Error in axios request:', err.message);
-    return res.status(500).json({ success: false, message: 'Error in external service' });
-   
-  }
+    let response
+    try {
+      response = await flaskAxios.post('/nn', {
+        email: userEmail,
+      })
+    } catch (err) {
+      cconsole.error('Error in flaskAxios request:', err.message)
+      return res
+        .status(500)
+        .json({ success: false, message: 'Error in external service' })
+    }
 
     // Assuming Flask responds with a 'users' object
     const users = response.data
@@ -154,8 +145,7 @@ app.get('/users', verifyJwt, async (req, res) => {
 
 app.post('/cnn', async (req, res) => {
   try {
-    // Sending a POST request to Flask app
-    const response = await axios.post('/nn', {
+    const response = await flaskAxios.post('/nn', {
       email: 'parthtayal2001@gmail.com',
     })
 
